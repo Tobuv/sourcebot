@@ -153,6 +153,7 @@
     "langfuse-vercel": "^3.38.4",
     "linguist-languages": "^9.3.1",
     "lucide-react": "^0.517.0",
+    "mermaid": "^11.17.2",
     "micromatch": "^4.0.8",
     "minidenticons": "^4.2.1",
     "next": "^16.2.6",

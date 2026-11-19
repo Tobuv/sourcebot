@@ -126,6 +126,21 @@ const DetailsCardComponent = ({
                                                             <span className="text-muted-foreground">Input</span>
                                                             <span>{metadata.totalInputTokens?.toLocaleString() ?? '—'}</span>
                                                         </div>
+                                                        {!!metadata.totalCacheReadTokens && (
+                                                            <div className="flex justify-between gap-4 pl-2">
+                                                                <span className="text-muted-foreground">Cache read</span>
+                                                                <span>
+                                                                    {metadata.totalCacheReadTokens.toLocaleString()}
+                                                                    {metadata.totalInputTokens ? ` (${Math.round(metadata.totalCacheReadTokens / metadata.totalInputTokens * 100)}%)` : ''}
+                                                                </span>
+                                                            </div>
+                                                        )}
+                                                        {!!metadata.totalCacheWriteTokens && (
+                                                            <div className="flex justify-between gap-4 pl-2">
+                                                                <span className="text-muted-foreground">Cache write</span>
+                                                                <span>{metadata.totalCacheWriteTokens.toLocaleString()}</span>
+                                                            </div>
+                                                        )}
                                                         <div className="flex justify-between gap-4">
                                                             <span className="text-muted-foreground">Output</span>
                                                             <span>{metadata.totalOutputTokens?.toLocaleString() ?? '—'}</span>

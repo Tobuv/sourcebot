@@ -278,6 +278,8 @@ const options = {
          */
         SOURCEBOT_CHAT_MODEL_TEMPERATURE: numberSchema.optional(),
         SOURCEBOT_CHAT_MAX_STEP_COUNT: numberSchema.default(100),
+        // Enables prompt caching for Ask Sourcebot on providers that support explicit cache breakpoints (Anthropic, Vertex Anthropic, Bedrock Claude).
+        SOURCEBOT_CHAT_PROMPT_CACHING_ENABLED: booleanSchema.default('true'),
 
         DEBUG_WRITE_CHAT_MESSAGES_TO_FILE: booleanSchema.default('false'),
         DEBUG_ENABLE_REACT_SCAN: booleanSchema.default('false'),

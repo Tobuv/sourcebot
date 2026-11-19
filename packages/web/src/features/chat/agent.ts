@@ -17,6 +17,7 @@ import { ANSWER_TAG, FILE_REFERENCE_PREFIX } from "./constants";
 import { Source } from "./types";
 import { addLineNumbers, fileReferenceToString } from "./utils";
 import { createTools } from "./tools";
+import { createCachingPrepareStep, createSystemMessage, getPromptCacheStrategy } from "./promptCaching";
 
 const dedent = _dedent.withOptions({ alignValues: true });
 
@@ -125,6 +126,8 @@ export const createMessageStream = async ({
                     totalTokens: totalUsage.totalTokens,
                     totalInputTokens: totalUsage.inputTokens,
                     totalOutputTokens: totalUsage.outputTokens,
+                    totalCacheReadTokens: totalUsage.inputTokenDetails?.cacheReadTokens,
+                    totalCacheWriteTokens: totalUsage.inputTokenDetails?.cacheWriteTokens,
                     totalResponseTimeMs: new Date().getTime() - startTime.getTime(),
                     modelName,
                     traceId,
@@ -197,11 +200,16 @@ const createAgentStream = async ({
         files: resolvedFileSources,
     });
 
+    const cacheStrategy = env.SOURCEBOT_CHAT_PROMPT_CACHING_ENABLED === 'true'
+        ? getPromptCacheStrategy(model)
+        : undefined;
+
     const stream = streamText({
         model,
         providerOptions,
         messages: inputMessages,
-        system: systemPrompt,
+        system: createSystemMessage(systemPrompt, cacheStrategy),
+        prepareStep: cacheStrategy ? createCachingPrepareStep(cacheStrategy) : undefined,
         tools: createTools({ source: 'sourcebot-ask-agent', selectedRepos }),
         temperature: temperature ?? env.SOURCEBOT_CHAT_MODEL_TEMPERATURE,
         stopWhen: [
@@ -310,6 +318,7 @@ const createPrompt = ({
     - Do NOT explain code without providing the exact location reference. Every code mention requires a corresponding \`${FILE_REFERENCE_PREFIX}\` reference
     - If you cannot provide a code reference for something you're discussing, do not mention that specific code element
     - Always prefer to use \`${FILE_REFERENCE_PREFIX}\` over \`\`\`code\`\`\` blocks.
+    - When a diagram would make the answer clearer (e.g. call flows, request lifecycles, component/module relationships, state machines, class or entity relationships), include it as a fenced \`\`\`mermaid\`\`\` code block. Keep diagrams focused, quote node labels that contain special characters, and do NOT put \`${FILE_REFERENCE_PREFIX}\` references inside the diagram; reference the code in the surrounding text instead.
 
     **Example answer structure:**
     \`\`\`markdown

@@ -18,6 +18,7 @@ import type { PluggableList, Plugin } from "unified";
 import { visit } from 'unist-util-visit';
 import { CodeBlock } from './codeBlock';
 import { LinearIssueCard } from './linearIssueCard';
+import { MermaidDiagram } from './mermaidDiagram';
 import { FILE_REFERENCE_REGEX } from '@/features/chat/constants';
 import { createFileReference } from '@/features/chat/utils';
 import isEqual from "fast-deep-equal/react";
@@ -203,6 +204,10 @@ const MarkdownRendererComponent = forwardRef<HTMLDivElement, MarkdownRendererPro
         if (node?.properties && node.properties.isBlock === true) {
             const match = /language-(\w+)/.exec(className || '');
             const language = match ? match[1] : undefined;
+
+            if (language === 'mermaid') {
+                return <MermaidDiagram code={text} />;
+            }
 
             return (
                 <CodeBlock
