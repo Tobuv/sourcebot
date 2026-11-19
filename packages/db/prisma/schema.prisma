@@ -291,6 +291,8 @@ model Org {
   searchContexts SearchContext[]
 
   chats Chat[]
+
+  chatSkills ChatSkill[]
 }
 
 enum OrgRole {
@@ -370,6 +372,8 @@ model User {
 
   chats Chat[]
   sharedChats ChatAccess[]
+
+  chatSkills ChatSkill[]
 
   oauthTokens        OAuthToken[]
   oauthAuthCodes     OAuthAuthorizationCode[]
@@ -573,4 +577,42 @@ model OAuthToken {
   expiresAt  DateTime
   createdAt  DateTime    @default(now())
   lastUsedAt DateTime?
+}
+
+enum ChatSkillScope {
+  /// Only visible to (and editable by) the user who created it.
+  PERSONAL
+  /// Visible to every member of the org. Only owners can create or edit.
+  WORKSPACE
+}
+
+/// A reusable set of instructions for Ask Sourcebot. Skills can be invoked
+/// explicitly with `/name` in the chat box, or loaded automatically by the
+/// agent based on their description.
+model ChatSkill {
+  id String @id @default(cuid())
+
+  /// Lowercase letters, digits and hyphens. Unique per user (personal) or per org (workspace).
+  name         String
+  /// Describes what the skill does and when to use it. Used by the agent to decide when to load it.
+  description  String
+  /// The instructions (markdown) given to the agent when the skill is used.
+  instructions String
+
+  scope ChatSkillScope
+
+  /// When true, the agent may load the skill on its own when relevant.
+  autoInvoke Boolean @default(true)
+
+  org   Org @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  orgId Int
+
+  createdBy   User?   @relation(fields: [createdById], references: [id], onDelete: SetNull)
+  createdById String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([orgId, scope])
+  @@index([createdById])
 }

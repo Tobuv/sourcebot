@@ -1,9 +1,9 @@
 'use client';
 
 import { useQuery } from "@tanstack/react-query";
-import { FileSuggestion, RefineSuggestion, Suggestion, SuggestionMode } from "./types";
+import { FileSuggestion, RefineSuggestion, SkillSuggestion, Suggestion, SuggestionMode } from "./types";
 import { unwrapServiceError } from "@/lib/utils";
-import { search } from "@/app/api/(client)/client";
+import { listSkills, search } from "@/app/api/(client)/client";
 import { useMemo } from "react";
 
 interface Props {
@@ -63,6 +63,29 @@ export const useSuggestionsData = ({
         },
         enabled: suggestionMode === "file",
     });
+    const { data: allSkillSuggestions, isLoading: _isLoadingSkills } = useQuery({
+        queryKey: ["chatSkills"],
+        queryFn: () => unwrapServiceError(listSkills()),
+        select: (data): SkillSuggestion[] => data.filter((skill) => !skill.isShadowed).map((skill) => ({
+            type: 'skill',
+            id: skill.id,
+            name: skill.name,
+            description: skill.description,
+            scope: skill.scope,
+        })),
+        enabled: suggestionMode === "skill",
+    });
+    const skillSuggestions = useMemo(() => {
+        const query = suggestionQuery.toLowerCase();
+        const skills = allSkillSuggestions ?? [];
+        // Prefix matches first, then other substring matches.
+        return [
+            ...skills.filter((skill) => skill.name.startsWith(query)),
+            ...skills.filter((skill) => !skill.name.startsWith(query) && skill.name.includes(query)),
+        ].slice(0, 10);
+    }, [allSkillSuggestions, suggestionQuery]);
+    const isLoadingSkills = suggestionMode === "skill" && _isLoadingSkills;
+
     const isLoadingFiles = useMemo(() => suggestionMode === "file" && _isLoadingFileSuggestions, [_isLoadingFileSuggestions, suggestionMode]);
 
     switch (suggestionMode) {
@@ -70,6 +93,11 @@ export const useSuggestionsData = ({
             return {
                 suggestions: fileSuggestions ?? [],
                 isLoading: isLoadingFiles,
+            }
+        case 'skill':
+            return {
+                suggestions: skillSuggestions,
+                isLoading: isLoadingSkills,
             }
         case 'refine':
             return {

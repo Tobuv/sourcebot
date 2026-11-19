@@ -2,6 +2,7 @@ import { sew } from "@/middleware/sew";
 import { createMessageStream } from "@/features/chat/agent";
 import { additionalChatRequestParamsSchema } from "@/features/chat/types";
 import { textAttachmentSchema, validateAttachments } from "@/features/chat/attachments";
+import { getVisibleSkills } from "@/features/chat/skills/skills.server";
 import { getLanguageModelKey } from "@/features/chat/utils";
 import { getAISDKLanguageModelAndOptions, getConfiguredLanguageModels, isOwnerOfChat, updateChatMessages } from "@/features/chat/utils.server";
 import { apiHandler } from "@/lib/apiHandler";
@@ -121,9 +122,13 @@ export const POST = apiHandler(async (req: NextRequest) => {
                 ...(env.EXPERIMENT_ASK_GH_ENABLED === 'true' ? { selectedRepos: expandedRepos } : {}),
             });
 
+            const skills = (await getVisibleSkills({ prisma, orgId: org.id, userId: user?.id }))
+                .map(({ id, name, description, instructions, autoInvoke }) => ({ id, name, description, instructions, autoInvoke }));
+
             const stream = await createMessageStream({
                 chatId: id,
                 messages,
+                skills,
                 metadata: {
                     selectedSearchScopes,
                 },

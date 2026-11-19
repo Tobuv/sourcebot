@@ -9,6 +9,8 @@ export { sourceSchema } from "@/features/tools/types";
 export type { FileSource, Source } from "@/features/tools/types";
 import type { Source } from "@/features/tools/types";
 import type { TextAttachment } from "./attachments";
+import type { createLoadSkillTool } from "./skills/loadSkillTool";
+import type { SkillInvocation } from "./skills/skillUtils";
 
 const fileReferenceSchema = z.object({
     type: z.literal('file'),
@@ -70,6 +72,8 @@ export type SBChatMessageMetadata = z.infer<typeof sbChatMessageMetadataSchema>;
 
 export type SBChatMessageToolTypes = {
     [K in keyof ReturnType<typeof createTools>]: InferUITool<ReturnType<typeof createTools>[K]>;
+} & {
+    load_skill: InferUITool<ReturnType<typeof createLoadSkillTool>>;
 };
 
 export type SBChatMessageDataParts = {
@@ -78,6 +82,8 @@ export type SBChatMessageDataParts = {
     "source": Source,
     // Text files attached by the user to a user message.
     "attachment": TextAttachment,
+    // Skills explicitly invoked by the user (via `/name`) for a user message.
+    "skill": SkillInvocation,
 }
 
 export type SBChatMessage = UIMessage<
@@ -110,7 +116,14 @@ export type FileMentionData = {
     revision: string;
 }
 
-export type MentionData = FileMentionData;
+export type SkillMentionData = {
+    type: 'skill';
+    id: string;
+    name: string;
+    description: string;
+}
+
+export type MentionData = FileMentionData | SkillMentionData;
 
 export type MentionElement = {
     type: 'mention';

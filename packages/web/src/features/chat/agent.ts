@@ -19,6 +19,8 @@ import { addLineNumbers, fileReferenceToString } from "./utils";
 import { createTools } from "./tools";
 import { createCachingPrepareStep, createSystemMessage, getPromptCacheStrategy } from "./promptCaching";
 import { formatAttachmentsForPrompt } from "./attachments";
+import { createLoadSkillTool, LOAD_SKILL_TOOL_NAME, LoadableSkill } from "./skills/loadSkillTool";
+import { formatInvokedSkillsForPrompt } from "./skills/skillUtils";
 
 const dedent = _dedent.withOptions({ alignValues: true });
 
@@ -45,7 +47,14 @@ interface CreateMessageStreamResponseProps {
     modelProviderOptions?: Record<string, Record<string, JSONValue>>;
     modelTemperature?: number;
     metadata?: Partial<SBChatMessageMetadata>;
+    /**
+     * Skills visible to the user. Skills invoked in a message (via `/name`) are
+     * resolved against this list; skills with `autoInvoke` can be loaded by the agent.
+     */
+    skills?: AgentSkill[];
 }
+
+export type AgentSkill = LoadableSkill & { autoInvoke: boolean };
 
 export const createMessageStream = async ({
     chatId,
@@ -58,6 +67,7 @@ export const createMessageStream = async ({
     modelTemperature,
     onFinish,
     onError,
+    skills = [],
 }: CreateMessageStreamResponseProps) => {
     const latestMessage = messages[messages.length - 1];
     const sources = latestMessage.parts
@@ -76,11 +86,22 @@ export const createMessageStream = async ({
                     .filter((part) => part.type === 'data-attachment')
                     .map((part) => part.data);
 
+                // Resolve invoked skills by id, falling back to name (e.g. if the skill was re-created).
+                // Skills that no longer exist or are no longer visible to the user are skipped.
+                const invokedSkills = message.parts
+                    .filter((part) => part.type === 'data-skill')
+                    .map(({ data }) => skills.find((skill) => skill.id === data.id) ?? skills.find((skill) => skill.name === data.name))
+                    .filter((skill) => skill !== undefined);
+
+                const content = [
+                    text,
+                    formatInvokedSkillsForPrompt(invokedSkills),
+                    formatAttachmentsForPrompt(attachments),
+                ].filter((section) => section.length > 0).join('\n\n');
+
                 return {
                     role: 'user',
-                    content: attachments.length > 0
-                        ? `${text}\n\n${formatAttachmentsForPrompt(attachments)}`
-                        : text,
+                    content,
                 };
             }
 
@@ -118,6 +139,7 @@ export const createMessageStream = async ({
                 },
                 traceId,
                 chatId,
+                autoInvokableSkills: skills.filter((skill) => skill.autoInvoke),
             });
 
             await mergeStreamAsync(researchStream, writer, {
@@ -165,6 +187,7 @@ interface AgentOptions {
     onWriteSource: (source: Source) => void;
     traceId: string;
     chatId: string;
+    autoInvokableSkills: LoadableSkill[];
 }
 
 const createAgentStream = async ({
@@ -177,6 +200,7 @@ const createAgentStream = async ({
     onWriteSource,
     traceId,
     chatId,
+    autoInvokableSkills,
 }: AgentOptions) => {
     // For every file source, resolve the source code so that we can include it in the system prompt.
     const fileSources = inputSources.filter((source) => source.type === 'file');
@@ -206,7 +230,13 @@ const createAgentStream = async ({
     const systemPrompt = createPrompt({
         repos: selectedRepos,
         files: resolvedFileSources,
+        skills: autoInvokableSkills,
     });
+
+    const tools = {
+        ...createTools({ source: 'sourcebot-ask-agent', selectedRepos }),
+        [LOAD_SKILL_TOOL_NAME]: createLoadSkillTool(autoInvokableSkills),
+    };
 
     const cacheStrategy = env.SOURCEBOT_CHAT_PROMPT_CACHING_ENABLED === 'true'
         ? getPromptCacheStrategy(model)
@@ -218,7 +248,11 @@ const createAgentStream = async ({
         messages: inputMessages,
         system: createSystemMessage(systemPrompt, cacheStrategy),
         prepareStep: cacheStrategy ? createCachingPrepareStep(cacheStrategy) : undefined,
-        tools: createTools({ source: 'sourcebot-ask-agent', selectedRepos }),
+        tools,
+        // Only expose `load_skill` when there are skills to load.
+        activeTools: autoInvokableSkills.length > 0
+            ? undefined
+            : (Object.keys(tools) as (keyof typeof tools)[]).filter((name) => name !== LOAD_SKILL_TOOL_NAME),
         temperature: temperature ?? env.SOURCEBOT_CHAT_MODEL_TEMPERATURE,
         stopWhen: [
             stepCountIsGTE(env.SOURCEBOT_CHAT_MAX_STEP_COUNT),
@@ -250,7 +284,9 @@ const createAgentStream = async ({
 const createPrompt = ({
     files,
     repos,
+    skills,
 }: {
+    skills: LoadableSkill[],
     files?: {
         path: string;
         source: string;
@@ -302,6 +338,14 @@ const createPrompt = ({
             </file>`).join('\n\n')}
         </files>
     `: ''}
+
+    ${skills.length > 0 ? dedent`
+        <available_skills>
+        Skills are reusable instructions written by your users. When the user's request matches a skill's description, call \`${LOAD_SKILL_TOOL_NAME}\` with the skill's name BEFORE doing the work, then follow the loaded instructions. Do not load skills that are not relevant. Skills the user invoked explicitly are already included in their message inside <invoked_skills>; do not load those again.
+
+        ${skills.map((skill) => `- ${skill.name}: ${skill.description.replace(/\s+/g, ' ')}`).join('\n')}
+        </available_skills>
+    ` : ''}
 
     <answer_instructions>
     When you have sufficient context, output your answer as a structured markdown response.

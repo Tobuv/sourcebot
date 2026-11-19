@@ -13,6 +13,7 @@ import { InferUIMessageChunk, UIDataTypes, UIMessage, UITools } from "ai";
 import { captureEvent } from "@/lib/posthog";
 import { getAuditService } from "@/ee/features/audit/factory";
 import { createMessageStream } from "../chat/agent";
+import { getVisibleSkills } from "../chat/skills/skills.server";
 
 const logger = createLogger('ask-codebase-api');
 
@@ -148,9 +149,13 @@ export const askCodebase = (params: AskCodebaseParams): Promise<AskCodebaseResul
                 } : {}),
             });
 
+            const skills = (await getVisibleSkills({ prisma, orgId: org.id, userId: user?.id }))
+                .map(({ id, name, description, instructions, autoInvoke }) => ({ id, name, description, instructions, autoInvoke }));
+
             const stream = await createMessageStream({
                 chatId: chat.id,
                 messages: [userMessage],
+                skills,
                 metadata: {
                     selectedSearchScopes: selectedRepos,
                 },

@@ -6,13 +6,15 @@ import { cn } from "@/lib/utils";
 import { forwardRef, useMemo } from "react";
 import { createPortal } from "react-dom";
 import { VscFiles } from "react-icons/vsc";
-import { FileSuggestion, RefineSuggestion, Suggestion } from "./types";
+import { FileSuggestion, RefineSuggestion, SkillSuggestion, Suggestion } from "./types";
+import { SparklesIcon } from "lucide-react";
 
 interface SuggestionBoxProps {
     selectedIndex: number;
     onInsertSuggestion: (suggestion: Suggestion) => void;
     isLoading: boolean;
     suggestions: Suggestion[];
+    emptyMessage?: string;
 }
 
 export const SuggestionBox = forwardRef<HTMLDivElement, SuggestionBoxProps>(({
@@ -20,6 +22,7 @@ export const SuggestionBox = forwardRef<HTMLDivElement, SuggestionBoxProps>(({
     onInsertSuggestion,
     isLoading,
     suggestions,
+    emptyMessage = "No results found",
 }, ref) => {
 
     return createPortal(
@@ -40,7 +43,7 @@ export const SuggestionBox = forwardRef<HTMLDivElement, SuggestionBoxProps>(({
                 (suggestions.length === 0) ? (
                     <div className="flex flex-col gap-2 px-1 py-0.5 w-full">
                         <p className="text-sm text-muted-foreground">
-                            No results found
+                            {emptyMessage}
                         </p>
                     </div>
                 ) :
@@ -66,6 +69,11 @@ export const SuggestionBox = forwardRef<HTMLDivElement, SuggestionBoxProps>(({
                                             <RefineSuggestionListItem refine={suggestion} />
                                         )
                                     }
+                                    {
+                                        suggestion.type === 'skill' && (
+                                            <SkillSuggestionListItem skill={suggestion} />
+                                        )
+                                    }
                                 </div>
                             ))}
                         </div>
@@ -88,6 +96,25 @@ const FileSuggestionListItem = ({ file }: { file: FileSuggestion }) => {
                 </span>
                 <span className="text-xs text-muted-foreground">
                     <span className="font-medium">{file.repo.split('/').pop()}</span>/{file.path}
+                </span>
+            </div>
+        </>
+    )
+}
+
+const SkillSuggestionListItem = ({ skill }: { skill: SkillSuggestion }) => {
+    return (
+        <>
+            <SparklesIcon className="w-4 h-4 flex-shrink-0 mt-1" />
+            <div className="flex flex-col w-full min-w-0">
+                <span className="text-sm font-medium font-mono">
+                    /{skill.name}
+                    {skill.scope === 'WORKSPACE' && (
+                        <span className="ml-2 font-sans text-xs font-normal text-muted-foreground">workspace</span>
+                    )}
+                </span>
+                <span className="text-xs text-muted-foreground line-clamp-2">
+                    {skill.description}
                 </span>
             </div>
         </>

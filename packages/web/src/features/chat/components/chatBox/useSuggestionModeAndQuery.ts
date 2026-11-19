@@ -42,6 +42,16 @@ export const useSuggestionModeAndQuery = () => {
 
         let match: RegExpMatchArray | null = null;
 
+        // Skill mode, e.g. `/review-pr`.
+        match = text.match(/^\/([a-z0-9-]*)$/);
+        if (match) {
+            return {
+                suggestionMode: "skill",
+                suggestionQuery: match[1],
+                range,
+            };
+        }
+
         // Refine mode.
         match = text.match(/^@$/);
         if (match) {

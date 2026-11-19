@@ -24,6 +24,7 @@ import { ListCommitsToolComponent } from './tools/listCommitsToolComponent';
 import { ListReposToolComponent } from './tools/listReposToolComponent';
 import { ListTreeToolComponent } from './tools/listTreeToolComponent';
 import { ReadFileToolComponent } from './tools/readFileToolComponent';
+import { LoadSkillToolComponent } from './tools/loadSkillToolComponent';
 import { ToolOutputGuard } from './tools/toolOutputGuard';
 
 
@@ -323,8 +324,18 @@ export const StepPartRenderer = ({ part }: { part: SBChatMessagePart }) => {
                     {(output) => <ListTreeToolComponent {...output} />}
                 </ToolOutputGuard>
             )
+        case 'tool-load_skill':
+            return (
+                <ToolOutputGuard
+                    part={part}
+                    loadingText="Loading skill..."
+                >
+                    {(output) => <LoadSkillToolComponent {...output} />}
+                </ToolOutputGuard>
+            )
         case 'data-source':
         case 'data-attachment':
+        case 'data-skill':
         case 'dynamic-tool':
         case 'file':
         case 'source-document':

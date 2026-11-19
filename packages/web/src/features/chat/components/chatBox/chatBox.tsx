@@ -8,7 +8,7 @@ import { insertMention, slateContentToString } from "@/features/chat/utils";
 import { cn } from "@/lib/utils";
 import { useIsMac } from "@/hooks/useIsMac";
 import { computePosition, flip, offset, shift, VirtualElement } from "@floating-ui/react";
-import { ArrowUp, Loader2, PaperclipIcon, StopCircleIcon } from "lucide-react";
+import { ArrowUp, Loader2, PaperclipIcon, SparklesIcon, StopCircleIcon } from "lucide-react";
 import { ClipboardEvent, DragEvent, Fragment, KeyboardEvent, memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useHotkeys } from "react-hotkeys-hook";
 import { Descendant, insertText } from "slate";
@@ -52,9 +52,9 @@ const ChatBoxComponent = ({
     const suggestionsBoxRef = useRef<HTMLDivElement>(null);
     const [index, setIndex] = useState(0);
     const editor = useSlate();
-    const { suggestionQuery, suggestionMode, range } = useSuggestionModeAndQuery();
+    const { suggestionQuery, suggestionMode: rawSuggestionMode, range } = useSuggestionModeAndQuery();
     const { suggestions, isLoading } = useSuggestionsData({
-        suggestionMode,
+        suggestionMode: rawSuggestionMode,
         suggestionQuery,
         selectedRepos: selectedSearchScopes.map((item) => {
             if (item.type === 'repo') {
@@ -71,6 +71,13 @@ const ChatBoxComponent = ({
             return [];
         }).flat(),
     });
+    // A word like `/usr` that matches no skill is just text: don't show the suggestion box
+    // (which would also swallow the Enter key). A bare `/` still shows the box so users
+    // can discover skills.
+    const suggestionMode = rawSuggestionMode === 'skill' && !isLoading && suggestions.length === 0 && suggestionQuery.length > 0
+        ? 'none'
+        : rawSuggestionMode;
+
     const { selectedLanguageModel } = useSelectedLanguageModel({
         languageModels,
     });
@@ -264,6 +271,14 @@ const ChatBoxComponent = ({
                     revision: suggestion.revision,
                 }, range);
                 break;
+            case 'skill':
+                insertMention(editor, {
+                    type: 'skill',
+                    id: suggestion.id,
+                    name: suggestion.name,
+                    description: suggestion.description,
+                }, range);
+                break;
             case 'refine': {
                 switch (suggestion.targetSuggestionMode) {
                     case 'file':
@@ -390,7 +405,7 @@ const ChatBoxComponent = ({
             )}
             <Editable
                 className="w-full focus-visible:outline-none focus-visible:ring-0 bg-background text-base disabled:cursor-not-allowed disabled:opacity-50 md:text-sm max-h-64 overflow-y-auto"
-                placeholder="Ask a question about your code. @mention files or select search scopes to refine your query."
+                placeholder="Ask a question about your code. @mention files, type / to use a skill, or select search scopes to refine your query."
                 renderElement={renderElement}
                 renderLeaf={renderLeaf}
                 onKeyDown={onKeyDown}
@@ -481,6 +496,7 @@ const ChatBoxComponent = ({
                     onInsertSuggestion={onInsertSuggestion}
                     isLoading={isLoading}
                     suggestions={suggestions}
+                    emptyMessage={suggestionMode === 'skill' ? "No skills yet. Create one in Settings → Skills." : undefined}
                 />
             )}
         </div>
@@ -552,4 +568,45 @@ const MentionComponent = ({
             </Tooltip>
         )
     }
+
+    if (data.type === 'skill') {
+        return (
+            <Tooltip>
+                <TooltipTrigger asChild>
+                    <span
+                        {...attributes}
+                        contentEditable={false}
+                        className={cn(
+                            "px-1.5 py-0.5 mr-1.5 mb-1 align-baseline inline-block rounded bg-muted text-xs font-mono",
+                            {
+                                "ring-2 ring-blue-300": selected && focused
+                            }
+                        )}
+                    >
+                        <span contentEditable={false} className="flex flex-row items-center select-none">
+                            {/* @see: https://github.com/ianstormtaylor/slate/issues/3490 */}
+                            {isMac ? (
+                                <Fragment>
+                                    {children}
+                                    <SparklesIcon className="w-3 h-3 mr-1" />
+                                    /{data.name}
+                                </Fragment>
+                            ) : (
+                                <Fragment>
+                                    <SparklesIcon className="w-3 h-3 mr-1" />
+                                    /{data.name}
+                                    {children}
+                                </Fragment>
+                            )}
+                        </span>
+                    </span>
+                </TooltipTrigger>
+                <TooltipContent className="max-w-sm">
+                    <span className="text-xs">{data.description}</span>
+                </TooltipContent>
+            </Tooltip>
+        )
+    }
+
+    return null;
 }

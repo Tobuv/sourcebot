@@ -94,6 +94,10 @@ export const getSidebarNavItems = async () =>
                     isNotificationDotVisible: connectionStats.numberOfConnectionsWithFirstTimeSyncJobsInProgress > 0,
                 }
             ] : []),
+            {
+                title: "Skills",
+                href: `/settings/skills`,
+            },
             ...(env.DISABLE_API_KEY_USAGE_FOR_NON_OWNER_USERS === 'false' || role === OrgRole.OWNER ? [
                 {
                     title: "API Keys",

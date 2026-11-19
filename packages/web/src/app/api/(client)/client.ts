@@ -28,6 +28,7 @@ import type {
     SearchChatShareableMembersQueryParams,
     SearchChatShareableMembersResponse,
 } from "../(server)/ee/chat/[chatId]/searchMembers/route";
+import type { ListSkillsResponse } from "../(server)/chat/skills/route";
 
 export const search = async (body: SearchRequest): Promise<SearchResponse | ServiceError> => {
     const result = await fetch("/api/search", {
@@ -195,4 +196,14 @@ export const searchChatShareableMembers = async (
     }).then(response => response.json());
 
     return result as SearchChatShareableMembersResponse | ServiceError;
+}
+export const listSkills = async (): Promise<ListSkillsResponse | ServiceError> => {
+    const result = await fetch("/api/chat/skills", {
+        method: "GET",
+        headers: {
+            "X-Sourcebot-Client-Source": "sourcebot-web-client",
+        },
+    }).then(response => response.json());
+
+    return result as ListSkillsResponse | ServiceError;
 }

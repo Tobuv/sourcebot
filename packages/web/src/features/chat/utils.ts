@@ -135,6 +135,8 @@ export const slateContentToString = (children: Descendant[]): string => {
             switch (type) {
                 case 'file':
                     return `${fileReferenceToString({ repo: child.data.repo, path: child.data.path })} `;
+                case 'skill':
+                    return `/${child.data.name} `;
             }
         }
 
@@ -216,6 +218,14 @@ export const createUIMessage = (
                 type: 'data-attachment' as const,
                 data,
             })),
+            ...mentions
+                .filter((mention) => mention.type === 'skill')
+                // Dedupe in case the same skill is mentioned more than once.
+                .filter((mention, index, all) => all.findIndex((other) => other.id === mention.id) === index)
+                .map((mention) => ({
+                    type: 'data-skill' as const,
+                    data: { id: mention.id, name: mention.name },
+                })),
         ],
         metadata: {
             selectedSearchScopes,
