@@ -324,6 +324,7 @@ export const StepPartRenderer = ({ part }: { part: SBChatMessagePart }) => {
                 </ToolOutputGuard>
             )
         case 'data-source':
+        case 'data-attachment':
         case 'dynamic-tool':
         case 'file':
         case 'source-document':

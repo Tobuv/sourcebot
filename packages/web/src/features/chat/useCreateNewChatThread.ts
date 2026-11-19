@@ -10,6 +10,7 @@ import { createChat, getAskGhLoginWallData } from "./actions";
 import { isServiceError } from "@/lib/utils";
 import { createPathWithQueryParams } from "@/lib/utils";
 import { SearchScope, SetChatStatePayload } from "./types";
+import type { TextAttachment } from "./attachments";
 import { SET_CHAT_STATE_SESSION_STORAGE_KEY } from "./constants";
 import { useSessionStorage } from "usehooks-ts";
 import type { IdentityProviderMetadata } from "@/lib/identityProviders";
@@ -30,11 +31,11 @@ export const useCreateNewChatThread = ({ isAuthenticated = false }: UseCreateNew
     const hasRestoredPendingMessage = useRef(false);
     const captureEvent = useCaptureEvent();
 
-    const doCreateChat = useCallback(async (children: Descendant[], selectedSearchScopes: SearchScope[]) => {
+    const doCreateChat = useCallback(async (children: Descendant[], selectedSearchScopes: SearchScope[], attachments: TextAttachment[] = []) => {
         const text = slateContentToString(children);
         const mentions = getAllMentionElements(children);
 
-        const inputMessage = createUIMessage(text, mentions.map((mention) => mention.data), selectedSearchScopes);
+        const inputMessage = createUIMessage(text, mentions.map((mention) => mention.data), selectedSearchScopes, attachments);
 
         setIsLoading(true);
         const response = await createChat({ source: 'sourcebot-web-client' });
@@ -56,7 +57,7 @@ export const useCreateNewChatThread = ({ isAuthenticated = false }: UseCreateNew
         router.push(url);
     }, [router, toast, setChatState]);
 
-    const createNewChatThread = useCallback(async (children: Descendant[], selectedSearchScopes: SearchScope[]) => {
+    const createNewChatThread = useCallback(async (children: Descendant[], selectedSearchScopes: SearchScope[], attachments: TextAttachment[] = []) => {
         if (!isAuthenticated) {
             const result = await getAskGhLoginWallData();
             if (!isServiceError(result) && result.isEnabled) {
@@ -67,7 +68,7 @@ export const useCreateNewChatThread = ({ isAuthenticated = false }: UseCreateNew
             }
         }
 
-        doCreateChat(children, selectedSearchScopes);
+        doCreateChat(children, selectedSearchScopes, attachments);
     }, [isAuthenticated, captureEvent, doCreateChat]);
 
     // Restore pending message after OAuth redirect

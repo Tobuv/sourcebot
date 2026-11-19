@@ -8,6 +8,7 @@ import { createTools } from "./tools";
 export { sourceSchema } from "@/features/tools/types";
 export type { FileSource, Source } from "@/features/tools/types";
 import type { Source } from "@/features/tools/types";
+import type { TextAttachment } from "./attachments";
 
 const fileReferenceSchema = z.object({
     type: z.literal('file'),
@@ -75,6 +76,8 @@ export type SBChatMessageDataParts = {
     // The `source` data type allows us to know what sources the LLM saw
     // during retrieval.
     "source": Source,
+    // Text files attached by the user to a user message.
+    "attachment": TextAttachment,
 }
 
 export type SBChatMessage = UIMessage<

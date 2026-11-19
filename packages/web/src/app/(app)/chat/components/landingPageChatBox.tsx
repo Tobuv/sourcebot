@@ -35,8 +35,8 @@ export const LandingPageChatBox = ({
         <div className="w-full max-w-[800px] mt-4">
             <div className="border rounded-md w-full shadow-sm">
                 <ChatBox
-                    onSubmit={(children) => {
-                        createNewChatThread(children, selectedSearchScopes);
+                    onSubmit={(children, _editor, attachments) => {
+                        createNewChatThread(children, selectedSearchScopes, attachments);
                     }}
                     className="min-h-[50px]"
                     isRedirecting={isLoading}

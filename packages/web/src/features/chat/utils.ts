@@ -2,6 +2,7 @@ import { BrowseHighlightRange, getBrowsePath } from "@/app/(app)/browse/hooks/ut
 import { CreateUIMessage, TextUIPart, UIMessagePart } from "ai";
 import { Descendant, Editor, Point, Range, Transforms } from "slate";
 import { ANSWER_TAG, FILE_REFERENCE_PREFIX, FILE_REFERENCE_REGEX } from "./constants";
+import type { TextAttachment } from "./attachments";
 import {
     CustomEditor,
     CustomText,
@@ -176,7 +177,12 @@ export const addLineNumbers = (source: string, lineOffset = 1) => {
     return source.split('\n').map((line, index) => `${index + lineOffset}: ${line}`).join('\n');
 }
 
-export const createUIMessage = (text: string, mentions: MentionData[], selectedSearchScopes: SearchScope[]): CreateUIMessage<SBChatMessage> => {
+export const createUIMessage = (
+    text: string,
+    mentions: MentionData[],
+    selectedSearchScopes: SearchScope[],
+    attachments: TextAttachment[] = [],
+): CreateUIMessage<SBChatMessage> => {
     // Converts applicable mentions into sources.
     const sources: Source[] = mentions
         .map((mention) => {
@@ -206,6 +212,10 @@ export const createUIMessage = (text: string, mentions: MentionData[], selectedS
                 type: 'data-source',
                 data,
             })) as UIMessagePart<{ source: Source }, SBChatMessageToolTypes>[],
+            ...attachments.map((data) => ({
+                type: 'data-attachment' as const,
+                data,
+            })),
         ],
         metadata: {
             selectedSearchScopes,

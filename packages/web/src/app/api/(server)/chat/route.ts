@@ -1,6 +1,7 @@
 import { sew } from "@/middleware/sew";
 import { createMessageStream } from "@/features/chat/agent";
 import { additionalChatRequestParamsSchema } from "@/features/chat/types";
+import { textAttachmentSchema, validateAttachments } from "@/features/chat/attachments";
 import { getLanguageModelKey } from "@/features/chat/utils";
 import { getAISDKLanguageModelAndOptions, getConfiguredLanguageModels, isOwnerOfChat, updateChatMessages } from "@/features/chat/utils.server";
 import { apiHandler } from "@/lib/apiHandler";
@@ -34,6 +35,25 @@ export const POST = apiHandler(async (req: NextRequest) => {
     }
 
     const { messages, id, selectedSearchScopes, languageModel: _languageModel } = parsed.data;
+
+    // Validate attachments on the latest message (earlier messages were validated when they were sent).
+    const latestMessage = messages[messages.length - 1];
+    const attachmentsResult = z.array(textAttachmentSchema).safeParse(
+        (Array.isArray(latestMessage?.parts) ? latestMessage.parts : [])
+            .filter((part: { type?: string }) => part?.type === 'data-attachment')
+            .map((part: { data?: unknown }) => part.data)
+    );
+    if (!attachmentsResult.success) {
+        return serviceErrorResponse(requestBodySchemaValidationError(attachmentsResult.error));
+    }
+    const attachmentsError = validateAttachments(attachmentsResult.data);
+    if (attachmentsError) {
+        return serviceErrorResponse({
+            statusCode: StatusCodes.BAD_REQUEST,
+            errorCode: ErrorCode.INVALID_REQUEST_BODY,
+            message: attachmentsError,
+        });
+    }
     // @note: a bit of type massaging is required here since the
     // zod schema does not enum on `model` or `provider`.
     // @see: chat/types.ts

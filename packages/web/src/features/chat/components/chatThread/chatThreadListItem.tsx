@@ -12,6 +12,7 @@ import { getAnswerPartFromAssistantMessage, groupMessageIntoSteps, repairReferen
 import { AnswerCard } from './answerCard';
 import { DetailsCard } from './detailsCard';
 import { MarkdownRenderer, REFERENCE_PAYLOAD_ATTRIBUTE } from './markdownRenderer';
+import { AttachmentChip } from '../attachmentChip';
 import { ReferencedSourcesListView } from './referencedSourcesListView';
 import isEqual from "fast-deep-equal/react";
 import { ANSWER_TAG } from '../../constants';
@@ -45,6 +46,12 @@ const ChatThreadListItemComponent = forwardRef<HTMLDivElement, ChatThreadListIte
 
     const userQuestion = useMemo(() => {
         return userMessage.parts.length > 0 && userMessage.parts[0].type === 'text' ? userMessage.parts[0].text : '';
+    }, [userMessage]);
+
+    const userAttachments = useMemo(() => {
+        return userMessage.parts
+            .filter((part) => part.type === 'data-attachment')
+            .map((part) => part.data);
     }, [userMessage]);
 
     // Take the assistant message and repair any references that are not properly formatted.
@@ -342,6 +349,17 @@ const ChatThreadListItemComponent = forwardRef<HTMLDivElement, ChatThreadListIte
                                 escapeHtml={true}
                             />
                         </div>
+
+                        {userAttachments.length > 0 && (
+                            <div className="flex flex-wrap gap-1.5 mb-4 ml-6">
+                                {userAttachments.map((attachment, index) => (
+                                    <AttachmentChip
+                                        key={`${attachment.name}-${index}`}
+                                        attachment={attachment}
+                                    />
+                                ))}
+                            </div>
+                        )}
 
                         {isThinking && (
                             <div className="space-y-4 mb-4">

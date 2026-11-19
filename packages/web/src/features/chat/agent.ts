@@ -18,6 +18,7 @@ import { Source } from "./types";
 import { addLineNumbers, fileReferenceToString } from "./utils";
 import { createTools } from "./tools";
 import { createCachingPrepareStep, createSystemMessage, getPromptCacheStrategy } from "./promptCaching";
+import { formatAttachmentsForPrompt } from "./attachments";
 
 const dedent = _dedent.withOptions({ alignValues: true });
 
@@ -70,9 +71,16 @@ export const createMessageStream = async ({
     const messageHistory =
         messages.map((message): ModelMessage | undefined => {
             if (message.role === 'user') {
+                const text = message.parts[0].type === 'text' ? message.parts[0].text : '';
+                const attachments = message.parts
+                    .filter((part) => part.type === 'data-attachment')
+                    .map((part) => part.data);
+
                 return {
                     role: 'user',
-                    content: message.parts[0].type === 'text' ? message.parts[0].text : '',
+                    content: attachments.length > 0
+                        ? `${text}\n\n${formatAttachmentsForPrompt(attachments)}`
+                        : text,
                 };
             }
 

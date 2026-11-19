@@ -31,6 +31,7 @@ import { DuplicateChatDialog } from '@/app/(app)/chat/components/duplicateChatDi
 import { LoginModal } from '@/app/components/loginModal';
 import type { IdentityProviderMetadata } from '@/lib/identityProviders';
 import { getAskGhLoginWallData } from '../../actions';
+import type { TextAttachment } from "../../attachments";
 
 type ChatHistoryState = {
     scrollOffset?: number;
@@ -304,7 +305,7 @@ export const ChatThread = ({
         }
     }, [error]);
 
-    const onSubmit = useCallback(async (children: Descendant[], editor: CustomEditor) => {
+    const onSubmit = useCallback(async (children: Descendant[], editor: CustomEditor, attachments: TextAttachment[]) => {
         if (!isAuthenticated) {
             const result = await getAskGhLoginWallData();
             if (!isServiceError(result) && result.isEnabled) {
@@ -319,7 +320,7 @@ export const ChatThread = ({
         const text = slateContentToString(children);
         const mentions = getAllMentionElements(children);
 
-        const message = createUIMessage(text, mentions.map(({ data }) => data), selectedSearchScopes);
+        const message = createUIMessage(text, mentions.map(({ data }) => data), selectedSearchScopes, attachments);
         sendMessage(message);
 
         scrollToBottom();

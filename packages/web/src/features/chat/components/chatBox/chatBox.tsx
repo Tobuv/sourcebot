@@ -8,8 +8,8 @@ import { insertMention, slateContentToString } from "@/features/chat/utils";
 import { cn } from "@/lib/utils";
 import { useIsMac } from "@/hooks/useIsMac";
 import { computePosition, flip, offset, shift, VirtualElement } from "@floating-ui/react";
-import { ArrowUp, Loader2, StopCircleIcon } from "lucide-react";
-import { Fragment, KeyboardEvent, memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { ArrowUp, Loader2, PaperclipIcon, StopCircleIcon } from "lucide-react";
+import { ClipboardEvent, DragEvent, Fragment, KeyboardEvent, memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useHotkeys } from "react-hotkeys-hook";
 import { Descendant, insertText } from "slate";
 import { Editable, ReactEditor, RenderElementProps, RenderLeafProps, useFocused, useSelected, useSlate } from "slate-react";
@@ -21,9 +21,11 @@ import { useSuggestionsData } from "./useSuggestionsData";
 import { useToast } from "@/components/hooks/use-toast";
 import { SearchContextQuery } from "@/lib/types";
 import isEqual from "fast-deep-equal/react";
+import { createPastedTextAttachment, readFileAsTextAttachment, shouldConvertPasteToAttachment, TextAttachment, validateAttachments } from "../../attachments";
+import { AttachmentChip } from "../attachmentChip";
 
 interface ChatBoxProps {
-    onSubmit: (children: Descendant[], editor: CustomEditor) => void;
+    onSubmit: (children: Descendant[], editor: CustomEditor, attachments: TextAttachment[]) => void;
     onStop?: () => void;
     preferredSuggestionsBoxPlacement?: "top-start" | "bottom-start";
     className?: string;
@@ -73,6 +75,93 @@ const ChatBoxComponent = ({
         languageModels,
     });
     const { toast } = useToast();
+    const [attachments, setAttachments] = useState<TextAttachment[]>([]);
+    const [isDraggingOver, setIsDraggingOver] = useState(false);
+    const fileInputRef = useRef<HTMLInputElement>(null);
+    // Latest attachments, for use after async file reads.
+    const attachmentsRef = useRef<TextAttachment[]>([]);
+    useEffect(() => {
+        attachmentsRef.current = attachments;
+    }, [attachments]);
+
+    // Adds attachments if they fit within the per-message limits, otherwise shows an error.
+    const addAttachments = useCallback((newAttachments: TextAttachment[]) => {
+        if (newAttachments.length === 0) {
+            return false;
+        }
+
+        const next = [...attachmentsRef.current, ...newAttachments];
+        const error = validateAttachments(next);
+        if (error) {
+            toast({ description: `⚠️ ${error}`, variant: "destructive" });
+            return false;
+        }
+
+        attachmentsRef.current = next;
+        setAttachments(next);
+        return true;
+    }, [toast]);
+
+    const addFiles = useCallback(async (files: File[]) => {
+        const results = await Promise.all(files.map(readFileAsTextAttachment));
+        const valid: TextAttachment[] = [];
+        for (const result of results) {
+            if ('error' in result) {
+                toast({ description: `⚠️ ${result.error}`, variant: "destructive" });
+            } else {
+                valid.push(result);
+            }
+        }
+        addAttachments(valid);
+    }, [addAttachments, toast]);
+
+    const onPaste = useCallback((event: ClipboardEvent<HTMLDivElement>) => {
+        const files = Array.from(event.clipboardData.files);
+        const text = event.clipboardData.getData('text/plain');
+
+        if (files.length > 0 && !text) {
+            event.preventDefault();
+            addFiles(files);
+            return;
+        }
+
+        if (text && shouldConvertPasteToAttachment(text)) {
+            event.preventDefault();
+            const added = addAttachments([createPastedTextAttachment(text, attachmentsRef.current)]);
+            if (added) {
+                toast({ description: "Large paste was added as an attachment." });
+            }
+        }
+    }, [addAttachments, addFiles, toast]);
+
+    const onDragOver = useCallback((event: DragEvent<HTMLDivElement>) => {
+        if (isDisabled || !event.dataTransfer.types.includes('Files')) {
+            return;
+        }
+        event.preventDefault();
+        setIsDraggingOver(true);
+    }, [isDisabled]);
+
+    const onDragLeave = useCallback((event: DragEvent<HTMLDivElement>) => {
+        // Ignore leave events fired when moving between child elements.
+        if (event.currentTarget.contains(event.relatedTarget as Node | null)) {
+            return;
+        }
+        setIsDraggingOver(false);
+    }, []);
+
+    const onDrop = useCallback((event: DragEvent<HTMLDivElement>) => {
+        setIsDraggingOver(false);
+        if (isDisabled) {
+            return;
+        }
+        const files = Array.from(event.dataTransfer.files);
+        if (files.length === 0) {
+            return;
+        }
+        event.preventDefault();
+        addFiles(files);
+    }, [addFiles, isDisabled]);
 
     // Reset the index when the suggestion mode changes.
     useEffect(() => {
@@ -158,8 +247,10 @@ const ChatBoxComponent = ({
             return;
         }
 
-        _onSubmit(editor.children, editor);
-    }, [_onSubmit, editor, isSubmitDisabled, isSubmitDisabledReason, toast]);
+        _onSubmit(editor.children, editor, attachments);
+        attachmentsRef.current = [];
+        setAttachments([]);
+    }, [_onSubmit, editor, attachments, isSubmitDisabled, isSubmitDisabledReason, toast]);
 
     const onInsertSuggestion = useCallback((suggestion: Suggestion) => {
         switch (suggestion.type) {
@@ -273,17 +364,68 @@ const ChatBoxComponent = ({
 
     return (
         <div
-            className={cn("flex flex-col justify-between gap-0.5 w-full px-3 py-2", className)}
+            className={cn(
+                "flex flex-col justify-between gap-0.5 w-full px-3 py-2",
+                isDraggingOver && "outline-dashed outline-2 outline-primary/60 -outline-offset-2 rounded-md",
+                className,
+            )}
+            onDragOver={onDragOver}
+            onDragLeave={onDragLeave}
+            onDrop={onDrop}
         >
+            {attachments.length > 0 && (
+                <div className="flex flex-wrap gap-1.5 mb-1.5">
+                    {attachments.map((attachment, index) => (
+                        <AttachmentChip
+                            key={`${attachment.name}-${index}`}
+                            attachment={attachment}
+                            onRemove={() => {
+                                const next = attachments.filter((_, i) => i !== index);
+                                attachmentsRef.current = next;
+                                setAttachments(next);
+                            }}
+                        />
+                    ))}
+                </div>
+            )}
             <Editable
                 className="w-full focus-visible:outline-none focus-visible:ring-0 bg-background text-base disabled:cursor-not-allowed disabled:opacity-50 md:text-sm max-h-64 overflow-y-auto"
                 placeholder="Ask a question about your code. @mention files or select search scopes to refine your query."
                 renderElement={renderElement}
                 renderLeaf={renderLeaf}
                 onKeyDown={onKeyDown}
+                onPaste={onPaste}
                 readOnly={isDisabled}
             />
-            <div className="ml-auto z-10">
+            <div className="ml-auto z-10 flex items-center gap-1">
+                <input
+                    ref={fileInputRef}
+                    type="file"
+                    multiple
+                    className="hidden"
+                    onChange={(event) => {
+                        const files = Array.from(event.target.files ?? []);
+                        // Reset so that selecting the same file again triggers onChange.
+                        event.target.value = '';
+                        addFiles(files);
+                    }}
+                />
+                <Tooltip>
+                    <TooltipTrigger asChild>
+                        <Button
+                            variant="ghost"
+                            size="sm"
+                            className="w-6 h-6 p-0"
+                            onClick={() => fileInputRef.current?.click()}
+                            disabled={isDisabled || isRedirecting}
+                        >
+                            <PaperclipIcon className="w-4 h-4" />
+                        </Button>
+                    </TooltipTrigger>
+                    <TooltipContent side="top">
+                        Attach text files (or drag &amp; drop / paste)
+                    </TooltipContent>
+                </Tooltip>
                 {isRedirecting ? (
                     <Button
                         variant="default"
