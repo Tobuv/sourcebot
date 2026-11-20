@@ -25,6 +25,9 @@ import { extractReasoningMiddleware, generateText, JSONValue, wrapLanguageModel 
 import fs from 'fs';
 import path from 'path';
 import { LanguageModelInfo, SBChatMessage } from './types';
+import { getCustomLanguageModels, getWorkspaceCustomLanguageModels, isResolvedSecretToken } from './customModels/customModels.server';
+import { getAuthContext } from '@/middleware/withAuth';
+import { isServiceError } from '@/lib/utils';
 
 /**
  * Checks if the current user (authenticated or anonymous) is the owner of a chat.
@@ -101,13 +104,20 @@ export const updateChatMessages = async ({
     }
 };
 /**
- * Returns the full configuration of the language models.
- *
- * @warning this can contain sensitive information like environment
- * variable names and base URLs. When passing information to the client,
- * use getConfiguredLanguageModelsInfo instead.
+ * Resolves a token from a language model config. Custom models configured in the
+ * settings UI carry their (decrypted) key as an in-memory `{ secret }` token.
  */
-export const getConfiguredLanguageModels = async (): Promise<LanguageModel[]> => {
+const resolveConfigToken = async (token: Token): Promise<string> => {
+    if (isResolvedSecretToken(token)) {
+        return token.secret;
+    }
+    return getTokenFromConfig(token);
+};
+
+/**
+ * Returns the language models defined in the config file.
+ */
+export const getConfigFileLanguageModels = async (): Promise<LanguageModel[]> => {
     try {
         const config = await loadConfig(env.CONFIG_PATH);
         return config.models ?? [];
@@ -115,6 +125,49 @@ export const getConfiguredLanguageModels = async (): Promise<LanguageModel[]> =>
         console.error('Failed to load language model configuration', error);
         return [];
     }
+};
+
+/**
+ * Returns the full configuration of the language models available to the current
+ * user: models from the config file, followed by custom models configured in the
+ * settings UI (workspace models, and the user's personal models). Outside of a
+ * request (e.g. background jobs), only workspace custom models are included.
+ *
+ * Models are identified by `getLanguageModelKey`; on a clash, the first one wins.
+ *
+ * @warning this can contain sensitive information like API keys, environment
+ * variable names and base URLs. When passing information to the client,
+ * use getConfiguredLanguageModelsInfo instead.
+ */
+export const getConfiguredLanguageModels = async (): Promise<LanguageModel[]> => {
+    const configFileModels = await getConfigFileLanguageModels();
+
+    let customModels: LanguageModel[] = [];
+    try {
+        let authContext: Awaited<ReturnType<typeof getAuthContext>> | undefined;
+        try {
+            authContext = await getAuthContext();
+        } catch {
+            // Not in a request context (e.g. a background job).
+            authContext = undefined;
+        }
+
+        customModels = authContext && !isServiceError(authContext)
+            ? await getCustomLanguageModels({ prisma: authContext.prisma, orgId: authContext.org.id, userId: authContext.user?.id })
+            : await getWorkspaceCustomLanguageModels();
+    } catch (error) {
+        console.error('Failed to load custom language models', error);
+    }
+
+    const seen = new Set<string>();
+    return [...configFileModels, ...customModels].filter((model) => {
+        const key = `${model.provider}-${model.model}-${model.displayName}`;
+        if (seen.has(key)) {
+            return false;
+        }
+        seen.add(key);
+        return true;
+    });
 };
 
 /**
@@ -175,13 +228,13 @@ export const getAISDKLanguageModelAndOptions = async (config: LanguageModel): Pr
                     baseURL: config.baseUrl,
                     region: config.region ?? env.AWS_REGION,
                     accessKeyId: config.accessKeyId
-                        ? await getTokenFromConfig(config.accessKeyId)
+                        ? await resolveConfigToken(config.accessKeyId)
                         : env.AWS_ACCESS_KEY_ID,
                     secretAccessKey: config.accessKeySecret
-                        ? await getTokenFromConfig(config.accessKeySecret)
+                        ? await resolveConfigToken(config.accessKeySecret)
                         : env.AWS_SECRET_ACCESS_KEY,
                     sessionToken: config.sessionToken
-                        ? await getTokenFromConfig(config.sessionToken)
+                        ? await resolveConfigToken(config.sessionToken)
                         : env.AWS_SESSION_TOKEN,
                     headers: config.headers
                         ? await extractLanguageModelKeyValuePairs(config.headers)
@@ -201,10 +254,10 @@ export const getAISDKLanguageModelAndOptions = async (config: LanguageModel): Pr
                 const anthropic = createAnthropic({
                     baseURL: config.baseUrl,
                     apiKey: config.token
-                        ? await getTokenFromConfig(config.token)
+                        ? await resolveConfigToken(config.token)
                         : env.ANTHROPIC_API_KEY,
                     authToken: config.authToken
-                        ? await getTokenFromConfig(config.authToken)
+                        ? await resolveConfigToken(config.authToken)
                         : env.ANTHROPIC_AUTH_TOKEN,
                     headers: config.headers
                         ? await extractLanguageModelKeyValuePairs(config.headers)
@@ -233,7 +286,7 @@ export const getAISDKLanguageModelAndOptions = async (config: LanguageModel): Pr
             case 'azure': {
                 const azure = createAzure({
                     baseURL: config.baseUrl,
-                    apiKey: config.token ? (await getTokenFromConfig(config.token)) : env.AZURE_API_KEY,
+                    apiKey: config.token ? (await resolveConfigToken(config.token)) : env.AZURE_API_KEY,
                     apiVersion: config.apiVersion,
                     resourceName: config.resourceName ?? env.AZURE_RESOURCE_NAME,
                     headers: config.headers
@@ -255,7 +308,7 @@ export const getAISDKLanguageModelAndOptions = async (config: LanguageModel): Pr
             case 'deepseek': {
                 const deepseek = createDeepSeek({
                     baseURL: config.baseUrl,
-                    apiKey: config.token ? (await getTokenFromConfig(config.token)) : env.DEEPSEEK_API_KEY,
+                    apiKey: config.token ? (await resolveConfigToken(config.token)) : env.DEEPSEEK_API_KEY,
                     headers: config.headers
                         ? await extractLanguageModelKeyValuePairs(config.headers)
                         : undefined,
@@ -269,7 +322,7 @@ export const getAISDKLanguageModelAndOptions = async (config: LanguageModel): Pr
                 const google = createGoogleGenerativeAI({
                     baseURL: config.baseUrl,
                     apiKey: config.token
-                        ? await getTokenFromConfig(config.token)
+                        ? await resolveConfigToken(config.token)
                         : env.GOOGLE_GENERATIVE_AI_API_KEY,
                     headers: config.headers
                         ? await extractLanguageModelKeyValuePairs(config.headers)
@@ -295,7 +348,7 @@ export const getAISDKLanguageModelAndOptions = async (config: LanguageModel): Pr
                     location: config.region ?? env.GOOGLE_VERTEX_REGION,
                     ...(config.credentials ? {
                         googleAuthOptions: {
-                            keyFilename: await getTokenFromConfig(config.credentials),
+                            keyFilename: await resolveConfigToken(config.credentials),
                         }
                     } : {}),
                     headers: config.headers
@@ -324,7 +377,7 @@ export const getAISDKLanguageModelAndOptions = async (config: LanguageModel): Pr
                     location: config.region ?? env.GOOGLE_VERTEX_REGION,
                     ...(config.credentials ? {
                         googleAuthOptions: {
-                            keyFilename: await getTokenFromConfig(config.credentials),
+                            keyFilename: await resolveConfigToken(config.credentials),
                         }
                     } : {}),
                     headers: config.headers
@@ -340,7 +393,7 @@ export const getAISDKLanguageModelAndOptions = async (config: LanguageModel): Pr
                 const mistral = createMistral({
                     baseURL: config.baseUrl,
                     apiKey: config.token
-                        ? await getTokenFromConfig(config.token)
+                        ? await resolveConfigToken(config.token)
                         : env.MISTRAL_API_KEY,
                     headers: config.headers
                         ? await extractLanguageModelKeyValuePairs(config.headers)
@@ -355,7 +408,7 @@ export const getAISDKLanguageModelAndOptions = async (config: LanguageModel): Pr
                 const openai = createOpenAI({
                     baseURL: config.baseUrl,
                     apiKey: config.token
-                        ? await getTokenFromConfig(config.token)
+                        ? await resolveConfigToken(config.token)
                         : env.OPENAI_API_KEY,
                     headers: config.headers
                         ? await extractLanguageModelKeyValuePairs(config.headers)
@@ -378,7 +431,7 @@ export const getAISDKLanguageModelAndOptions = async (config: LanguageModel): Pr
                     baseURL: config.baseUrl,
                     name: config.displayName ?? modelId,
                     apiKey: config.token
-                        ? await getTokenFromConfig(config.token)
+                        ? await resolveConfigToken(config.token)
                         : undefined,
                     headers: config.headers
                         ? await extractLanguageModelKeyValuePairs(config.headers)
@@ -405,7 +458,7 @@ export const getAISDKLanguageModelAndOptions = async (config: LanguageModel): Pr
                 const openrouter = createOpenRouter({
                     baseURL: config.baseUrl,
                     apiKey: config.token
-                        ? await getTokenFromConfig(config.token)
+                        ? await resolveConfigToken(config.token)
                         : env.OPENROUTER_API_KEY,
                     headers: config.headers
                         ? await extractLanguageModelKeyValuePairs(config.headers)
@@ -420,7 +473,7 @@ export const getAISDKLanguageModelAndOptions = async (config: LanguageModel): Pr
                 const xai = createXai({
                     baseURL: config.baseUrl,
                     apiKey: config.token
-                        ? await getTokenFromConfig(config.token)
+                        ? await resolveConfigToken(config.token)
                         : env.XAI_API_KEY,
                     headers: config.headers
                         ? await extractLanguageModelKeyValuePairs(config.headers)
@@ -468,7 +521,7 @@ const extractLanguageModelKeyValuePairs = async (
             continue;
         }
 
-        const value = await getTokenFromConfig(val);
+        const value = await resolveConfigToken(val);
         resolvedPairs[key] = value;
     }
 

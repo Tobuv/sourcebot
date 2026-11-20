@@ -95,6 +95,10 @@ export const getSidebarNavItems = async () =>
                 }
             ] : []),
             {
+                title: "Models",
+                href: `/settings/models`,
+            },
+            {
                 title: "Skills",
                 href: `/settings/skills`,
             },

@@ -29,6 +29,7 @@ import type {
     SearchChatShareableMembersResponse,
 } from "../(server)/ee/chat/[chatId]/searchMembers/route";
 import type { ListSkillsResponse } from "../(server)/chat/skills/route";
+import type { ListCustomModelsResponse } from "@/features/chat/customModels/customModelUtils";
 
 export const search = async (body: SearchRequest): Promise<SearchResponse | ServiceError> => {
     const result = await fetch("/api/search", {
@@ -206,4 +207,15 @@ export const listSkills = async (): Promise<ListSkillsResponse | ServiceError> =
     }).then(response => response.json());
 
     return result as ListSkillsResponse | ServiceError;
+}
+
+export const listCustomModels = async (): Promise<ListCustomModelsResponse | ServiceError> => {
+    const result = await fetch("/api/models/custom", {
+        method: "GET",
+        headers: {
+            "X-Sourcebot-Client-Source": "sourcebot-web-client",
+        },
+    }).then(response => response.json());
+
+    return result as ListCustomModelsResponse | ServiceError;
 }

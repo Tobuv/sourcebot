@@ -40,6 +40,21 @@ provide Sourcebot.
 }
 ```
 
+# Configure models in the settings
+
+You can also add models from **Settings → Models** without editing the config file:
+
+- **Workspace models** are available to every member. Only owners can add or edit them.
+- **Personal models** are only available to the member who added them, using their own API key.
+- API keys are encrypted with `SOURCEBOT_ENCRYPTION_KEY` and are never shown again after saving. Use **Test connection** to check a model before saving it.
+- Supported providers: Anthropic, OpenAI, OpenAI compatible, DeepSeek, Google Gemini, Azure OpenAI, OpenRouter, xAI and Mistral. Configure Amazon Bedrock and Google Vertex in the config file.
+
+Models from the config file are listed on the same page (read-only) and keep working as before.
+
+<Warning>
+If `SOURCEBOT_ENCRYPTION_KEY` changes, saved API keys can no longer be decrypted. Enter them again from **Settings → Models**.
+</Warning>
+
 # Supported Providers
 
 Sourcebot uses the [Vercel AI SDK](https://ai-sdk.dev/docs/introduction), so it can integrate with any provider the SDK supports. If you don't see your provider below please submit

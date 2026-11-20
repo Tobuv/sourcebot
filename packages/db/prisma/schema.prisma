@@ -293,6 +293,8 @@ model Org {
   chats Chat[]
 
   chatSkills ChatSkill[]
+
+  customLanguageModels CustomLanguageModel[]
 }
 
 enum OrgRole {
@@ -374,6 +376,8 @@ model User {
   sharedChats ChatAccess[]
 
   chatSkills ChatSkill[]
+
+  customLanguageModels CustomLanguageModel[]
 
   oauthTokens        OAuthToken[]
   oauthAuthCodes     OAuthAuthorizationCode[]
@@ -608,6 +612,48 @@ model ChatSkill {
   orgId Int
 
   createdBy   User?   @relation(fields: [createdById], references: [id], onDelete: SetNull)
+  createdById String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([orgId, scope])
+  @@index([createdById])
+}
+
+enum CustomLanguageModelScope {
+  /// Only available to the user who created it.
+  PERSONAL
+  /// Available to every member of the org. Only owners can create or edit.
+  WORKSPACE
+}
+
+/// A language model configured from the settings UI (in addition to the
+/// models defined in the config file).
+model CustomLanguageModel {
+  id String @id @default(cuid())
+
+  scope CustomLanguageModelScope
+
+  /// One of the providers supported in the settings UI (see customModelUtils.ts).
+  provider    String
+  /// The provider's model id, e.g. `claude-sonnet-4-5`.
+  model       String
+  /// Shown in the model selector. Unique per user (personal) / per org (workspace).
+  displayName String
+  baseUrl     String?
+  imageInput  Boolean @default(false)
+  temperature Float?
+  /// Provider specific, non-secret settings (e.g. Azure resource name).
+  settings    Json?
+
+  /// API key encrypted with SOURCEBOT_ENCRYPTION_KEY, as `<iv>:<data>`.
+  encryptedApiKey String?
+
+  org   Org @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  orgId Int
+
+  createdBy   User?   @relation(fields: [createdById], references: [id], onDelete: Cascade)
   createdById String?
 
   createdAt DateTime @default(now())
