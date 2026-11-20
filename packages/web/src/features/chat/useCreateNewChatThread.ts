@@ -11,6 +11,8 @@ import { isServiceError } from "@/lib/utils";
 import { createPathWithQueryParams } from "@/lib/utils";
 import { SearchScope, SetChatStatePayload } from "./types";
 import type { TextAttachment } from "./attachments";
+import type { ImageAttachment } from "./imageAttachments";
+import { setPendingChatImages } from "./pendingChatImages";
 import { SET_CHAT_STATE_SESSION_STORAGE_KEY } from "./constants";
 import { useSessionStorage } from "usehooks-ts";
 import type { IdentityProviderMetadata } from "@/lib/identityProviders";
@@ -31,11 +33,11 @@ export const useCreateNewChatThread = ({ isAuthenticated = false }: UseCreateNew
     const hasRestoredPendingMessage = useRef(false);
     const captureEvent = useCaptureEvent();
 
-    const doCreateChat = useCallback(async (children: Descendant[], selectedSearchScopes: SearchScope[], attachments: TextAttachment[] = []) => {
+    const doCreateChat = useCallback(async (children: Descendant[], selectedSearchScopes: SearchScope[], attachments: TextAttachment[] = [], images: ImageAttachment[] = []) => {
         const text = slateContentToString(children);
         const mentions = getAllMentionElements(children);
 
-        const inputMessage = createUIMessage(text, mentions.map((mention) => mention.data), selectedSearchScopes, attachments);
+        const inputMessage = createUIMessage(text, mentions.map((mention) => mention.data), selectedSearchScopes, attachments, images);
 
         setIsLoading(true);
         const response = await createChat({ source: 'sourcebot-web-client' });
@@ -47,8 +49,13 @@ export const useCreateNewChatThread = ({ isAuthenticated = false }: UseCreateNew
             return;
         }
 
+        // Images are handed over in memory rather than through sessionStorage (size quota).
+        setPendingChatImages(response.id, images);
         setChatState({
-            inputMessage,
+            inputMessage: {
+                ...inputMessage,
+                parts: inputMessage.parts.filter((part) => part.type !== 'data-image'),
+            },
             selectedSearchScopes,
         });
 
@@ -57,7 +64,7 @@ export const useCreateNewChatThread = ({ isAuthenticated = false }: UseCreateNew
         router.push(url);
     }, [router, toast, setChatState]);
 
-    const createNewChatThread = useCallback(async (children: Descendant[], selectedSearchScopes: SearchScope[], attachments: TextAttachment[] = []) => {
+    const createNewChatThread = useCallback(async (children: Descendant[], selectedSearchScopes: SearchScope[], attachments: TextAttachment[] = [], images: ImageAttachment[] = []) => {
         if (!isAuthenticated) {
             const result = await getAskGhLoginWallData();
             if (!isServiceError(result) && result.isEnabled) {
@@ -68,7 +75,7 @@ export const useCreateNewChatThread = ({ isAuthenticated = false }: UseCreateNew
             }
         }
 
-        doCreateChat(children, selectedSearchScopes, attachments);
+        doCreateChat(children, selectedSearchScopes, attachments, images);
     }, [isAuthenticated, captureEvent, doCreateChat]);
 
     // Restore pending message after OAuth redirect

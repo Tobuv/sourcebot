@@ -127,6 +127,7 @@ export const getConfiguredLanguageModelsInfo = async () => {
         provider: model.provider,
         model: model.model,
         displayName: model.displayName,
+        imageInput: model.imageInput ?? false,
     }));
 };
 

@@ -17,6 +17,11 @@
                     "type": "string",
                     "description": "Optional display name."
                 },
+                "imageInput": {
+                    "type": "boolean",
+                    "default": false,
+                    "description": "Whether the model accepts image input. When true, users can attach images to Ask Sourcebot messages sent to this model."
+                },
                 "accessKeyId": {
                     "$ref": "./shared.json#/definitions/Token",
                     "description": "Optional access key ID to use with the model. Defaults to the `AWS_ACCESS_KEY_ID` environment variable."
@@ -73,6 +78,11 @@
                     "type": "string",
                     "description": "Optional display name."
                 },
+                "imageInput": {
+                    "type": "boolean",
+                    "default": false,
+                    "description": "Whether the model accepts image input. When true, users can attach images to Ask Sourcebot messages sent to this model."
+                },
                 "token": {
                     "$ref": "./shared.json#/definitions/Token",
                     "description": "Optional API key to use with the model, sent as the `x-api-key` header. Defaults to the `ANTHROPIC_API_KEY` environment variable."
@@ -115,6 +125,11 @@
                 "displayName": {
                     "type": "string",
                     "description": "Optional display name."
+                },
+                "imageInput": {
+                    "type": "boolean",
+                    "default": false,
+                    "description": "Whether the model accepts image input. When true, users can attach images to Ask Sourcebot messages sent to this model."
                 },
                 "resourceName": {
                     "type": "string",
@@ -183,6 +198,11 @@
                     "type": "string",
                     "description": "Optional display name."
                 },
+                "imageInput": {
+                    "type": "boolean",
+                    "default": false,
+                    "description": "Whether the model accepts image input. When true, users can attach images to Ask Sourcebot messages sent to this model."
+                },
                 "token": {
                     "$ref": "./shared.json#/definitions/Token",
                     "description": "Optional API key to use with the model. Defaults to the `DEEPSEEK_API_KEY` environment variable."
@@ -221,6 +241,11 @@
                 "displayName": {
                     "type": "string",
                     "description": "Optional display name."
+                },
+                "imageInput": {
+                    "type": "boolean",
+                    "default": false,
+                    "description": "Whether the model accepts image input. When true, users can attach images to Ask Sourcebot messages sent to this model."
                 },
                 "token": {
                     "$ref": "./shared.json#/definitions/Token",
@@ -278,6 +303,11 @@
                     "type": "string",
                     "description": "Optional display name."
                 },
+                "imageInput": {
+                    "type": "boolean",
+                    "default": false,
+                    "description": "Whether the model accepts image input. When true, users can attach images to Ask Sourcebot messages sent to this model."
+                },
                 "project": {
                     "type": "string",
                     "description": "The Google Cloud project ID. Defaults to the `GOOGLE_VERTEX_PROJECT` environment variable."
@@ -334,6 +364,11 @@
                 "displayName": {
                     "type": "string",
                     "description": "Optional display name."
+                },
+                "imageInput": {
+                    "type": "boolean",
+                    "default": false,
+                    "description": "Whether the model accepts image input. When true, users can attach images to Ask Sourcebot messages sent to this model."
                 },
                 "project": {
                     "type": "string",
@@ -401,6 +436,11 @@
                     "type": "string",
                     "description": "Optional display name."
                 },
+                "imageInput": {
+                    "type": "boolean",
+                    "default": false,
+                    "description": "Whether the model accepts image input. When true, users can attach images to Ask Sourcebot messages sent to this model."
+                },
                 "token": {
                     "$ref": "./shared.json#/definitions/Token",
                     "description": "Optional API key to use with the model. Defaults to the `MISTRAL_API_KEY` environment variable."
@@ -445,6 +485,11 @@
                 "displayName": {
                     "type": "string",
                     "description": "Optional display name."
+                },
+                "imageInput": {
+                    "type": "boolean",
+                    "default": false,
+                    "description": "Whether the model accepts image input. When true, users can attach images to Ask Sourcebot messages sent to this model."
                 },
                 "token": {
                     "$ref": "./shared.json#/definitions/Token",
@@ -505,6 +550,11 @@
                     "type": "string",
                     "description": "Optional display name."
                 },
+                "imageInput": {
+                    "type": "boolean",
+                    "default": false,
+                    "description": "Whether the model accepts image input. When true, users can attach images to Ask Sourcebot messages sent to this model."
+                },
                 "token": {
                     "$ref": "./shared.json#/definitions/Token",
                     "description": "Optional API key. If specified, adds an `Authorization` header to request headers with the value Bearer <token>."
@@ -561,6 +611,11 @@
                     "type": "string",
                     "description": "Optional display name."
                 },
+                "imageInput": {
+                    "type": "boolean",
+                    "default": false,
+                    "description": "Whether the model accepts image input. When true, users can attach images to Ask Sourcebot messages sent to this model."
+                },
                 "token": {
                     "$ref": "./shared.json#/definitions/Token",
                     "description": "Optional API key to use with the model. Defaults to the `OPENROUTER_API_KEY` environment variable."
@@ -603,6 +658,11 @@
                 "displayName": {
                     "type": "string",
                     "description": "Optional display name."
+                },
+                "imageInput": {
+                    "type": "boolean",
+                    "default": false,
+                    "description": "Whether the model accepts image input. When true, users can attach images to Ask Sourcebot messages sent to this model."
                 },
                 "token": {
                     "$ref": "./shared.json#/definitions/Token",

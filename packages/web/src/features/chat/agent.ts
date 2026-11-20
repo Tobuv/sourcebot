@@ -19,6 +19,7 @@ import { addLineNumbers, fileReferenceToString } from "./utils";
 import { createTools } from "./tools";
 import { createCachingPrepareStep, createSystemMessage, getPromptCacheStrategy } from "./promptCaching";
 import { formatAttachmentsForPrompt } from "./attachments";
+import { describeOmittedImages } from "./imageAttachments";
 import { createLoadSkillTool, LOAD_SKILL_TOOL_NAME, LoadableSkill } from "./skills/loadSkillTool";
 import { formatInvokedSkillsForPrompt } from "./skills/skillUtils";
 import { connectMcpServers, ConnectedMcpServer, getConfiguredMcpServers } from "./mcpConnectors/mcpConnectors.server";
@@ -53,6 +54,8 @@ interface CreateMessageStreamResponseProps {
      * resolved against this list; skills with `autoInvoke` can be loaded by the agent.
      */
     skills?: AgentSkill[];
+    /** Whether the model accepts image input. Images are replaced by a note otherwise. */
+    supportsImageInput?: boolean;
 }
 
 export type AgentSkill = LoadableSkill & { autoInvoke: boolean };
@@ -69,6 +72,7 @@ export const createMessageStream = async ({
     onFinish,
     onError,
     skills = [],
+    supportsImageInput = false,
 }: CreateMessageStreamResponseProps) => {
     const latestMessage = messages[messages.length - 1];
     const sources = latestMessage.parts
@@ -94,11 +98,30 @@ export const createMessageStream = async ({
                     .map(({ data }) => skills.find((skill) => skill.id === data.id) ?? skills.find((skill) => skill.name === data.name))
                     .filter((skill) => skill !== undefined);
 
+                const images = message.parts
+                    .filter((part) => part.type === 'data-image')
+                    .map((part) => part.data);
+
                 const content = [
                     text,
                     formatInvokedSkillsForPrompt(invokedSkills),
                     formatAttachmentsForPrompt(attachments),
+                    supportsImageInput ? '' : describeOmittedImages(images),
                 ].filter((section) => section.length > 0).join('\n\n');
+
+                if (supportsImageInput && images.length > 0) {
+                    return {
+                        role: 'user',
+                        content: [
+                            { type: 'text', text: content },
+                            ...images.map((image) => ({
+                                type: 'image' as const,
+                                image: image.data,
+                                mediaType: image.mediaType,
+                            })),
+                        ],
+                    };
+                }
 
                 return {
                     role: 'user',

@@ -23,9 +23,13 @@ import { SearchContextQuery } from "@/lib/types";
 import isEqual from "fast-deep-equal/react";
 import { createPastedTextAttachment, readFileAsTextAttachment, shouldConvertPasteToAttachment, TextAttachment, validateAttachments } from "../../attachments";
 import { AttachmentChip } from "../attachmentChip";
+import { ImageAttachment, isImageFile, validateImageAttachments } from "../../imageAttachments";
+import { processImageFile } from "../../imageProcessing";
+import { ImageAttachmentChip } from "../imageAttachmentChip";
+import { getLanguageModelKey } from "../../utils";
 
 interface ChatBoxProps {
-    onSubmit: (children: Descendant[], editor: CustomEditor, attachments: TextAttachment[]) => void;
+    onSubmit: (children: Descendant[], editor: CustomEditor, attachments: TextAttachment[], images: ImageAttachment[]) => void;
     onStop?: () => void;
     preferredSuggestionsBoxPlacement?: "top-start" | "bottom-start";
     className?: string;
@@ -82,7 +86,21 @@ const ChatBoxComponent = ({
         languageModels,
     });
     const { toast } = useToast();
+    // The selected model is persisted in local storage and may be stale, so look up
+    // its capabilities in the current list of configured models.
+    const supportsImageInput = useMemo(() => {
+        if (!selectedLanguageModel) {
+            return false;
+        }
+        const key = getLanguageModelKey(selectedLanguageModel);
+        return languageModels.find((model) => getLanguageModelKey(model) === key)?.imageInput === true;
+    }, [languageModels, selectedLanguageModel]);
     const [attachments, setAttachments] = useState<TextAttachment[]>([]);
+    const [images, setImages] = useState<ImageAttachment[]>([]);
+    const imagesRef = useRef<ImageAttachment[]>([]);
+    useEffect(() => {
+        imagesRef.current = images;
+    }, [images]);
     const [isDraggingOver, setIsDraggingOver] = useState(false);
     const fileInputRef = useRef<HTMLInputElement>(null);
     // Latest attachments, for use after async file reads.
@@ -109,7 +127,45 @@ const ChatBoxComponent = ({
         return true;
     }, [toast]);
 
-    const addFiles = useCallback(async (files: File[]) => {
+    const addImages = useCallback(async (files: File[]) => {
+        if (files.length === 0) {
+            return;
+        }
+
+        if (!supportsImageInput) {
+            toast({
+                description: `⚠️ The selected model does not accept images. Choose a model with image input enabled to attach images.`,
+                variant: "destructive",
+            });
+            return;
+        }
+
+        const results = await Promise.all(files.map(processImageFile));
+        const valid: ImageAttachment[] = [];
+        for (const result of results) {
+            if ('error' in result) {
+                toast({ description: `⚠️ ${result.error}`, variant: "destructive" });
+            } else {
+                valid.push(result);
+            }
+        }
+        if (valid.length === 0) {
+            return;
+        }
+
+        const next = [...imagesRef.current, ...valid];
+        const error = validateImageAttachments(next);
+        if (error) {
+            toast({ description: `⚠️ ${error}`, variant: "destructive" });
+            return;
+        }
+        imagesRef.current = next;
+        setImages(next);
+    }, [supportsImageInput, toast]);
+
+    const addFiles = useCallback(async (allFiles: File[]) => {
+        addImages(allFiles.filter(isImageFile));
+        const files = allFiles.filter((file) => !isImageFile(file));
         const results = await Promise.all(files.map(readFileAsTextAttachment));
         const valid: TextAttachment[] = [];
         for (const result of results) {
@@ -120,7 +176,7 @@ const ChatBoxComponent = ({
             }
         }
         addAttachments(valid);
-    }, [addAttachments, toast]);
+    }, [addAttachments, addImages, toast]);
 
     const onPaste = useCallback((event: ClipboardEvent<HTMLDivElement>) => {
         const files = Array.from(event.clipboardData.files);
@@ -201,7 +257,7 @@ const ChatBoxComponent = ({
 
     const { isSubmitDisabled, isSubmitDisabledReason } = useMemo((): {
         isSubmitDisabled: true,
-        isSubmitDisabledReason: "empty" | "redirecting" | "generating" | "no-language-model-selected"
+        isSubmitDisabledReason: "empty" | "redirecting" | "generating" | "no-language-model-selected" | "images-not-supported"
     } | {
         isSubmitDisabled: false,
         isSubmitDisabledReason: undefined,
@@ -235,12 +291,19 @@ const ChatBoxComponent = ({
             }
         }
 
+        if (images.length > 0 && !supportsImageInput) {
+            return {
+                isSubmitDisabled: true,
+                isSubmitDisabledReason: "images-not-supported",
+            }
+        }
+
         return {
             isSubmitDisabled: false,
             isSubmitDisabledReason: undefined,
         }
 
-    }, [editor.children, isRedirecting, isGenerating, selectedLanguageModel])
+    }, [editor.children, isRedirecting, isGenerating, selectedLanguageModel, images.length, supportsImageInput])
 
     const onSubmit = useCallback(() => {
         if (isSubmitDisabled) {
@@ -251,13 +314,22 @@ const ChatBoxComponent = ({
                 });
             }
 
+            if (isSubmitDisabledReason === "images-not-supported") {
+                toast({
+                    description: "⚠️ The selected model does not accept images. Remove the images or choose a model with image input enabled.",
+                    variant: "destructive",
+                });
+            }
+
             return;
         }
 
-        _onSubmit(editor.children, editor, attachments);
+        _onSubmit(editor.children, editor, attachments, images);
         attachmentsRef.current = [];
         setAttachments([]);
-    }, [_onSubmit, editor, attachments, isSubmitDisabled, isSubmitDisabledReason, toast]);
+        imagesRef.current = [];
+        setImages([]);
+    }, [_onSubmit, editor, attachments, images, isSubmitDisabled, isSubmitDisabledReason, toast]);
 
     const onInsertSuggestion = useCallback((suggestion: Suggestion) => {
         switch (suggestion.type) {
@@ -388,6 +460,21 @@ const ChatBoxComponent = ({
             onDragLeave={onDragLeave}
             onDrop={onDrop}
         >
+            {images.length > 0 && (
+                <div className="flex flex-wrap gap-1.5 mb-1.5">
+                    {images.map((image, index) => (
+                        <ImageAttachmentChip
+                            key={`${image.name}-${index}`}
+                            image={image}
+                            onRemove={() => {
+                                const next = images.filter((_, i) => i !== index);
+                                imagesRef.current = next;
+                                setImages(next);
+                            }}
+                        />
+                    ))}
+                </div>
+            )}
             {attachments.length > 0 && (
                 <div className="flex flex-wrap gap-1.5 mb-1.5">
                     {attachments.map((attachment, index) => (
@@ -438,7 +525,9 @@ const ChatBoxComponent = ({
                         </Button>
                     </TooltipTrigger>
                     <TooltipContent side="top">
-                        Attach text files (or drag &amp; drop / paste)
+                        {supportsImageInput
+                            ? 'Attach text files or images (or drag & drop / paste)'
+                            : 'Attach text files (or drag & drop / paste)'}
                     </TooltipContent>
                 </Tooltip>
                 {isRedirecting ? (

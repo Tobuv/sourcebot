@@ -389,6 +389,28 @@ You can pass custom headers to the language model provider by using the `headers
 }
 ```
 
+# Image input
+
+Set `imageInput` to `true` for models that accept images. Users can then attach images (PNG, JPEG, WebP or GIF) to Ask Sourcebot messages by using the paperclip button, dragging and dropping, or pasting a screenshot. Defaults to `false`.
+
+```json wrap icon="code" Example config with image input
+{
+    "$schema": "https://raw.githubusercontent.com/sourcebot-dev/sourcebot/main/schemas/v3/index.json",
+    "models": [
+        {
+            "provider": "anthropic",
+            "model": "claude-sonnet-4-5",
+            "displayName": "Claude Sonnet 4.5",
+            "imageInput": true
+        }
+    ]
+}
+```
+
+- Images are resized in the browser so that their longest side is at most 1568 pixels, and compressed if needed.
+- A message can have up to 5 images, 1.5 MB each and 3 MB in total.
+- If a conversation with images continues with a model that does not accept images, the images are replaced by a short note for that model.
+
 
 # Schema reference
 

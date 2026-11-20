@@ -9,6 +9,7 @@ export { sourceSchema } from "@/features/tools/types";
 export type { FileSource, Source } from "@/features/tools/types";
 import type { Source } from "@/features/tools/types";
 import type { TextAttachment } from "./attachments";
+import type { ImageAttachment } from "./imageAttachments";
 import type { createLoadSkillTool } from "./skills/loadSkillTool";
 import type { SkillInvocation } from "./skills/skillUtils";
 
@@ -82,6 +83,8 @@ export type SBChatMessageDataParts = {
     "source": Source,
     // Text files attached by the user to a user message.
     "attachment": TextAttachment,
+    // Images attached by the user to a user message.
+    "image": ImageAttachment,
     // Skills explicitly invoked by the user (via `/name`) for a user message.
     "skill": SkillInvocation,
 }
@@ -191,6 +194,7 @@ export const languageModelInfoSchema = z.object({
     provider: z.enum(languageModelProviders).describe("The model provider (e.g., 'anthropic', 'openai')"),
     model: z.string().describe("The model ID"),
     displayName: z.string().optional().describe("Optional display name for the model"),
+    imageInput: z.boolean().optional().describe("Whether the model accepts image input"),
 });
 
 /**
@@ -200,6 +204,7 @@ export type LanguageModelInfo = {
     provider: LanguageModelProvider,
     model: LanguageModel['model'],
     displayName?: LanguageModel['displayName'],
+    imageInput?: boolean,
 }
 
 // Additional request body data that we send along to the chat API.

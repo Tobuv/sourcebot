@@ -28,6 +28,10 @@ export interface AmazonBedrockLanguageModel {
    */
   displayName?: string;
   /**
+   * Whether the model accepts image input. When true, users can attach images to Ask Sourcebot messages sent to this model.
+   */
+  imageInput?: boolean;
+  /**
    * Optional access key ID to use with the model. Defaults to the `AWS_ACCESS_KEY_ID` environment variable.
    */
   accessKeyId?:
@@ -128,6 +132,10 @@ export interface AnthropicLanguageModel {
    */
   displayName?: string;
   /**
+   * Whether the model accepts image input. When true, users can attach images to Ask Sourcebot messages sent to this model.
+   */
+  imageInput?: boolean;
+  /**
    * Optional API key to use with the model, sent as the `x-api-key` header. Defaults to the `ANTHROPIC_API_KEY` environment variable.
    */
   token?:
@@ -182,6 +190,10 @@ export interface AzureLanguageModel {
    * Optional display name.
    */
   displayName?: string;
+  /**
+   * Whether the model accepts image input. When true, users can attach images to Ask Sourcebot messages sent to this model.
+   */
+  imageInput?: boolean;
   /**
    * Azure resource name. Defaults to the `AZURE_RESOURCE_NAME` environment variable.
    */
@@ -238,6 +250,10 @@ export interface DeepSeekLanguageModel {
    */
   displayName?: string;
   /**
+   * Whether the model accepts image input. When true, users can attach images to Ask Sourcebot messages sent to this model.
+   */
+  imageInput?: boolean;
+  /**
    * Optional API key to use with the model. Defaults to the `DEEPSEEK_API_KEY` environment variable.
    */
   token?:
@@ -276,6 +292,10 @@ export interface GoogleGenerativeAILanguageModel {
    * Optional display name.
    */
   displayName?: string;
+  /**
+   * Whether the model accepts image input. When true, users can attach images to Ask Sourcebot messages sent to this model.
+   */
+  imageInput?: boolean;
   /**
    * Optional API key to use with the model. Defaults to the `GOOGLE_GENERATIVE_AI_API_KEY` environment variable.
    */
@@ -324,6 +344,10 @@ export interface GoogleVertexAnthropicLanguageModel {
    */
   displayName?: string;
   /**
+   * Whether the model accepts image input. When true, users can attach images to Ask Sourcebot messages sent to this model.
+   */
+  imageInput?: boolean;
+  /**
    * The Google Cloud project ID. Defaults to the `GOOGLE_VERTEX_PROJECT` environment variable.
    */
   project?: string;
@@ -370,6 +394,10 @@ export interface GoogleVertexLanguageModel {
    * Optional display name.
    */
   displayName?: string;
+  /**
+   * Whether the model accepts image input. When true, users can attach images to Ask Sourcebot messages sent to this model.
+   */
+  imageInput?: boolean;
   /**
    * The Google Cloud project ID. Defaults to the `GOOGLE_VERTEX_PROJECT` environment variable.
    */
@@ -426,6 +454,10 @@ export interface MistralLanguageModel {
    */
   displayName?: string;
   /**
+   * Whether the model accepts image input. When true, users can attach images to Ask Sourcebot messages sent to this model.
+   */
+  imageInput?: boolean;
+  /**
    * Optional API key to use with the model. Defaults to the `MISTRAL_API_KEY` environment variable.
    */
   token?:
@@ -464,6 +496,10 @@ export interface OpenAILanguageModel {
    * Optional display name.
    */
   displayName?: string;
+  /**
+   * Whether the model accepts image input. When true, users can attach images to Ask Sourcebot messages sent to this model.
+   */
+  imageInput?: boolean;
   /**
    * Optional API key to use with the model. Defaults to the `OPENAI_API_KEY` environment variable.
    */
@@ -511,6 +547,10 @@ export interface OpenAICompatibleLanguageModel {
    * Optional display name.
    */
   displayName?: string;
+  /**
+   * Whether the model accepts image input. When true, users can attach images to Ask Sourcebot messages sent to this model.
+   */
+  imageInput?: boolean;
   /**
    * Optional API key. If specified, adds an `Authorization` header to request headers with the value Bearer <token>.
    */
@@ -581,6 +621,10 @@ export interface OpenRouterLanguageModel {
    */
   displayName?: string;
   /**
+   * Whether the model accepts image input. When true, users can attach images to Ask Sourcebot messages sent to this model.
+   */
+  imageInput?: boolean;
+  /**
    * Optional API key to use with the model. Defaults to the `OPENROUTER_API_KEY` environment variable.
    */
   token?:
@@ -619,6 +663,10 @@ export interface XaiLanguageModel {
    * Optional display name.
    */
   displayName?: string;
+  /**
+   * Whether the model accepts image input. When true, users can attach images to Ask Sourcebot messages sent to this model.
+   */
+  imageInput?: boolean;
   /**
    * Optional API key to use with the model. Defaults to the `XAI_API_KEY` environment variable.
    */

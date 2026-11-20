@@ -2,6 +2,7 @@ import { sew } from "@/middleware/sew";
 import { createMessageStream } from "@/features/chat/agent";
 import { additionalChatRequestParamsSchema } from "@/features/chat/types";
 import { textAttachmentSchema, validateAttachments } from "@/features/chat/attachments";
+import { imageAttachmentSchema, validateImageAttachments } from "@/features/chat/imageAttachments";
 import { getVisibleSkills } from "@/features/chat/skills/skills.server";
 import { getLanguageModelKey } from "@/features/chat/utils";
 import { getAISDKLanguageModelAndOptions, getConfiguredLanguageModels, isOwnerOfChat, updateChatMessages } from "@/features/chat/utils.server";
@@ -55,6 +56,23 @@ export const POST = apiHandler(async (req: NextRequest) => {
             message: attachmentsError,
         });
     }
+
+    const imagesResult = z.array(imageAttachmentSchema).safeParse(
+        (Array.isArray(latestMessage?.parts) ? latestMessage.parts : [])
+            .filter((part: { type?: string }) => part?.type === 'data-image')
+            .map((part: { data?: unknown }) => part.data)
+    );
+    if (!imagesResult.success) {
+        return serviceErrorResponse(requestBodySchemaValidationError(imagesResult.error));
+    }
+    const imagesError = validateImageAttachments(imagesResult.data);
+    if (imagesError) {
+        return serviceErrorResponse({
+            statusCode: StatusCodes.BAD_REQUEST,
+            errorCode: ErrorCode.INVALID_REQUEST_BODY,
+            message: imagesError,
+        });
+    }
     // @note: a bit of type massaging is required here since the
     // zod schema does not enum on `model` or `provider`.
     // @see: chat/types.ts
@@ -98,6 +116,15 @@ export const POST = apiHandler(async (req: NextRequest) => {
                 } satisfies ServiceError;
             }
 
+            const supportsImageInput = languageModelConfig.imageInput === true;
+            if (!supportsImageInput && imagesResult.data.length > 0) {
+                return {
+                    statusCode: StatusCodes.BAD_REQUEST,
+                    errorCode: ErrorCode.INVALID_REQUEST_BODY,
+                    message: `Language model ${languageModelConfig.displayName ?? languageModelConfig.model} does not accept images.`,
+                } satisfies ServiceError;
+            }
+
             const { model, providerOptions, temperature } = await getAISDKLanguageModelAndOptions(languageModelConfig);
 
             const expandedRepos = (await Promise.all(selectedSearchScopes.map(async (scope) => {
@@ -129,6 +156,7 @@ export const POST = apiHandler(async (req: NextRequest) => {
                 chatId: id,
                 messages,
                 skills,
+                supportsImageInput,
                 metadata: {
                     selectedSearchScopes,
                 },

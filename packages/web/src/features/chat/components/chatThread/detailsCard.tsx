@@ -337,6 +337,7 @@ export const StepPartRenderer = ({ part }: { part: SBChatMessagePart }) => {
         case 'data-source':
         case 'data-attachment':
         case 'data-skill':
+        case 'data-image':
             return null;
         case 'dynamic-tool':
             return <McpToolComponent part={part} />;

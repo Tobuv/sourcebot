@@ -1704,6 +1704,11 @@ const schema = {
                 "type": "string",
                 "description": "Optional display name."
               },
+              "imageInput": {
+                "type": "boolean",
+                "default": false,
+                "description": "Whether the model accepts image input. When true, users can attach images to Ask Sourcebot messages sent to this model."
+              },
               "accessKeyId": {
                 "anyOf": [
                   {
@@ -1882,6 +1887,11 @@ const schema = {
                 "type": "string",
                 "description": "Optional display name."
               },
+              "imageInput": {
+                "type": "boolean",
+                "default": false,
+                "description": "Whether the model accepts image input. When true, users can attach images to Ask Sourcebot messages sent to this model."
+              },
               "token": {
                 "anyOf": [
                   {
@@ -2020,6 +2030,11 @@ const schema = {
                 "type": "string",
                 "description": "Optional display name."
               },
+              "imageInput": {
+                "type": "boolean",
+                "default": false,
+                "description": "Whether the model accepts image input. When true, users can attach images to Ask Sourcebot messages sent to this model."
+              },
               "resourceName": {
                 "type": "string",
                 "description": "Azure resource name. Defaults to the `AZURE_RESOURCE_NAME` environment variable."
@@ -2155,6 +2170,11 @@ const schema = {
                 "type": "string",
                 "description": "Optional display name."
               },
+              "imageInput": {
+                "type": "boolean",
+                "default": false,
+                "description": "Whether the model accepts image input. When true, users can attach images to Ask Sourcebot messages sent to this model."
+              },
               "token": {
                 "anyOf": [
                   {
@@ -2261,6 +2281,11 @@ const schema = {
               "displayName": {
                 "type": "string",
                 "description": "Optional display name."
+              },
+              "imageInput": {
+                "type": "boolean",
+                "default": false,
+                "description": "Whether the model accepts image input. When true, users can attach images to Ask Sourcebot messages sent to this model."
               },
               "token": {
                 "anyOf": [
@@ -2386,6 +2411,11 @@ const schema = {
                 "type": "string",
                 "description": "Optional display name."
               },
+              "imageInput": {
+                "type": "boolean",
+                "default": false,
+                "description": "Whether the model accepts image input. When true, users can attach images to Ask Sourcebot messages sent to this model."
+              },
               "project": {
                 "type": "string",
                 "description": "The Google Cloud project ID. Defaults to the `GOOGLE_VERTEX_PROJECT` environment variable."
@@ -2510,6 +2540,11 @@ const schema = {
               "displayName": {
                 "type": "string",
                 "description": "Optional display name."
+              },
+              "imageInput": {
+                "type": "boolean",
+                "default": false,
+                "description": "Whether the model accepts image input. When true, users can attach images to Ask Sourcebot messages sent to this model."
               },
               "project": {
                 "type": "string",
@@ -2645,6 +2680,11 @@ const schema = {
                 "type": "string",
                 "description": "Optional display name."
               },
+              "imageInput": {
+                "type": "boolean",
+                "default": false,
+                "description": "Whether the model accepts image input. When true, users can attach images to Ask Sourcebot messages sent to this model."
+              },
               "token": {
                 "anyOf": [
                   {
@@ -2757,6 +2797,11 @@ const schema = {
               "displayName": {
                 "type": "string",
                 "description": "Optional display name."
+              },
+              "imageInput": {
+                "type": "boolean",
+                "default": false,
+                "description": "Whether the model accepts image input. When true, users can attach images to Ask Sourcebot messages sent to this model."
               },
               "token": {
                 "anyOf": [
@@ -2884,6 +2929,11 @@ const schema = {
               "displayName": {
                 "type": "string",
                 "description": "Optional display name."
+              },
+              "imageInput": {
+                "type": "boolean",
+                "default": false,
+                "description": "Whether the model accepts image input. When true, users can attach images to Ask Sourcebot messages sent to this model."
               },
               "token": {
                 "anyOf": [
@@ -3050,6 +3100,11 @@ const schema = {
                 "type": "string",
                 "description": "Optional display name."
               },
+              "imageInput": {
+                "type": "boolean",
+                "default": false,
+                "description": "Whether the model accepts image input. When true, users can attach images to Ask Sourcebot messages sent to this model."
+              },
               "token": {
                 "anyOf": [
                   {
@@ -3161,6 +3216,11 @@ const schema = {
                 "type": "string",
                 "description": "Optional display name."
               },
+              "imageInput": {
+                "type": "boolean",
+                "default": false,
+                "description": "Whether the model accepts image input. When true, users can attach images to Ask Sourcebot messages sent to this model."
+              },
               "token": {
                 "anyOf": [
                   {
@@ -3269,6 +3329,11 @@ const schema = {
               "displayName": {
                 "type": "string",
                 "description": "Optional display name."
+              },
+              "imageInput": {
+                "type": "boolean",
+                "default": false,
+                "description": "Whether the model accepts image input. When true, users can attach images to Ask Sourcebot messages sent to this model."
               },
               "accessKeyId": {
                 "anyOf": [
@@ -3448,6 +3513,11 @@ const schema = {
                 "type": "string",
                 "description": "Optional display name."
               },
+              "imageInput": {
+                "type": "boolean",
+                "default": false,
+                "description": "Whether the model accepts image input. When true, users can attach images to Ask Sourcebot messages sent to this model."
+              },
               "token": {
                 "anyOf": [
                   {
@@ -3586,6 +3656,11 @@ const schema = {
                 "type": "string",
                 "description": "Optional display name."
               },
+              "imageInput": {
+                "type": "boolean",
+                "default": false,
+                "description": "Whether the model accepts image input. When true, users can attach images to Ask Sourcebot messages sent to this model."
+              },
               "resourceName": {
                 "type": "string",
                 "description": "Azure resource name. Defaults to the `AZURE_RESOURCE_NAME` environment variable."
@@ -3721,6 +3796,11 @@ const schema = {
                 "type": "string",
                 "description": "Optional display name."
               },
+              "imageInput": {
+                "type": "boolean",
+                "default": false,
+                "description": "Whether the model accepts image input. When true, users can attach images to Ask Sourcebot messages sent to this model."
+              },
               "token": {
                 "anyOf": [
                   {
@@ -3827,6 +3907,11 @@ const schema = {
               "displayName": {
                 "type": "string",
                 "description": "Optional display name."
+              },
+              "imageInput": {
+                "type": "boolean",
+                "default": false,
+                "description": "Whether the model accepts image input. When true, users can attach images to Ask Sourcebot messages sent to this model."
               },
               "token": {
                 "anyOf": [
@@ -3952,6 +4037,11 @@ const schema = {
                 "type": "string",
                 "description": "Optional display name."
               },
+              "imageInput": {
+                "type": "boolean",
+                "default": false,
+                "description": "Whether the model accepts image input. When true, users can attach images to Ask Sourcebot messages sent to this model."
+              },
               "project": {
                 "type": "string",
                 "description": "The Google Cloud project ID. Defaults to the `GOOGLE_VERTEX_PROJECT` environment variable."
@@ -4076,6 +4166,11 @@ const schema = {
               "displayName": {
                 "type": "string",
                 "description": "Optional display name."
+              },
+              "imageInput": {
+                "type": "boolean",
+                "default": false,
+                "description": "Whether the model accepts image input. When true, users can attach images to Ask Sourcebot messages sent to this model."
               },
               "project": {
                 "type": "string",
@@ -4211,6 +4306,11 @@ const schema = {
                 "type": "string",
                 "description": "Optional display name."
               },
+              "imageInput": {
+                "type": "boolean",
+                "default": false,
+                "description": "Whether the model accepts image input. When true, users can attach images to Ask Sourcebot messages sent to this model."
+              },
               "token": {
                 "anyOf": [
                   {
@@ -4323,6 +4423,11 @@ const schema = {
               "displayName": {
                 "type": "string",
                 "description": "Optional display name."
+              },
+              "imageInput": {
+                "type": "boolean",
+                "default": false,
+                "description": "Whether the model accepts image input. When true, users can attach images to Ask Sourcebot messages sent to this model."
               },
               "token": {
                 "anyOf": [
@@ -4450,6 +4555,11 @@ const schema = {
               "displayName": {
                 "type": "string",
                 "description": "Optional display name."
+              },
+              "imageInput": {
+                "type": "boolean",
+                "default": false,
+                "description": "Whether the model accepts image input. When true, users can attach images to Ask Sourcebot messages sent to this model."
               },
               "token": {
                 "anyOf": [
@@ -4616,6 +4726,11 @@ const schema = {
                 "type": "string",
                 "description": "Optional display name."
               },
+              "imageInput": {
+                "type": "boolean",
+                "default": false,
+                "description": "Whether the model accepts image input. When true, users can attach images to Ask Sourcebot messages sent to this model."
+              },
               "token": {
                 "anyOf": [
                   {
@@ -4726,6 +4841,11 @@ const schema = {
               "displayName": {
                 "type": "string",
                 "description": "Optional display name."
+              },
+              "imageInput": {
+                "type": "boolean",
+                "default": false,
+                "description": "Whether the model accepts image input. When true, users can attach images to Ask Sourcebot messages sent to this model."
               },
               "token": {
                 "anyOf": [

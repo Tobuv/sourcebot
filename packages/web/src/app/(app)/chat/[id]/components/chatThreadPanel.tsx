@@ -9,6 +9,7 @@ import { CreateUIMessage } from 'ai';
 import { useEffect, useState } from 'react';
 import { useChatId } from '../../useChatId';
 import { useSessionStorage } from 'usehooks-ts';
+import { takePendingChatImages } from '@/features/chat/pendingChatImages';
 
 interface ChatThreadPanelProps {
     languageModels: LanguageModelInfo[];
@@ -54,7 +55,14 @@ export const ChatThreadPanel = ({
         }
 
         try {
-            setInputMessage(chatState.inputMessage);
+            const images = takePendingChatImages(chatId);
+            setInputMessage({
+                ...chatState.inputMessage,
+                parts: [
+                    ...chatState.inputMessage.parts,
+                    ...images.map((data) => ({ type: 'data-image' as const, data })),
+                ],
+            });
             setSelectedSearchScopes(chatState.selectedSearchScopes);
         } catch {
             console.error('Invalid chat state in session storage');
@@ -62,7 +70,7 @@ export const ChatThreadPanel = ({
             setChatState(null);
         }
 
-    }, [chatState, setChatState]);
+    }, [chatState, setChatState, chatId]);
 
     return (
         <ResizablePanel

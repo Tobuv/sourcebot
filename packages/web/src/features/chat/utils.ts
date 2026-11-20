@@ -3,6 +3,7 @@ import { CreateUIMessage, TextUIPart, UIMessagePart } from "ai";
 import { Descendant, Editor, Point, Range, Transforms } from "slate";
 import { ANSWER_TAG, FILE_REFERENCE_PREFIX, FILE_REFERENCE_REGEX } from "./constants";
 import type { TextAttachment } from "./attachments";
+import type { ImageAttachment } from "./imageAttachments";
 import {
     CustomEditor,
     CustomText,
@@ -184,6 +185,7 @@ export const createUIMessage = (
     mentions: MentionData[],
     selectedSearchScopes: SearchScope[],
     attachments: TextAttachment[] = [],
+    images: ImageAttachment[] = [],
 ): CreateUIMessage<SBChatMessage> => {
     // Converts applicable mentions into sources.
     const sources: Source[] = mentions
@@ -216,6 +218,10 @@ export const createUIMessage = (
             })) as UIMessagePart<{ source: Source }, SBChatMessageToolTypes>[],
             ...attachments.map((data) => ({
                 type: 'data-attachment' as const,
+                data,
+            })),
+            ...images.map((data) => ({
+                type: 'data-image' as const,
                 data,
             })),
             ...mentions

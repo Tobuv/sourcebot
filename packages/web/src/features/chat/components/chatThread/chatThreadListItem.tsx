@@ -13,6 +13,7 @@ import { AnswerCard } from './answerCard';
 import { DetailsCard } from './detailsCard';
 import { MarkdownRenderer, REFERENCE_PAYLOAD_ATTRIBUTE } from './markdownRenderer';
 import { AttachmentChip } from '../attachmentChip';
+import { ImageAttachmentChip } from '../imageAttachmentChip';
 import { ReferencedSourcesListView } from './referencedSourcesListView';
 import isEqual from "fast-deep-equal/react";
 import { ANSWER_TAG } from '../../constants';
@@ -46,6 +47,12 @@ const ChatThreadListItemComponent = forwardRef<HTMLDivElement, ChatThreadListIte
 
     const userQuestion = useMemo(() => {
         return userMessage.parts.length > 0 && userMessage.parts[0].type === 'text' ? userMessage.parts[0].text : '';
+    }, [userMessage]);
+
+    const userImages = useMemo(() => {
+        return userMessage.parts
+            .filter((part) => part.type === 'data-image')
+            .map((part) => part.data);
     }, [userMessage]);
 
     const userAttachments = useMemo(() => {
@@ -350,6 +357,18 @@ const ChatThreadListItemComponent = forwardRef<HTMLDivElement, ChatThreadListIte
                                 escapeHtml={true}
                             />
                         </div>
+
+                        {userImages.length > 0 && (
+                            <div className="flex flex-wrap gap-1.5 mb-4 ml-6">
+                                {userImages.map((image, index) => (
+                                    <ImageAttachmentChip
+                                        key={`${image.name}-${index}`}
+                                        image={image}
+                                        className="h-20 w-20"
+                                    />
+                                ))}
+                            </div>
+                        )}
 
                         {userAttachments.length > 0 && (
                             <div className="flex flex-wrap gap-1.5 mb-4 ml-6">

@@ -32,6 +32,7 @@ import { LoginModal } from '@/app/components/loginModal';
 import type { IdentityProviderMetadata } from '@/lib/identityProviders';
 import { getAskGhLoginWallData } from '../../actions';
 import type { TextAttachment } from "../../attachments";
+import type { ImageAttachment } from "../../imageAttachments";
 
 type ChatHistoryState = {
     scrollOffset?: number;
@@ -305,7 +306,7 @@ export const ChatThread = ({
         }
     }, [error]);
 
-    const onSubmit = useCallback(async (children: Descendant[], editor: CustomEditor, attachments: TextAttachment[]) => {
+    const onSubmit = useCallback(async (children: Descendant[], editor: CustomEditor, attachments: TextAttachment[], images: ImageAttachment[]) => {
         if (!isAuthenticated) {
             const result = await getAskGhLoginWallData();
             if (!isServiceError(result) && result.isEnabled) {
@@ -320,7 +321,7 @@ export const ChatThread = ({
         const text = slateContentToString(children);
         const mentions = getAllMentionElements(children);
 
-        const message = createUIMessage(text, mentions.map(({ data }) => data), selectedSearchScopes, attachments);
+        const message = createUIMessage(text, mentions.map(({ data }) => data), selectedSearchScopes, attachments, images);
         sendMessage(message);
 
         scrollToBottom();
