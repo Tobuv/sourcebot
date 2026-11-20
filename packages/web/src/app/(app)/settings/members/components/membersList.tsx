@@ -11,6 +11,8 @@ import { UserAvatar } from "@/components/userAvatar";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { promoteToOwner, demoteToMember } from "@/ee/features/userManagement/actions";
 import { leaveOrg, removeMemberFromOrg } from "@/features/userManagement/actions";
+import { resetMemberPassword } from "@/features/account/passwordActions";
+import { Check, Copy } from "lucide-react";
 import { isServiceError } from "@/lib/utils";
 import { useToast } from "@/components/hooks/use-toast";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
@@ -49,6 +51,9 @@ export const MembersList = ({ members, currentUserId, currentUserRole, orgName, 
     const [isPromoteDialogOpen, setIsPromoteDialogOpen] = useState(false)
     const [isDemoteDialogOpen, setIsDemoteDialogOpen] = useState(false)
     const [isLeaveOrgDialogOpen, setIsLeaveOrgDialogOpen] = useState(false)
+    const [memberToResetPassword, setMemberToResetPassword] = useState<Member | null>(null)
+    const [passwordResetResult, setPasswordResetResult] = useState<{ member: Member, temporaryPassword: string } | null>(null)
+    const [isTemporaryPasswordCopied, setIsTemporaryPasswordCopied] = useState(false)
     const router = useRouter();
     const captureEvent = useCaptureEvent();
 
@@ -89,6 +94,20 @@ export const MembersList = ({ members, currentUserId, currentUserRole, orgName, 
                 }
             });
     }, [toast, router, captureEvent]);
+
+    const onResetPassword = useCallback((member: Member) => {
+        resetMemberPassword(member.id)
+            .then((response) => {
+                if (isServiceError(response)) {
+                    toast({
+                        description: `❌ Failed to reset password. Reason: ${response.message}`
+                    })
+                } else {
+                    setIsTemporaryPasswordCopied(false);
+                    setPasswordResetResult({ member, temporaryPassword: response.temporaryPassword });
+                }
+            });
+    }, [toast]);
 
     const onPromoteToOwner = useCallback((memberId: string) => {
         promoteToOwner(memberId)
@@ -289,6 +308,16 @@ export const MembersList = ({ members, currentUserId, currentUserRole, orgName, 
                                                 )}
                                                 {member.id !== currentUserId && currentUserRole === OrgRole.OWNER && (
                                                     <DropdownMenuItem
+                                                        className="cursor-pointer"
+                                                        onClick={() => {
+                                                            setMemberToResetPassword(member);
+                                                        }}
+                                                    >
+                                                        Reset password
+                                                    </DropdownMenuItem>
+                                                )}
+                                                {member.id !== currentUserId && currentUserRole === OrgRole.OWNER && (
+                                                    <DropdownMenuItem
                                                         className="cursor-pointer text-destructive"
                                                         onClick={() => {
                                                             setMemberToRemove(member);
@@ -399,6 +428,65 @@ export const MembersList = ({ members, currentUserId, currentUserRole, orgName, 
                             >
                                 Demote
                             </AlertDialogAction>
+                        </AlertDialogFooter>
+                    </AlertDialogContent>
+                </AlertDialog>
+                <AlertDialog
+                    open={memberToResetPassword !== null}
+                    onOpenChange={(open) => !open && setMemberToResetPassword(null)}
+                >
+                    <AlertDialogContent>
+                        <AlertDialogHeader>
+                            <AlertDialogTitle>Reset Password</AlertDialogTitle>
+                            <AlertDialogDescription>
+                                {`Reset the password of ${memberToResetPassword?.name ?? memberToResetPassword?.email}? A temporary password is generated and they are signed out on all devices.`}
+                            </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                            <AlertDialogCancel>Cancel</AlertDialogCancel>
+                            <AlertDialogAction
+                                onClick={() => {
+                                    if (memberToResetPassword) {
+                                        onResetPassword(memberToResetPassword);
+                                    }
+                                    setMemberToResetPassword(null);
+                                }}
+                            >
+                                Reset password
+                            </AlertDialogAction>
+                        </AlertDialogFooter>
+                    </AlertDialogContent>
+                </AlertDialog>
+                <AlertDialog
+                    open={passwordResetResult !== null}
+                    onOpenChange={(open) => !open && setPasswordResetResult(null)}
+                >
+                    <AlertDialogContent>
+                        <AlertDialogHeader>
+                            <AlertDialogTitle>Temporary Password</AlertDialogTitle>
+                            <AlertDialogDescription>
+                                {`Share this temporary password with ${passwordResetResult?.member.name ?? passwordResetResult?.member.email} through a secure channel. It is only shown once. Ask them to change it in Settings → Account after signing in.`}
+                            </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <div className="flex items-center gap-2">
+                            <div className="bg-muted p-2 rounded-md text-sm flex-1 break-all font-mono">
+                                {passwordResetResult?.temporaryPassword}
+                            </div>
+                            <Button
+                                size="icon"
+                                variant="outline"
+                                onClick={() => {
+                                    if (passwordResetResult) {
+                                        navigator.clipboard.writeText(passwordResetResult.temporaryPassword);
+                                        setIsTemporaryPasswordCopied(true);
+                                    }
+                                }}
+                            >
+                                {isTemporaryPasswordCopied ? <Check className="h-4 w-4 text-green-500" /> : <Copy className="h-4 w-4" />}
+                            </Button>
+                        </div>
+                        <AlertDialogFooter>
+                            <AlertDialogAction>Done</AlertDialogAction>
                         </AlertDialogFooter>
                     </AlertDialogContent>
                 </AlertDialog>
