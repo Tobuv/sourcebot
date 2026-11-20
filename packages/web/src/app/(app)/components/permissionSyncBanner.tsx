@@ -56,11 +56,11 @@ export function PermissionSyncBanner({ initialHasPendingFirstSync }: PermissionS
         <Alert className="rounded-none border-x-0 border-t-0 bg-accent">
             <Info className="h-4 w-4 mt-0.5" />
             <AlertTitle className="flex items-center gap-2">
-                Syncing repository access with Sourcebot.
+                Syncing repository access with NexusCode.
                 <Loader2 className="h-4 w-4 animate-spin" />
             </AlertTitle>
             <AlertDescription>
-                Sourcebot is syncing what repositories you have access to from a code host. This may take a minute.
+                NexusCode is syncing what repositories you have access to from a code host. This may take a minute.
             </AlertDescription>
         </Alert>
     );

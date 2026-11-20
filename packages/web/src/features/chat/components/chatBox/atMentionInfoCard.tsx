@@ -8,7 +8,7 @@ export const AtMentionInfoCard = () => {
                 <h4 className="text-sm font-semibold text-popover-foreground">Mention</h4>
             </div>
             <div className="text-sm text-popover-foreground leading-relaxed">
-                When asking Sourcebot a question, you can @ mention files to include them in the context of the search.
+                When asking NexusCode a question, you can @ mention files to include them in the context of the search.
             </div>
         </div>
     );

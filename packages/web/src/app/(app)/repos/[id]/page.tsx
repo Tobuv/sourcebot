@@ -101,7 +101,7 @@ export default async function RepoDetailPage({ params }: { params: Promise<{ id:
                                     <Info className="h-3.5 w-3.5 text-muted-foreground cursor-help" />
                                 </TooltipTrigger>
                                 <TooltipContent>
-                                    <p>When this repository was first added to Sourcebot</p>
+                                    <p>When this repository was first added to NexusCode</p>
                                 </TooltipContent>
                             </Tooltip>
                         </CardTitle>

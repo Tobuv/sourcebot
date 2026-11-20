@@ -1,9 +1,7 @@
 'use client';
 
 import Link from "next/link";
-import Image from "next/image";
-import logoLight from "@/public/sb_logo_light.png";
-import logoDark from "@/public/sb_logo_dark.png";
+import { NexusCodeWordmark } from "@/app/components/sourcebotLogo";
 import { MeControlDropdownMenu } from "./meControlDropdownMenu";
 import { Separator } from "@/components/ui/separator";
 import { Session } from "next-auth";
@@ -39,16 +37,7 @@ export const TopBar = ({
                         href={homePath}
                         className="shrink-0 cursor-pointer"
                     >
-                        <Image
-                            src={logoDark}
-                            className="h-4 w-auto hidden dark:block"
-                            alt={"Sourcebot logo"}
-                        />
-                        <Image
-                            src={logoLight}
-                            className="h-4 w-auto block dark:hidden"
-                            alt={"Sourcebot logo"}
-                        />
+                        <NexusCodeWordmark className="h-6 w-auto" />
                     </Link>
                     {children}
                 </div>

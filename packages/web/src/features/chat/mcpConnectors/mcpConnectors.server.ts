@@ -84,7 +84,7 @@ const withTimeout = <T>(promise: Promise<T>, ms: number, message: string): Promi
 
 const connectServer = async (server: McpServer): Promise<{ client: Client, tools: Awaited<ReturnType<Client['listTools']>>['tools'] }> => {
     const headers = await resolveHeaders(server.headers);
-    const client = new Client({ name: 'sourcebot-ask', version: '1.0.0' });
+    const client = new Client({ name: 'nexuscode-ask', version: '1.0.0' });
 
     try {
         await withTimeout(

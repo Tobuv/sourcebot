@@ -102,7 +102,7 @@ export const columns: ColumnDef<Connection>[] = [
                                 </span>
                             </TooltipTrigger>
                             <TooltipContent>
-                                <span>This is the first time Sourcebot is syncing this connection. It may take a few minutes to complete.</span>
+                                <span>This is the first time NexusCode is syncing this connection. It may take a few minutes to complete.</span>
                             </TooltipContent>
                         </Tooltip>
                     )}

@@ -1,14 +1,13 @@
 {
-    "name": "Sourcebot",
-    "short_name": "Sourcebot",
+    "name": "NexusCode",
+    "short_name": "NexusCode",
     "display": "standalone",
     "start_url": "/",
     "icons": [
-      {
-        "src": "/logo_512.png",
-        "sizes": "512x512",
-        "type": "image/png"
-      }
+        {
+            "src": "/logo_512.png",
+            "sizes": "512x512",
+            "type": "image/png"
+        }
     ]
-  }
-  
+}

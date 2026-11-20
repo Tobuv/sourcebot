@@ -1,30 +1,56 @@
-import logoDarkLarge from "@/public/sb_logo_dark_large.png";
-import logoLightLarge from "@/public/sb_logo_light_large.png";
-import logoDarkSmall from "@/public/sb_logo_dark_small.png";
-import logoLightSmall from "@/public/sb_logo_light_small.png";
-import Image from "next/image";
 import { cn } from "@/lib/utils";
+import { NexusCodeMarkShapes } from "./nexusCodeMark";
 
 interface SourcebotLogoProps {
     className?: string;
     size?: "small" | "large";
 }
 
+/**
+ * Product logo. `small` is the square mark, `large` is the mark plus the
+ * "NexusCode" wordmark. Sized by the caller's height/width classes.
+ */
 export const SourcebotLogo = ({ className, size = "large" }: SourcebotLogoProps) => {
+    if (size === "small") {
+        return (
+            <svg
+                viewBox="0 0 24 24"
+                role="img"
+                aria-label="NexusCode logo"
+                className={cn("h-16 w-auto text-foreground", className)}
+            >
+                <NexusCodeMarkShapes />
+            </svg>
+        );
+    }
+
     return (
-        <>
-            <Image
-                src={size === "large" ? logoDarkLarge : logoDarkSmall}
-                className={cn("h-16 w-auto hidden dark:block", className)}
-                alt={"Sourcebot logo"}
-                priority={true}
-            />
-            <Image
-                src={size === "large" ? logoLightLarge : logoLightSmall}
-                className={cn("h-16 w-auto block dark:hidden", className)}
-                alt={"Sourcebot logo"}
-                priority={true}
-            />
-        </>
-    )
+        <NexusCodeWordmark className={cn("h-16 w-auto", className)} />
+    );
 }
+
+export const NexusCodeWordmark = ({ className }: { className?: string }) => (
+    <svg
+        viewBox="0 0 220 56"
+        role="img"
+        aria-label="NexusCode logo"
+        className={cn("text-foreground", className)}
+    >
+        <g transform="translate(4 4) scale(2)">
+            <NexusCodeMarkShapes />
+        </g>
+        <text
+            x="64"
+            y="39"
+            fill="currentColor"
+            fontSize="32"
+            fontWeight="700"
+            letterSpacing="-0.5"
+            textLength="150"
+            lengthAdjust="spacingAndGlyphs"
+            style={{ fontFamily: "inherit" }}
+        >
+            NexusCode
+        </text>
+    </svg>
+);

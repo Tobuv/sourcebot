@@ -150,7 +150,7 @@ export const getColumns = (context: ColumnsContext): ColumnDef<Repo>[] => [
                                 </span>
                             </TooltipTrigger>
                             <TooltipContent>
-                                <span>This is the first time Sourcebot is indexing this repository. It may take a few minutes to complete.</span>
+                                <span>This is the first time NexusCode is indexing this repository. It may take a few minutes to complete.</span>
                             </TooltipContent>
                         </Tooltip>
                     )}

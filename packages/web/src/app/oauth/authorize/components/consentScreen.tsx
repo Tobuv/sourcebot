@@ -91,7 +91,7 @@ export function ConsentScreen({
                 </svg>
                 <Image
                     src={logo}
-                    alt="Sourcebot"
+                    alt="NexusCode"
                     width={70}
                     height={70}
                     className="shrink-0 rounded-xl object-cover"
@@ -100,7 +100,7 @@ export function ConsentScreen({
 
             {/* Title */}
             <h1 className="text-lg font-semibold text-foreground mb-2">
-                <span className="font-bold">{clientName}</span> is requesting access to your Sourcebot account.
+                <span className="font-bold">{clientName}</span> is requesting access to your NexusCode account.
             </h1>
             <p className="text-sm text-muted-foreground text-center mb-6">
                 Logged in as <span className="font-medium">{userEmail}</span>

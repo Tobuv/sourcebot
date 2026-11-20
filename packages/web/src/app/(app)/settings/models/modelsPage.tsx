@@ -74,7 +74,7 @@ export const ModelsPage = ({ isOwner }: { isOwner: boolean }) => {
                 <div>
                     <h3 className="text-lg font-medium">Models</h3>
                     <p className="text-sm text-muted-foreground max-w-lg">
-                        Configure the language models available in Ask Sourcebot. Workspace models are shared with all members; personal models are only available to you.
+                        Configure the language models available in Ask NexusCode. Workspace models are shared with all members; personal models are only available to you.
                     </p>
                 </div>
                 <Button onClick={() => openEditor({ mode: 'create' })} className="flex-shrink-0">

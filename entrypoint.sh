@@ -85,12 +85,13 @@ if [ -n "$SOURCEBOT_TELEMETRY_DISABLED" ]; then
         exit 1
     fi
 else
-    export SOURCEBOT_TELEMETRY_DISABLED=false
+    # Telemetry is opt-in: disabled unless explicitly set to false.
+    export SOURCEBOT_TELEMETRY_DISABLED=true
 fi
 
 # Issue a info message about telemetry
 if [ "$SOURCEBOT_TELEMETRY_DISABLED" = "true" ]; then
-    echo -e "\e[34m[Info] Disabling telemetry since SOURCEBOT_TELEMETRY_DISABLED was set.\e[0m"
+    echo -e "\e[34m[Info] Telemetry is disabled. Set SOURCEBOT_TELEMETRY_DISABLED=false to enable it.\e[0m"
 fi
 
 # Check if DATA_CACHE_DIR exists, if not create it

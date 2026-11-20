@@ -97,7 +97,7 @@ export const SkillsPage = ({ isOwner }: { isOwner: boolean }) => {
                 <div>
                     <h3 className="text-lg font-medium">Skills</h3>
                     <p className="text-sm text-muted-foreground max-w-lg">
-                        Reusable instructions for Ask Sourcebot. Type <code>/name</code> in the chat box to use a skill, or enable auto-invoke to let the agent load it when relevant.
+                        Reusable instructions for Ask NexusCode. Type <code>/name</code> in the chat box to use a skill, or enable auto-invoke to let the agent load it when relevant.
                     </p>
                 </div>
                 <div className="flex gap-2 flex-shrink-0">

@@ -16,11 +16,11 @@ export const metadata: Metadata = {
   // Using the title.template will allow child pages to set the title
   // while keeping a consistent suffix.
   title: {
-    default: "Sourcebot",
-    template: "%s | Sourcebot",
+    default: "NexusCode",
+    template: "%s | NexusCode",
   },
   description:
-    "Sourcebot is a self-hosted code understanding tool. Ask questions about your codebase and get rich Markdown answers with inline citations.",
+    "NexusCode is a self-hosted code understanding tool. Ask questions about your codebase and get rich Markdown answers with inline citations.",
   manifest: "/manifest.json",
 };
 

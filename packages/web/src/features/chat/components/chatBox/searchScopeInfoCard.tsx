@@ -8,7 +8,7 @@ export const SearchScopeInfoCard = () => {
                 <h4 className="text-sm font-semibold text-popover-foreground">Search Scope</h4>
             </div>
             <div className="text-sm text-popover-foreground leading-relaxed">
-                When asking Sourcebot a question, you can select one or more scopes to focus the search.
+                When asking NexusCode a question, you can select one or more scopes to focus the search.
                 There are two different types of search scopes:
                 <div className="mt-3 space-y-2">
                     <div className="flex items-center gap-2">

@@ -6,7 +6,7 @@ import { env } from "@sourcebot/shared";
 import { minidenticon } from 'minidenticons';
 
 export const runtime = 'nodejs';
-export const alt = 'Sourcebot Chat';
+export const alt = 'NexusCode Chat';
 export const size = {
     width: 1200,
     height: 630,
@@ -158,11 +158,11 @@ export default async function Image({ params }: ImageProps) {
                                 color: '#ffffff',
                             }}
                         >
-                            sourcebot.dev
+                            NexusCode
                         </span>
                         <img
-                            src={`${env.AUTH_URL}/sb_logo_dark_small.png`}
-                            alt="Sourcebot"
+                            src={`${env.AUTH_URL}/nexuscode_mark_dark.png`}
+                            alt="NexusCode"
                             width={80}
                             height={80}
                         />

@@ -367,11 +367,12 @@ const options = {
         EXPERIMENT_EE_PERMISSION_SYNC_ENABLED: booleanSchema.default('false'),
 
         /**
-         * Configure whether to send telemetry events.
+         * Configure whether to send telemetry events. Disabled by default;
+         * set to false to opt in.
          * By default, all events are anonymized and do not contain PII data,
          * unless SOURCEBOT_TELEMETRY_PII_COLLECTION_ENABLED is set to true.
          */
-        SOURCEBOT_TELEMETRY_DISABLED: booleanSchema.default('false'),
+        SOURCEBOT_TELEMETRY_DISABLED: booleanSchema.default('true'),
 
         /**
          * Configure whether to collect PII data in telemetry events.

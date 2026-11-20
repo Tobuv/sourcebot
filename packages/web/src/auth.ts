@@ -73,9 +73,9 @@ export const getProviders = () => {
                     const result = await transport.sendMail({
                         to: identifier,
                         from: provider.from,
-                        subject: 'Log in to Sourcebot',
+                        subject: 'Log in to NexusCode',
                         html,
-                        text: `Log in to Sourcebot using this code: ${token}`
+                        text: `Log in to NexusCode using this code: ${token}`
                     });
 
                     const failed = result.rejected.concat(result.pending).filter(Boolean);

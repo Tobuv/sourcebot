@@ -147,7 +147,7 @@ export const SearchModeSelector = ({
                         >
                             <div className="flex flex-col gap-2">
                                 <div className="flex flex-row items-center gap-2">
-                                    <p className="font-semibold">Ask Sourcebot</p>
+                                    <p className="font-semibold">Ask NexusCode</p>
                                 </div>
                                 <Separator orientation="horizontal" className="w-full my-0.5" />
                                 <p>Use natural language to search, summarize and understand your codebase using a reasoning agent.</p>

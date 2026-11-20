@@ -142,7 +142,7 @@ export function createPublicOpenApiDocument(version: string) {
         operationId: 'listRepositories',
         tags: [reposTag.name],
         summary: 'List repositories',
-        description: 'Returns a paginated list of repositories indexed by this Sourcebot instance.',
+        description: 'Returns a paginated list of repositories indexed by this NexusCode instance.',
         request: {
             query: publicListReposQueryParamsSchema,
         },
@@ -177,11 +177,11 @@ export function createPublicOpenApiDocument(version: string) {
         path: '/api/version',
         operationId: 'getVersion',
         tags: [systemTag.name],
-        summary: 'Get Sourcebot version',
-        description: 'Returns the currently running Sourcebot version string.',
+        summary: 'Get NexusCode version',
+        description: 'Returns the currently running NexusCode version string.',
         responses: {
             200: {
-                description: 'Current Sourcebot version.',
+                description: 'Current NexusCode version.',
                 content: jsonContent(publicVersionResponseSchema),
             },
         },
@@ -541,9 +541,9 @@ export function createPublicOpenApiDocument(version: string) {
     const document = generator.generateDocument({
         openapi: '3.0.3',
         info: {
-            title: 'Sourcebot Public API',
+            title: 'NexusCode Public API',
             version,
-            description: 'OpenAPI description for the public Sourcebot REST endpoints used for search, repository listing, and file browsing. Authentication is instance-dependent: API keys are the standard integration mechanism, OAuth bearer tokens are EE-only, and some instances may allow anonymous access.',
+            description: 'OpenAPI description for the public NexusCode REST endpoints used for search, repository listing, and file browsing. Authentication is instance-dependent: API keys are the standard integration mechanism, OAuth bearer tokens are EE-only, and some instances may allow anonymous access.',
         },
         tags: [searchTag, reposTag, gitTag, systemTag, eeTag],
         security: [

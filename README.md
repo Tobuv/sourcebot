@@ -1,118 +1,62 @@
-
 <div align="center">
-<picture>
-  <source media="(prefers-color-scheme: dark)" srcset=".github/images/logo_dark.png">
-  <img height="150" src=".github/images/logo_light.png">
-</picture>
+  <h1>NexusCode</h1>
+  <p>Self-hosted code search, navigation and AI Q&amp;A across all of your repositories.</p>
 </div>
-<div align="center">
-   <div>
-      <h3>
-         <a href="https://docs.sourcebot.dev">
-            <strong>Self Host</strong>
-         </a> · 
-         <a href="https://app.sourcebot.dev">
-            <strong>Public Demo</strong>
-         </a>
-      </h3>
-   </div>
 
-   <div>
-      <a href="https://docs.sourcebot.dev/"><strong>Docs</strong></a> ·
-      <a href="https://github.com/sourcebot-dev/sourcebot/issues/459"><strong>Roadmap</strong></a> ·
-      <a href="https://github.com/sourcebot-dev/sourcebot/issues/new?template=bug_report.yml"><strong>Report Bug</strong></a> ·
-      <a href="https://github.com/sourcebot-dev/sourcebot/issues/new?template=feature_request.md"><strong>Feature Request</strong></a> ·
-      <a href="https://www.sourcebot.dev/changelog"><strong>Changelog</strong></a>
-   </div>
-   <br/>
-   <div>
-   </div>
-</div>
-<p align="center">
-  <a href="mailto:team@sourcebot.dev"><img src="https://img.shields.io/badge/Email%20Us-brightgreen" /></a>
-  <a href="https://github.com/sourcebot-dev/sourcebot/actions/workflows/release-prod.yml"><img src="https://img.shields.io/github/actions/workflow/status/sourcebot-dev/sourcebot/release-prod.yml"/><a>
-  <a href="https://github.com/sourcebot-dev/sourcebot/stargazers"><img src="https://img.shields.io/github/stars/sourcebot-dev/sourcebot" /></a>
-</p>
-<p align="center">
-</p>
+NexusCode is a self-hosted tool that helps you understand your codebase. It is
+based on [Sourcebot](https://github.com/sourcebot-dev/sourcebot) (v4) and
+extends its Ask feature.
 
-Sourcebot is a self-hosted tool that helps you understand your codebase. 
+## Features
 
-- **Ask Sourcebot:** Ask questions about your codebase and have Sourcebot provide detailed answers grounded with inline citations.
-- **Code search:** Search and navigate across all your repos and branches, no matter where they’re hosted.
+- **Code search** – fast regex and symbol search across all repos and branches
+  on any code host, with repo/language filters and boolean logic.
+- **File explorer** – browse every file with syntax highlighting, a file tree,
+  blame, history and diffs.
+- **Code navigation** – go to definition and find references across repos
+  (enterprise feature inherited from Sourcebot, see `ee/LICENSE`).
+- **Ask** – ask questions about your code in natural language and get answers
+  with inline citations. On top of the upstream feature, NexusCode adds:
+  - Mermaid diagram rendering and prompt caching
+  - text file and image attachments
+  - skills: reusable instructions, invoked with `/name` or automatically
+  - tools from remote MCP servers (`mcpServers` in `config.json`)
+  - language models configured from **Settings → Models**, without editing `config.json`
+- **Accounts** – change your password in **Settings → Account**; owners can
+  reset a member's password from **Settings → Members**.
 
-Try it out in our [public demo](https://app.sourcebot.dev)!
+## Running locally
 
-https://github.com/user-attachments/assets/ed66a622-e38f-4947-a531-86df1e1e0218
+See [`CONTRIBUTING.md`](./CONTRIBUTING.md) for the toolchain (Node.js, Go,
+universal-ctags, Docker) and the development setup. In short:
 
-# Features
-![Sourcebot Features](https://github.com/user-attachments/assets/3aed7348-7aeb-4af3-89da-b617c3db2e02)
-
-## Ask Sourcebot
-Ask Sourcebot gives you the ability to ask complex questions about your codebase in natural language.
-
-It uses Sourcebot's existing code search and navigation tools to allow reasoning models to search your code, follow code nav references, and provide an answer that's rich with inline citations and navigable code snippets.
-
-https://github.com/user-attachments/assets/8212cd16-683f-468f-8ea5-67455c0931e2
-
-## Code Search
-Search across all your repos/branches across any code host platform. Blazingly fast, and supports regular expressions, repo/language search filters, boolean logic, and more.
-
-https://github.com/user-attachments/assets/3b381452-d329-4949-b6f2-2fc38952e481
-
-## Code Navigation
-IDE-level code navigation (goto definition and find references) across all your repos.
-
-https://github.com/user-attachments/assets/e2da2829-71cc-40af-98b4-7ba52e945530
-
-## Built-in File Explorer
-Explore every file across all of your repos. Modern UI with syntax highlighting, file tree, code navigation, etc.
-
-https://github.com/user-attachments/assets/31ec0669-707d-4e03-b511-1bc33d44197a
-
-# Deploy Sourcebot
-
-Sourcebot can be deployed in seconds using Docker Compose. Visit our [docs](https://docs.sourcebot.dev/docs/deployment/docker-compose) for more information.
-
-1. Download the docker-compose.yml file
 ```sh
-curl -o docker-compose.yml https://raw.githubusercontent.com/sourcebot-dev/sourcebot/main/docker-compose.yml
+make                                            # build zoekt, install dependencies
+docker compose -f docker-compose-dev.yml up -d  # Postgres + Redis
+yarn dev:prisma:migrate:dev                     # set up the database
+yarn dev                                        # web on http://localhost:3000
 ```
 
-2. In the same directory as the `docker-compose.yml` file, create a [configuration file](https://docs.sourcebot.dev/docs/configuration/config-file). The configuration file is a JSON file that configures Sourcebot's behaviour, including what repositories to index, language model providers, auth providers, and more.
-```sh
-echo '{
-    "$schema": "https://raw.githubusercontent.com/sourcebot-dev/sourcebot/main/schemas/v3/index.json",
-    // Comments are supported.
-    // This config creates a single connection to GitHub.com that
-    // indexes the Sourcebot repository
-    "connections": {
-        "starter-connection": {
-            "type": "github",
-            "repos": [
-                "sourcebot-dev/sourcebot"
-            ]
-        }
-    }
-}' > config.json
-```
+Repositories to index and language models are configured in `config.json`
+(language models can also be added in the settings UI). Configuration options
+are documented in the upstream docs:
 
-3.  Update the secrets in the `docker-compose.yml` and then run Sourcebot using:
-```sh
-docker compose up
-```
+- [Config file](https://docs.sourcebot.dev/docs/configuration/config-file)
+- [Language model providers](https://docs.sourcebot.dev/docs/configuration/language-model-providers)
+- [Environment variables](https://docs.sourcebot.dev/docs/configuration/environment-variables)
 
-4. Visit `http://localhost:3000` to start using Sourcebot
-</br>
+Internal identifiers are unchanged from upstream: packages are named
+`@sourcebot/*`, environment variables use the `SOURCEBOT_` prefix and API keys
+are sent in the `X-Sourcebot-Api-Key` header.
 
-To configure Sourcebot (index your own repos, connect your LLMs, etc), check out our [docs](https://docs.sourcebot.dev/docs/configuration/config-file).
+## Telemetry
 
-> [!NOTE]
-> Sourcebot collects <a href="https://app.sourcebot.dev/~/search?query=captureEvent%5C(%20repo%3Asourcebot">anonymous usage data</a> by default to help us improve the product. No sensitive data is collected, but if you'd like to disable this you can do so by setting the `SOURCEBOT_TELEMETRY_DISABLED` environment
-> variable to `true`. Please refer to our [telemetry docs](https://docs.sourcebot.dev/docs/overview#telemetry) for more information.
+Telemetry is **disabled by default**. Set `SOURCEBOT_TELEMETRY_DISABLED=false`
+to opt in to the anonymous usage events inherited from upstream.
 
-# Build from source
->[!NOTE]
-> Building from source is only required if you'd like to contribute. If you'd just like to use Sourcebot, we recommend checking out our self-hosting [docs](https://docs.sourcebot.dev/self-hosting/overview).
+## License
 
-If you'd like to build from source, please checkout the `CONTRIBUTING.md` file for more information.
+NexusCode is a modified version of Sourcebot, Copyright (c) Taqla Inc.
+Code outside `ee/` is available under the Functional Source License 1.1
+(ALv2 future license) in [`LICENSE.md`](./LICENSE.md); code in `ee/` is
+covered by [`ee/LICENSE`](./ee/LICENSE).

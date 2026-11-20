@@ -24,7 +24,7 @@ export function AnalyticsEntitlementMessage() {
                 <CardContent className="text-center space-y-4">
                     <div className="bg-muted/50 rounded-lg p-4 border border-border">
                         <p className="text-sm text-muted-foreground">
-                            Want to try out Sourcebot&apos;s enterprise features? Reach out to us and we&apos;ll get back to you within
+                            Want to try out NexusCode&apos;s enterprise features? Reach out to us and we&apos;ll get back to you within
                             a couple hours with a trial license.
                         </p>
                     </div>

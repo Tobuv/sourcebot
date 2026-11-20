@@ -169,7 +169,7 @@ export const ModelEditorDialog = ({ state, isOwner, onOpenChange, onSaved }: Mod
                 <DialogHeader>
                     <DialogTitle>{state?.mode === 'create' ? 'Add model' : isEdit ? 'Edit model' : 'View model'}</DialogTitle>
                     <DialogDescription>
-                        Models added here appear in the model selector of Ask Sourcebot. API keys are encrypted and never shown again after saving.
+                        Models added here appear in the model selector of Ask NexusCode. API keys are encrypted and never shown again after saving.
                     </DialogDescription>
                 </DialogHeader>
 

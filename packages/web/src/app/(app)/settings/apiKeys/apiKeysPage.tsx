@@ -176,7 +176,7 @@ export function ApiKeysPage({ canCreateApiKey }: { canCreateApiKey: boolean }) {
                 <div>
                     <h3 className="text-lg font-medium">API Keys</h3>
                     <p className="text-sm text-muted-foreground max-w-lg">
-                        Create and manage API keys for programmatic access to Sourcebot. All API keys are scoped to the user who created them.
+                        Create and manage API keys for programmatic access to NexusCode. All API keys are scoped to the user who created them.
                     </p>
                 </div>
 

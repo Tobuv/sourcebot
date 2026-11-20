@@ -5,7 +5,6 @@ import {
     Head,
     Heading,
     Html,
-    Img,
     Link,
     Preview,
     Section,
@@ -13,7 +12,7 @@ import {
     Text,
 } from '@react-email/components';
 import { EmailFooter } from './emailFooter';
-import { SOURCEBOT_LOGO_LIGHT_LARGE_URL, SOURCEBOT_PLACEHOLDER_AVATAR_URL } from './constants';
+import { SOURCEBOT_PLACEHOLDER_AVATAR_URL } from './constants';
 
 interface JoinRequestApprovedEmailProps {
     baseUrl: string;
@@ -30,7 +29,7 @@ export const JoinRequestApprovedEmail = ({
     user,
     orgName,
 }: JoinRequestApprovedEmailProps) => {
-    const previewText = `Your request to join ${orgName} on Sourcebot has been approved`;
+    const previewText = `Your request to join ${orgName} on NexusCode has been approved`;
     const orgLink = baseUrl;
 
     return (
@@ -41,13 +40,7 @@ export const JoinRequestApprovedEmail = ({
                     <Preview>{previewText}</Preview>
                     <Container className="border border-solid border-[#eaeaea] rounded my-[40px] mx-auto p-[20px] max-w-[465px]">
                         <Section className="mt-[32px]">
-                            <Img
-                                src={SOURCEBOT_LOGO_LIGHT_LARGE_URL}
-                                width="auto"
-                                height="60"
-                                alt="Sourcebot Logo"
-                                className="my-0 mx-auto"
-                            />
+                            <Text className="text-black text-[28px] font-bold text-center my-0 mx-auto">NexusCode</Text>
                         </Section>
                         <Heading className="text-black text-[24px] font-normal text-center p-0 my-[30px] mx-0">
                             Welcome to <strong>{orgName}</strong>
@@ -56,7 +49,7 @@ export const JoinRequestApprovedEmail = ({
                             Hello{user.name ? ` ${user.name}` : ''},
                         </Text>
                         <Text className="text-black text-[14px] leading-[24px]">
-                            Your request to join <strong>{orgName}</strong> on Sourcebot has been approved. You now have access to the organization.
+                            Your request to join <strong>{orgName}</strong> on NexusCode has been approved. You now have access to the organization.
                         </Text>
                         <Section className="text-center mt-[32px] mb-[32px]">
                             <Button

@@ -15,7 +15,7 @@ import {
     Text,
 } from '@react-email/components';
 import { EmailFooter } from './emailFooter';
-import { SOURCEBOT_LOGO_LIGHT_LARGE_URL, SOURCEBOT_ARROW_IMAGE_URL, SOURCEBOT_PLACEHOLDER_AVATAR_URL } from './constants';
+import { SOURCEBOT_ARROW_IMAGE_URL, SOURCEBOT_PLACEHOLDER_AVATAR_URL } from './constants';
 
 interface JoinRequestSubmittedEmailProps {
     baseUrl: string;
@@ -34,7 +34,7 @@ export const JoinRequestSubmittedEmail = ({
     orgName,
     orgImageUrl,
 }: JoinRequestSubmittedEmailProps) => {
-    const previewText = `${requestor.name ?? requestor.email} has requested to join ${orgName} on Sourcebot`;
+    const previewText = `${requestor.name ?? requestor.email} has requested to join ${orgName} on NexusCode`;
     const reviewLink = `${baseUrl}/settings/members?tab=requests`;
 
     return (
@@ -45,13 +45,7 @@ export const JoinRequestSubmittedEmail = ({
                     <Preview>{previewText}</Preview>
                     <Container className="border border-solid border-[#eaeaea] rounded my-[40px] mx-auto p-[20px] max-w-[465px]">
                         <Section className="mt-[32px]">
-                            <Img
-                                src={SOURCEBOT_LOGO_LIGHT_LARGE_URL}
-                                width="auto"
-                                height="60"
-                                alt="Sourcebot Logo"
-                                className="my-0 mx-auto"
-                            />
+                            <Text className="text-black text-[28px] font-bold text-center my-0 mx-auto">NexusCode</Text>
                         </Section>
                         <Heading className="text-black text-[24px] font-normal text-center p-0 my-[30px] mx-0">
                             New Join Request for <strong>{orgName}</strong>
@@ -60,7 +54,7 @@ export const JoinRequestSubmittedEmail = ({
                             Hello,
                         </Text>
                         <Text className="text-black text-[14px] leading-[24px]">
-                            <RequestorInfo email={requestor.email} name={requestor.name} /> has requested to join your organization <strong>{orgName}</strong> on Sourcebot.
+                            <RequestorInfo email={requestor.email} name={requestor.name} /> has requested to join your organization <strong>{orgName}</strong> on NexusCode.
                         </Text>
                         <Section>
                             <Row>

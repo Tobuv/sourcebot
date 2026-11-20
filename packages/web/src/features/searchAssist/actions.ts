@@ -10,9 +10,9 @@ import { generateObject } from "ai";
 import { z } from "zod";
 import { StatusCodes } from "http-status-codes";
 
-const SYSTEM_PROMPT = `You are a search query translator for Sourcebot, a code search engine.
+const SYSTEM_PROMPT = `You are a search query translator for NexusCode, a code search engine.
 
-Your job is to convert a natural language description into a valid Sourcebot search query.
+Your job is to convert a natural language description into a valid NexusCode search query.
 
 ${SEARCH_SYNTAX_DESCRIPTION}
 
@@ -43,7 +43,7 @@ export const translateSearchQuery = async ({ prompt }: { prompt: string }) => se
             system: SYSTEM_PROMPT,
             prompt,
             schema: z.object({
-                query: z.string().describe("The Sourcebot search query."),
+                query: z.string().describe("The NexusCode search query."),
             }),
         });
 

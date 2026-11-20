@@ -77,7 +77,7 @@ function ErrorCard({ message, errorCode, statusCode, onReloadButtonClicked }: Er
                     Unexpected Error
                 </CardTitle>
                 <CardDescription className="text-sm">
-                    An unexpected error occurred. Please reload the page and try again. If the issue persists, <Link href={`mailto:${SOURCEBOT_SUPPORT_EMAIL}?subject=Sourcebot%20Error%20Report${errorCode ? `%20|%20Code:%20${errorCode}` : ''}`} className='underline'>please contact us</Link>.
+                    An unexpected error occurred. Please reload the page and try again. If the issue persists, <Link href={`mailto:${SOURCEBOT_SUPPORT_EMAIL}?subject=NexusCode%20Error%20Report${errorCode ? `%20|%20Code:%20${errorCode}` : ''}`} className='underline'>please contact us</Link>.
                 </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">

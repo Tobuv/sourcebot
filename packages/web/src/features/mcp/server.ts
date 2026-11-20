@@ -28,7 +28,7 @@ const dedent = _dedent.withOptions({ alignValues: true });
 
 export async function createMcpServer(): Promise<McpServer> {
     const server = new McpServer({
-        name: 'sourcebot-mcp-server',
+        name: 'nexuscode-mcp-server',
         version: SOURCEBOT_VERSION,
     });
 
@@ -52,7 +52,7 @@ export async function createMcpServer(): Promise<McpServer> {
     server.registerTool(
         "list_language_models",
         {
-            description: dedent`Lists the available language models configured on the Sourcebot instance. Use this to discover which models can be specified when calling ask_codebase.`,
+            description: dedent`Lists the available language models configured on the NexusCode instance. Use this to discover which models can be specified when calling ask_codebase.`,
             annotations: {
                 readOnlyHint: true,
                 idempotentHint: true,
@@ -85,7 +85,7 @@ export async function createMcpServer(): Promise<McpServer> {
             - Search the codebase using multiple strategies (code search, symbol lookup, file reading)
             - Synthesize findings into a comprehensive answer with code references
 
-            Returns a detailed answer in markdown format with code references, plus a link to view the full research session (including all tool calls and reasoning) in the Sourcebot web UI.
+            Returns a detailed answer in markdown format with code references, plus a link to view the full research session (including all tool calls and reasoning) in the NexusCode web UI.
 
             When using this in shared environments (e.g., Slack), you can set the visibility parameter to 'PUBLIC' to ensure everyone can access the chat link.
             `,

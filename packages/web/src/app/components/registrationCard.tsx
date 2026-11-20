@@ -18,7 +18,7 @@ export default function RegistrationCard() {
       onMouseLeave={() => setIsHovered(false)}
     >
       <CardHeader className="pb-2">
-        <CardTitle className="text-xl font-bold mt-2">Try Sourcebot Cloud</CardTitle>
+        <CardTitle className="text-xl font-bold mt-2">Try NexusCode Cloud</CardTitle>
         <CardDescription>Index and search your own code repositories</CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">

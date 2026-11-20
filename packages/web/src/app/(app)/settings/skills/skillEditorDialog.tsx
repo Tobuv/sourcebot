@@ -104,7 +104,7 @@ export const SkillEditorDialog = ({ state, isOwner, onOpenChange, onSaved }: Ski
                 <DialogHeader>
                     <DialogTitle>{title}</DialogTitle>
                     <DialogDescription>
-                        Skills are reusable instructions for Ask Sourcebot. Use one by typing <code>/{values.name || 'name'}</code> in the chat box{values.autoInvoke ? ', or let the agent load it automatically when your question matches its description' : ''}.
+                        Skills are reusable instructions for Ask NexusCode. Use one by typing <code>/{values.name || 'name'}</code> in the chat box{values.autoInvoke ? ', or let the agent load it automatically when your question matches its description' : ''}.
                     </DialogDescription>
                 </DialogHeader>
 

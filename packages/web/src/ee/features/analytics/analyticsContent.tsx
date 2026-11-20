@@ -607,7 +607,7 @@ export function AnalyticsContent() {
                 <div>
                     <h3 className="text-xl font-semibold">Web App</h3>
                     <p className="text-sm text-muted-foreground">
-                        Usage from the Sourcebot web interface.
+                        Usage from the NexusCode web interface.
                     </p>
                 </div>
                 <MultiLineAnalyticsChart
@@ -616,7 +616,7 @@ export function AnalyticsContent() {
                     icon={Users}
                     period={selectedPeriod}
                     series={webActiveUsersSeries}
-                    description="Unique users who interacted with the Sourcebot web interface. All includes users who performed any web action (code searches, navigations, Ask chats, or file views), excluding repo listing. Search and Ask show the subset of users who performed those specific actions."
+                    description="Unique users who interacted with the NexusCode web interface. All includes users who performed any web action (code searches, navigations, Ask chats, or file views), excluding repo listing. Search and Ask show the subset of users who performed those specific actions."
                 />
                 <MultiLineAnalyticsChart
                     data={periodData}

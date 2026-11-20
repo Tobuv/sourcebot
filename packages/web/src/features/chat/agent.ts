@@ -340,7 +340,7 @@ const createPrompt = ({
     repos: string[],
 }) => {
     return dedent`
-    You are a powerful agentic AI code assistant built into Sourcebot, the world's best code-intelligence platform. Your job is to help developers understand and navigate their large codebases.
+    You are a powerful agentic AI code assistant built into NexusCode, a code-intelligence platform. Your job is to help developers understand and navigate their large codebases.
 
     <workflow>
     Your workflow has two distinct phases:

@@ -84,14 +84,14 @@ export default async function Onboarding(props: OnboardingProps) {
         {
             id: "code-host-connections",
             title: "Code Host Connections",
-            description: "Learn how to index repos across Sourcebot's supported platforms",
+            description: "Learn how to index repos across NexusCode's supported platforms",
             href: "https://docs.sourcebot.dev/docs/connections/overview",
             icon: <GitBranchIcon className="w-4 h-4" />,
         },
         {
             id: "language-models",
             title: "Language Models",
-            description: "Learn how to configure your language model providers to start using Ask Sourcebot",
+            description: "Learn how to configure your language model providers to start using Ask NexusCode",
             href: "https://docs.sourcebot.dev/docs/configuration/language-model-providers",
             icon: <Brain className="w-4 h-4" />,
         },
@@ -105,7 +105,7 @@ export default async function Onboarding(props: OnboardingProps) {
         {
             id: "mcp-server",
             title: "MCP Server",
-            description: "Learn how to setup Sourcebot's MCP server to provide code context to your AI agents",
+            description: "Learn how to setup NexusCode's MCP server to provide code context to your AI agents",
             href: "https://docs.sourcebot.dev/docs/features/mcp-server",
             icon: <BetweenHorizontalStart className="w-4 h-4" />,
         }
@@ -114,7 +114,7 @@ export default async function Onboarding(props: OnboardingProps) {
     const steps: OnboardingStep[] = [
         {
             id: "welcome",
-            title: "Welcome to Sourcebot",
+            title: "Welcome to NexusCode",
             subtitle: "This onboarding flow will guide you through creating your owner account and configuring your organization.",
             component: (
                 <div className="space-y-6">
@@ -181,7 +181,7 @@ export default async function Onboarding(props: OnboardingProps) {
             title: "You're All Set!",
             subtitle: (
                 <>
-                    Your Sourcebot deployment is ready. Check out these resources to learn how to get the most out of Sourcebot.
+                    Your NexusCode deployment is ready. Check out these resources to learn how to get the most out of NexusCode.
                     <div className="text-center space-y-4 mt-6">
                         <div className="w-16 h-16 mx-auto bg-primary rounded-full flex items-center justify-center">
                             <svg className="w-8 h-8 text-primary-foreground" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -378,7 +378,7 @@ function NonOwnerOnboardingMessage() {
                                     Onboarding In Progress
                                 </h1>
                                 <p className="text-muted-foreground text-base leading-relaxed">
-                                    Your Sourcebot deployment is being configured by the organization owner.
+                                    Your NexusCode deployment is being configured by the organization owner.
                                 </p>
                             </div>
 
@@ -394,7 +394,7 @@ function NonOwnerOnboardingMessage() {
                                             Owner Access Required
                                         </p>
                                         <p className="text-sm text-muted-foreground leading-relaxed">
-                                            Only the organization owner can complete the initial setup and configuration. Once onboarding is complete, you&apos;ll be able to access Sourcebot.
+                                            Only the organization owner can complete the initial setup and configuration. Once onboarding is complete, you&apos;ll be able to access NexusCode.
                                         </p>
                                     </div>
                                 </div>

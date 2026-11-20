@@ -3,13 +3,11 @@ import {
     Container,
     Head,
     Html,
-    Img,
     Preview,
     Section,
     Tailwind,
     Text,
 } from '@react-email/components';
-import { SOURCEBOT_LOGO_LIGHT_LARGE_URL } from './constants';
 
 interface MagicLinkEmailProps {
     token: string,
@@ -20,23 +18,17 @@ export const MagicLinkEmail = ({
 }: MagicLinkEmailProps) => (
     <Html>
         <Head />
-        <Preview>Use this code {token} to log in to Sourcebot</Preview>
+        <Preview>Use this code {token} to log in to NexusCode</Preview>
         <Tailwind>
             <Body className="bg-white font-sans m-0 p-0">
                 <Container className="mx-auto max-w-[600px] p-6">
                     <Section className="mb-4">
-                        <Img
-                            src={SOURCEBOT_LOGO_LIGHT_LARGE_URL}
-                            alt="Sourcebot Logo"
-                            width="auto"
-                            height="40"
-                            className="mx-0"
-                        />
+                        <Text className="text-black text-[28px] font-bold text-center my-0 mx-auto">NexusCode</Text>
                     </Section>
 
                     <Section className="mb-4">
                         <Text className="text-base text-black">
-                            Use the code below to log in to Sourcebot.
+                            Use the code below to log in to NexusCode.
                         </Text>
                     </Section>
 

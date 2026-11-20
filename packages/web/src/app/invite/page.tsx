@@ -63,13 +63,13 @@ function WelcomeCard({ inviteLinkId, providers }: { inviteLinkId: string; provid
                 <CardHeader className="text-center">
                     <SourcebotLogo className="h-12 mb-4 mx-auto" size="large" />
                     <CardTitle className="text-2xl font-semibold">
-                        Welcome to Sourcebot
+                        Welcome to NexusCode
                     </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-6">
                     <div className="text-center space-y-3">
                         <p className="text-[var(--muted-foreground)] text-[15px] leading-6">
-                            You&apos;ve been invited to join this Sourcebot deployment. Sign up to get started.
+                            You&apos;ve been invited to join this NexusCode deployment. Sign up to get started.
                         </p>
                     </div>  
 

@@ -37,14 +37,14 @@ export const generateMetadata = async ({ params }: PageProps): Promise<Metadata>
 
     if (!chat) {
         return {
-            title: 'Chat | Sourcebot',
+            title: 'Chat | NexusCode',
         };
     }
 
     // Only show detailed metadata for public chats
     if (chat.visibility !== ChatVisibility.PUBLIC) {
         return {
-            title: 'Private Chat | Sourcebot',
+            title: 'Private Chat | NexusCode',
             description: 'Login to view',
         };
     }
@@ -53,7 +53,7 @@ export const generateMetadata = async ({ params }: PageProps): Promise<Metadata>
     const messages = chat.messages as unknown as SBChatMessage[];
     const firstUserMessage = messages.find(m => m.role === 'user');
 
-    let description = 'A chat on Sourcebot';
+    let description = 'A chat on NexusCode';
     if (firstUserMessage) {
         const textPart = firstUserMessage.parts.find(p => p.type === 'text');
         if (textPart && textPart.type === 'text') {
@@ -64,7 +64,7 @@ export const generateMetadata = async ({ params }: PageProps): Promise<Metadata>
     }
 
     return {
-        title: `${chatName} | Sourcebot`,
+        title: `${chatName} | NexusCode`,
         description,
         openGraph: {
             title: chatName,

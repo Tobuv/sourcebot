@@ -10,7 +10,7 @@ export const newsData: NewsItem[] = [
     {
         unique_id: "mcp-server",
         header: "Remote MCP Server",
-        sub_header: "Sourcebot now exposes a built-in MCP server over Streamable HTTP with OAuth.",
+        sub_header: "NexusCode now exposes a built-in MCP server over Streamable HTTP with OAuth.",
         url: "https://docs.sourcebot.dev/docs/features/mcp-server"
     },
     {
@@ -22,19 +22,19 @@ export const newsData: NewsItem[] = [
     {
         unique_id: "chat-sharing",
         header: "Chat Sharing",
-        sub_header: "Share Ask Sourcebot chats via link or with specific team members.",
+        sub_header: "Share Ask NexusCode chats via link or with specific team members.",
         url: "https://docs.sourcebot.dev/docs/features/ask/chat-sharing"
     },
     {
         unique_id: "ask-sourcebot",
-        header: "Ask Sourcebot",
-        sub_header: "Ask Sourcebot to search, summarize, and explain code. Bring your own LLM.",
+        header: "Ask NexusCode",
+        sub_header: "Ask NexusCode to search, summarize, and explain code. Bring your own LLM.",
         url: "https://docs.sourcebot.dev/docs/features/ask/overview"
     },
     {
         unique_id: "anonymous-access",
         header: "Anonymous Access",
-        sub_header: "We've added the ability to disable the need for users to login to Sourcebot.",
+        sub_header: "We've added the ability to disable the need for users to login to NexusCode.",
         url: "https://docs.sourcebot.dev/docs/configuration/auth/access-settings"
     },
     {
@@ -46,7 +46,7 @@ export const newsData: NewsItem[] = [
     {
         unique_id: "analytics",
         header: "Analytics Dashboard",
-        sub_header: "Understand your team's Sourcebot usage",
+        sub_header: "Understand your team's NexusCode usage",
         url: "https://docs.sourcebot.dev/docs/features/analytics"
     },
     {

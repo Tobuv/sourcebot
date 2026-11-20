@@ -12,7 +12,7 @@ export function JoinOrganizationCard({ inviteLinkId }: { inviteLinkId?: string }
                 <CardContent className="space-y-6">
                     <div className="text-center space-y-4">
                         <p className="text-[var(--muted-foreground)] text-[15px] leading-6">
-                            Welcome to Sourcebot! Click the button below to join this organization.
+                            Welcome to NexusCode! Click the button below to join this organization.
                         </p>
                     </div>
                     <JoinOrganizationButton inviteLinkId={inviteLinkId} />

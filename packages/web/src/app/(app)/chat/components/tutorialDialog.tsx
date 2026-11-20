@@ -8,8 +8,7 @@ import { cn } from "@/lib/utils"
 import mentionsDemo from "@/public/ask_sb_tutorial_at_mentions.png"
 import citationsDemo from "@/public/ask_sb_tutorial_citations.png"
 import searchScopeDemo from "@/public/ask_sb_tutorial_search_scope.png"
-import logoDarkSmall from "@/public/sb_logo_dark_small.png"
-import { useQuery } from "@tanstack/react-query"
+import { SourcebotLogo } from "@/app/components/sourcebotLogo"
 import {
     ArrowLeftRightIcon,
     AtSignIcon,
@@ -23,7 +22,6 @@ import {
     GitCommitHorizontalIcon,
     LibraryBigIcon,
     ScanSearchIcon,
-    StarIcon,
     TicketIcon,
 } from "lucide-react"
 import Image from "next/image"
@@ -33,47 +31,6 @@ import { useCallback, useState } from "react"
 
 
 
-// Star button component that fetches GitHub star count
-const GitHubStarButton = () => {
-    const { data: starCount, isLoading, isError } = useQuery({
-        queryKey: ['github-stars', 'sourcebot-dev/sourcebot'],
-        queryFn: async () => {
-            const response = await fetch('https://api.github.com/repos/sourcebot-dev/sourcebot')
-            if (!response.ok) {
-                throw new Error('Failed to fetch star count')
-            }
-            const data = await response.json()
-            return data.stargazers_count as number;
-        },
-        staleTime: 5 * 60 * 1000, // 5 minutes
-        gcTime: 30 * 60 * 1000, // 30 minutes
-        retry: 3,
-        retryDelay: attemptIndex => Math.min(1000 * 2 ** attemptIndex, 30000),
-    })
-
-    const formatStarCount = (count: number) => {
-        if (count >= 1000) {
-            return `${(count / 1000).toFixed(1)}k`
-        }
-        return count.toString()
-    }
-
-    return (
-        <Button
-            variant="secondary"
-            size="lg"
-            className="flex items-center gap-2"
-            onClick={() => window.open('https://github.com/sourcebot-dev/sourcebot', '_blank')}
-        >
-            <StarIcon className="w-4 h-4" />
-            <span className="font-medium">
-                {
-                    !isLoading && !isError && starCount ? `Star (${formatStarCount(starCount)})` : 'Star'
-                }
-            </span>
-        </Button>
-    )
-}
 
 
 const tutorialSteps = [
@@ -89,7 +46,7 @@ const tutorialSteps = [
                         Get back responses grounded in code with <span className="font-bold">inline citations</span>.
                     </p>
                     <p className="text-md text-muted-foreground">
-                        Ask Sourcebot is an agentic search tool that can answer questions about your codebase by searching, reading files, navigating references, and more. Supports any <Link href="https://docs.sourcebot.dev/docs/configuration/language-model-providers" className="underline">compatible LLM.</Link>
+                        Ask NexusCode is an agentic search tool that can answer questions about your codebase by searching, reading files, navigating references, and more. Supports any <Link href="https://docs.sourcebot.dev/docs/configuration/language-model-providers" className="underline">compatible LLM.</Link>
                     </p>
                 </div>
                 <div className="space-y-3 mx-auto flex flex-wrap justify-center gap-4">
@@ -126,7 +83,7 @@ const tutorialSteps = [
                     Search Scopes
                 </h2>
                 <p className="text-lg">
-                    {`When asking Sourcebot a question, you can select one or more scopes to focus the search.`}
+                    {`When asking NexusCode a question, you can select one or more scopes to focus the search.`}
                 </p>
 
                 <div className="flex flex-col mb-2 text-muted-foreground">
@@ -200,7 +157,7 @@ const tutorialSteps = [
                     Inline Citations
                 </h2>
                 <p className="text-lg">
-                    {`Sourcebot searches your codebase and provides responses with clickable citations that link directly to relevant sections of code.`}
+                    {`NexusCode searches your codebase and provides responses with clickable citations that link directly to relevant sections of code.`}
                 </p>
             </div>
         ),
@@ -220,7 +177,7 @@ const tutorialSteps = [
                     You&apos;re all set!
                 </h2>
                 <p className="text-lg">
-                    You can now ask Sourcebot any question about your codebase. Checkout the <Link href="https://docs.sourcebot.dev/docs/features/ask/overview" className="underline">docs</Link> for more information.
+                    You can now ask NexusCode any question about your codebase. Checkout the <Link href="https://docs.sourcebot.dev/docs/features/ask/overview" className="underline">docs</Link> for more information.
                 </p>
                 <p className="text-lg">
                     <span className="font-bold">Hit a bug?</span> Open up <Link href="https://github.com/sourcebot-dev/sourcebot/issues" className="underline">an issue</Link>.
@@ -235,14 +192,7 @@ const tutorialSteps = [
         ),
         rightContent: (
             <div className="flex flex-col h-full justify-center items-center gap-6 bg-[#020817]">
-                <Image
-                    src={logoDarkSmall}
-                    width={150}
-                    height={150}
-                    alt={"Sourcebot logo"}
-                    priority={true}
-                />
-                <GitHubStarButton />
+                <SourcebotLogo size="small" className="h-[150px] w-[150px] text-white" />
             </div>
         ),
     },
@@ -283,7 +233,7 @@ export const TutorialDialog = ({ isOpen: _isOpen }: TutorialDialogProps) => {
                 className="sm:max-w-[900px] p-0 flex flex-col h-[525px] overflow-hidden rounded-xl border-none bg-transparent"
                 closeButtonClassName="text-white"
             >
-                <DialogTitle className="sr-only">Ask Sourcebot tutorial</DialogTitle>
+                <DialogTitle className="sr-only">Ask NexusCode tutorial</DialogTitle>
                 <div className="relative flex h-full">
                     {/* Left Column (Text Content & Navigation) */}
                     <div className="flex-1 flex flex-col justify-between bg-background">

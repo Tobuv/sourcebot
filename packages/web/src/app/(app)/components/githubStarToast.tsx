@@ -55,7 +55,7 @@ export const GitHubStarToast = () => {
         if (elapsed >= (POPUP_DELAY_S * 1000)) {
             toast({
                 title: "Star us on GitHub ❤️",
-                description: "If you've found Sourcebot useful, please consider starring us on GitHub. Your support means a lot!",
+                description: "If you've found NexusCode useful, please consider starring us on GitHub. Your support means a lot!",
                 duration: 15 * 1000,
                 action: (
                     <div className="flex flex-col gap-1">
@@ -68,7 +68,7 @@ export const GitHubStarToast = () => {
                         >
                             <div className="flex items-center gap-2">
                                 <GitHubLogoIcon className="w-4 h-4" />
-                                Sourcebot
+                                NexusCode
                             </div>
                         </ToastAction>
                     </div>

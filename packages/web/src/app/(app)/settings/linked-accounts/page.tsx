@@ -26,7 +26,7 @@ export default async function LinkedAccountsPage() {
             <div>
                 <h3 className="text-lg font-medium">Linked Accounts</h3>
                 <p className="text-sm text-muted-foreground mt-1">
-                    Manage the accounts linked to Sourcebot.
+                    Manage the accounts linked to NexusCode.
                 </p>
             </div>
 

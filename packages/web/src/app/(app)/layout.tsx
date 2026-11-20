@@ -24,7 +24,6 @@ import { GcpIapAuth } from "./components/gcpIapAuth";
 import { getAnonymousAccessStatus, getMemberApprovalRequired } from "@/actions";
 import { JoinOrganizationCard } from "@/app/components/joinOrganizationCard";
 import { LogoutEscapeHatch } from "@/app/components/logoutEscapeHatch";
-import { GitHubStarToast } from "./components/githubStarToast";
 import { UpgradeToast } from "./components/upgradeToast";
 import { getLinkedAccounts } from "@/ee/features/sso/actions";
 import { PermissionSyncBanner } from "./components/permissionSyncBanner";
@@ -177,7 +176,6 @@ export default async function Layout(props: LayoutProps) {
             }
             {children}
             <SyntaxReferenceGuide />
-            <GitHubStarToast />
             {env.EXPERIMENT_ASK_GH_ENABLED !== 'true' && <UpgradeToast />}
         </SyntaxGuideProvider>
     )

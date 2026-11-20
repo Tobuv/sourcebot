@@ -34,7 +34,7 @@ if (!hasExtendedZod) {
 }
 
 export const publicServiceErrorSchema = serviceErrorSchema.openapi('PublicApiServiceError', {
-    description: 'Structured error response returned by Sourcebot public API endpoints.',
+    description: 'Structured error response returned by NexusCode public API endpoints.',
 });
 
 export const publicSearchRequestSchema = searchRequestSchema.openapi('PublicSearchRequest');

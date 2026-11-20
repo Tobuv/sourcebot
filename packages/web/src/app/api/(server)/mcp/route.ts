@@ -22,7 +22,7 @@ function mcpErrorResponse(error: ServiceError): Response {
         const issuer = env.AUTH_URL.replace(/\/$/, '');
         response.headers.set(
             'WWW-Authenticate',
-            `Bearer realm="Sourcebot", resource_metadata_uri="${issuer}/.well-known/oauth-protected-resource/api/mcp"`
+            `Bearer realm="NexusCode", resource_metadata_uri="${issuer}/.well-known/oauth-protected-resource/api/mcp"`
         );
     }
     return response;
