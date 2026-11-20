@@ -109,11 +109,12 @@ const ChatThreadListItemComponent = forwardRef<HTMLDivElement, ChatThreadListIte
                         return true;
                     })
                     .filter((part) => {
-                        // Only include text, reasoning, and tool parts
+                        // Only include text, reasoning, and tool parts (including tools from external MCP servers)
                         return (
                             part.type === 'text' ||
                             part.type === 'reasoning' ||
-                            part.type.startsWith('tool-')
+                            part.type.startsWith('tool-') ||
+                            part.type === 'dynamic-tool'
                         )
                     })
             )

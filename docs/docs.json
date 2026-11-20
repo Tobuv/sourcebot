@@ -74,7 +74,8 @@
                                 "pages": [
                                     "docs/features/ask/overview",
                                     "docs/features/ask/chat-sharing",
-                                    "docs/features/ask/add-model-providers"
+                                    "docs/features/ask/add-model-providers",
+                                    "docs/features/ask/mcp-servers"
                                 ]
                             },
                             "docs/features/mcp-server",

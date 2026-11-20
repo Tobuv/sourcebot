@@ -1,0 +1,54 @@
+---
+title: Connect MCP servers
+sidebarTitle: Connect MCP servers
+---
+
+Ask Sourcebot can use tools from remote [MCP](https://modelcontextprotocol.io) servers, such as an issue tracker, a documentation site, or an internal service. The agent calls these tools alongside its code search tools when your question needs information from those systems.
+
+## Configuration
+
+Add MCP servers to the `mcpServers` array in your [config file](/docs/configuration/config-file):
+
+```json
+{
+    "mcpServers": [
+        {
+            "name": "jira",
+            "url": "https://mcp.example.com/mcp",
+            "description": "Jira issues for the platform team",
+            "headers": {
+                "Authorization": {
+                    "env": "JIRA_MCP_TOKEN"
+                }
+            },
+            "excludeTools": ["delete_issue"]
+        }
+    ]
+}
+```
+
+| Property | Required | Description |
+|:---------|:---------|:------------|
+| `name` | Yes | Unique name. Tool names are prefixed with it (e.g. `jira__search_issues`). Letters, digits, `_` and `-`, up to 32 characters. |
+| `url` | Yes | The MCP server endpoint. |
+| `transport` | No | `streamable-http` (default) or `sse` for servers that only support the legacy HTTP+SSE transport. |
+| `headers` | No | Headers sent with every request. Values can be strings or tokens (e.g. `{ "env": "MY_TOKEN" }`). |
+| `description` | No | What the server provides. Shown to the agent to help it decide when to use the server's tools. |
+| `includeTools` | No | Only expose these tools (by their name on the server). |
+| `excludeTools` | No | Never expose these tools. |
+| `enabled` | No | Set to `false` to disable the server without removing it. Defaults to `true`. |
+
+## How it works
+
+- Sourcebot connects to the configured servers at the start of each Ask message and disconnects when the answer is complete.
+- A server that cannot be reached (or rejects the request) is skipped and logged. Ask keeps working with the remaining tools.
+- Calls to external tools appear in the answer's details panel, with the request and response.
+- Tool results larger than 50,000 characters are truncated. Image and audio results are not passed to the model.
+
+<Warning>
+MCP servers are shared by every user of the workspace and run with the credentials in your config file. Only connect servers you trust, and use `includeTools` or `excludeTools` to hide tools that modify data.
+</Warning>
+
+<Note>
+Servers that require each user to sign in with OAuth and local (stdio) servers are not supported yet.
+</Note>

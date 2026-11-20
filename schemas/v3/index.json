@@ -144,6 +144,13 @@
                 "$ref": "./languageModel.json"
             }
         },
+        "mcpServers": {
+            "type": "array",
+            "description": "Defines remote MCP servers whose tools are available to Ask Sourcebot.",
+            "items": {
+                "$ref": "./mcpServer.json"
+            }
+        },
         "apps": {
             "type": "array",
             "description": "Defines a collection of apps that are available to Sourcebot.",

@@ -25,6 +25,7 @@ import { ListReposToolComponent } from './tools/listReposToolComponent';
 import { ListTreeToolComponent } from './tools/listTreeToolComponent';
 import { ReadFileToolComponent } from './tools/readFileToolComponent';
 import { LoadSkillToolComponent } from './tools/loadSkillToolComponent';
+import { McpToolComponent } from './tools/mcpToolComponent';
 import { ToolOutputGuard } from './tools/toolOutputGuard';
 
 
@@ -49,7 +50,7 @@ const DetailsCardComponent = ({
 }: DetailsCardProps) => {
     const captureEvent = useCaptureEvent();
 
-    const toolCallCount = useMemo(() => thinkingSteps.flat().filter(part => part.type.startsWith('tool-')).length, [thinkingSteps]);
+    const toolCallCount = useMemo(() => thinkingSteps.flat().filter(part => part.type.startsWith('tool-') || part.type === 'dynamic-tool').length, [thinkingSteps]);
 
     const handleExpandedChanged = useCallback((next: boolean) => {
         captureEvent('wa_chat_details_card_toggled', { chatId, isExpanded: next });
@@ -336,7 +337,9 @@ export const StepPartRenderer = ({ part }: { part: SBChatMessagePart }) => {
         case 'data-source':
         case 'data-attachment':
         case 'data-skill':
+            return null;
         case 'dynamic-tool':
+            return <McpToolComponent part={part} />;
         case 'file':
         case 'source-document':
         case 'source-url':

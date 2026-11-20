@@ -6,7 +6,7 @@ import { LanguageModelV3 as AISDKLanguageModelV3 } from "@ai-sdk/provider";
 import { ProviderOptions } from "@ai-sdk/provider-utils";
 import { createLogger, env } from "@sourcebot/shared";
 import {
-    createUIMessageStream, JSONValue, LanguageModel, ModelMessage, StopCondition, streamText, StreamTextResult,
+    createUIMessageStream, JSONValue, LanguageModel, ModelMessage, StopCondition, streamText, StreamTextResult, Tool,
     UIMessageStreamOnFinishCallback,
     UIMessageStreamOptions,
     UIMessageStreamWriter
@@ -21,6 +21,7 @@ import { createCachingPrepareStep, createSystemMessage, getPromptCacheStrategy }
 import { formatAttachmentsForPrompt } from "./attachments";
 import { createLoadSkillTool, LOAD_SKILL_TOOL_NAME, LoadableSkill } from "./skills/loadSkillTool";
 import { formatInvokedSkillsForPrompt } from "./skills/skillUtils";
+import { connectMcpServers, ConnectedMcpServer, getConfiguredMcpServers } from "./mcpConnectors/mcpConnectors.server";
 
 const dedent = _dedent.withOptions({ alignValues: true });
 
@@ -124,46 +125,56 @@ export const createMessageStream = async ({
 
             const startTime = new Date();
 
-            const researchStream = await createAgentStream({
-                model,
-                providerOptions: modelProviderOptions,
-                temperature: modelTemperature,
-                inputMessages: messageHistory,
-                inputSources: sources,
-                selectedRepos,
-                onWriteSource: (source) => {
-                    writer.write({
-                        type: 'data-source',
-                        data: source,
-                    });
-                },
-                traceId,
-                chatId,
-                autoInvokableSkills: skills.filter((skill) => skill.autoInvoke),
-            });
+            // Connect to third-party MCP servers configured in config.json.
+            const mcpServers = await getConfiguredMcpServers();
+            const mcpConnectors = mcpServers.length > 0 ? await connectMcpServers(mcpServers) : undefined;
 
-            await mergeStreamAsync(researchStream, writer, {
-                sendReasoning: true,
-                sendStart: false,
-                sendFinish: false,
-            });
-
-            const totalUsage = await researchStream.totalUsage;
-
-            writer.write({
-                type: 'message-metadata',
-                messageMetadata: {
-                    totalTokens: totalUsage.totalTokens,
-                    totalInputTokens: totalUsage.inputTokens,
-                    totalOutputTokens: totalUsage.outputTokens,
-                    totalCacheReadTokens: totalUsage.inputTokenDetails?.cacheReadTokens,
-                    totalCacheWriteTokens: totalUsage.inputTokenDetails?.cacheWriteTokens,
-                    totalResponseTimeMs: new Date().getTime() - startTime.getTime(),
-                    modelName,
+            try {
+                const researchStream = await createAgentStream({
+                    model,
+                    providerOptions: modelProviderOptions,
+                    temperature: modelTemperature,
+                    inputMessages: messageHistory,
+                    inputSources: sources,
+                    selectedRepos,
+                    onWriteSource: (source) => {
+                        writer.write({
+                            type: 'data-source',
+                            data: source,
+                        });
+                    },
                     traceId,
-                    ...metadata,
-                }
-            });
+                    chatId,
+                    autoInvokableSkills: skills.filter((skill) => skill.autoInvoke),
+                    externalTools: mcpConnectors?.tools ?? {},
+                    externalServers: mcpConnectors?.servers ?? [],
+                });
+
+                await mergeStreamAsync(researchStream, writer, {
+                    sendReasoning: true,
+                    sendStart: false,
+                    sendFinish: false,
+                });
+
+                const totalUsage = await researchStream.totalUsage;
+
+                writer.write({
+                    type: 'message-metadata',
+                    messageMetadata: {
+                        totalTokens: totalUsage.totalTokens,
+                        totalInputTokens: totalUsage.inputTokens,
+                        totalOutputTokens: totalUsage.outputTokens,
+                        totalCacheReadTokens: totalUsage.inputTokenDetails?.cacheReadTokens,
+                        totalCacheWriteTokens: totalUsage.inputTokenDetails?.cacheWriteTokens,
+                        totalResponseTimeMs: new Date().getTime() - startTime.getTime(),
+                        modelName,
+                        traceId,
+                        ...metadata,
+                    }
+                });
+            } finally {
+                await mcpConnectors?.close();
+            }
 
             writer.write({
                 type: 'finish',
@@ -188,6 +199,9 @@ interface AgentOptions {
     traceId: string;
     chatId: string;
     autoInvokableSkills: LoadableSkill[];
+    /** Tools from third-party MCP servers. */
+    externalTools: Record<string, Tool>;
+    externalServers: ConnectedMcpServer[];
 }
 
 const createAgentStream = async ({
@@ -201,6 +215,8 @@ const createAgentStream = async ({
     traceId,
     chatId,
     autoInvokableSkills,
+    externalTools,
+    externalServers,
 }: AgentOptions) => {
     // For every file source, resolve the source code so that we can include it in the system prompt.
     const fileSources = inputSources.filter((source) => source.type === 'file');
@@ -231,11 +247,13 @@ const createAgentStream = async ({
         repos: selectedRepos,
         files: resolvedFileSources,
         skills: autoInvokableSkills,
+        externalServers,
     });
 
     const tools = {
         ...createTools({ source: 'sourcebot-ask-agent', selectedRepos }),
         [LOAD_SKILL_TOOL_NAME]: createLoadSkillTool(autoInvokableSkills),
+        ...externalTools,
     };
 
     const cacheStrategy = env.SOURCEBOT_CHAT_PROMPT_CACHING_ENABLED === 'true'
@@ -285,8 +303,10 @@ const createPrompt = ({
     files,
     repos,
     skills,
+    externalServers,
 }: {
     skills: LoadableSkill[],
+    externalServers: ConnectedMcpServer[],
     files?: {
         path: string;
         source: string;
@@ -345,6 +365,14 @@ const createPrompt = ({
 
         ${skills.map((skill) => `- ${skill.name}: ${skill.description.replace(/\s+/g, ' ')}`).join('\n')}
         </available_skills>
+    ` : ''}
+
+    ${externalServers.length > 0 ? dedent`
+        <external_tools>
+        In addition to the code tools, you have tools from the following external MCP servers. Their tool names are prefixed with the server name (e.g. \`server__tool\`). Use them when the user's question involves information from these systems (for example issues, documentation or internal services) rather than the code itself. Results from external tools are not code in the indexed repositories, so do not cite them with \`${FILE_REFERENCE_PREFIX}\` references; mention the source by name or link instead.
+
+        ${externalServers.map((server) => `- ${server.name}${server.description ? `: ${server.description.replace(/\s+/g, ' ')}` : ''}`).join('\n')}
+        </external_tools>
     ` : ''}
 
     <answer_instructions>
