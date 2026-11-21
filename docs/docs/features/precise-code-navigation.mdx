@@ -1,0 +1,63 @@
+---
+title: Precise code navigation
+sidebarTitle: Precise code navigation
+---
+
+**Precise code navigation** uses compiler-accurate [SCIP](https://github.com/scip-code/scip) indexes to power hover documentation, go to definition and find references. Unlike the search based [code navigation](/docs/features/code-navigation), results never include comments, strings or unrelated identifiers that happen to share a name.
+
+## How it works
+
+1. After a repository finishes indexing, the worker exports the default branch HEAD and runs the SCIP indexer(s) for the languages it detects.
+2. The resulting index is stored in the database (`ScipIndex`, `ScipOccurrence`, `ScipSymbol` tables). When a newer index completes, older ones for the same repository and indexer are removed.
+3. When viewing a file at a revision that has a precise index:
+   - hovering a symbol shows its signature and documentation;
+   - `Ctrl` / `Cmd` + click (or **Go to definition**) jumps to the definition, including definitions in other indexed repositories;
+   - **Find references** lists all references in the **Explore** panel.
+4. `/api/find_definitions`, `/api/find_references`, the MCP server and Ask's symbol tools prefer precise results when the repository has an index, and fall back to search based heuristics otherwise.
+
+Revisions without an index (e.g. other branches, or commits newer than the last index) fall back to search based navigation.
+
+## Supported languages
+
+| Language | Detected by | Indexer |
+|:---------|:------------|:--------|
+| TypeScript / JavaScript | `tsconfig.json`, `jsconfig.json`, `package.json` | [`scip-typescript`](https://github.com/sourcegraph/scip-typescript) |
+| Go | `go.mod` | [`scip-go`](https://github.com/scip-code/scip-go) |
+| Python | `pyproject.toml`, `setup.py`, `setup.cfg`, `requirements.txt`, `Pipfile` | [`scip-python`](https://github.com/sourcegraph/scip-python) |
+| Java / Kotlin / Scala | `pom.xml`, `build.gradle(.kts)`, `settings.gradle(.kts)`, `build.sbt` | [`scip-java`](https://github.com/sourcegraph/scip-java) |
+
+The indexers must be installed on the worker:
+
+```bash
+npm install -g @sourcegraph/scip-typescript @sourcegraph/scip-python
+go install github.com/scip-code/scip-go/cmd/scip-go@latest
+# scip-java: see https://sourcegraph.github.io/scip-java/docs/getting-started.html (requires a JDK)
+```
+
+Indexers that are not installed are skipped; the failure is recorded on the index and shown by `/api/precise_status`.
+
+<Warning>
+`scip-java` runs the repository's Maven / Gradle / sbt build, which executes code from the repository. It is disabled unless `PRECISE_CODE_NAV_ALLOW_BUILD_EXECUTION=true`. Only enable this for repositories you trust.
+</Warning>
+
+## Configuration
+
+| Environment variable | Default | Description |
+|:---------------------|:--------|:------------|
+| `PRECISE_CODE_NAV_ENABLED` | `true` | Generate precise indexes. |
+| `PRECISE_CODE_NAV_LANGUAGES` | `typescript,go,python,java` | Languages to index. |
+| `PRECISE_CODE_NAV_ALLOW_BUILD_EXECUTION` | `false` | Allow indexers that execute the repository's build (`scip-java`). |
+| `PRECISE_CODE_NAV_INDEXER_TIMEOUT_SECONDS` | `1800` | Timeout per indexer run. |
+| `PRECISE_CODE_NAV_JOB_CONCURRENCY` | `1` | Number of repositories indexed concurrently. |
+| `PRECISE_CODE_NAV_MAX_OCCURRENCES` | `5000000` | Indexes larger than this are rejected to protect the database. |
+| `SCIP_TYPESCRIPT_PATH`, `SCIP_GO_PATH`, `SCIP_PYTHON_PATH`, `SCIP_JAVA_PATH` | indexer name | Path to each indexer binary. |
+
+## API
+
+| Endpoint | Description |
+|:---------|:------------|
+| `POST /api/precise_status` | `{ repoName, revisionName? }` → whether a precise index exists for the revision, plus the status of recent indexes. |
+| `POST /api/precise_hover` | `{ repoName, revisionName?, path, line, character }` → symbol, signature and documentation at a position. |
+| `POST /api/precise_related` | Same as hover plus `kind: "definitions" \| "references"` → matches grouped by file. |
+
+Positions are 0-based; `character` is a UTF-16 offset within the line.

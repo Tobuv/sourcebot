@@ -80,6 +80,7 @@
                             },
                             "docs/features/mcp-server",
                             "docs/features/code-navigation",
+                            "docs/features/precise-code-navigation",
                             "docs/features/analytics",
                             "docs/features/permission-syncing",
                             {
