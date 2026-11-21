@@ -9,18 +9,35 @@ import { SearchResponse } from "../search/types";
 import { FindRelatedSymbolsRequest, FindRelatedSymbolsResponse } from "./types";
 import { QueryIR } from '../search/ir';
 import escapeStringRegexp from "escape-string-regexp";
+import { findPreciseRelatedSymbolsByName, toFindRelatedSymbolsResponse } from "../preciseCodeNav/api";
 
 // The maximum number of matches to return from the search API.
 const MAX_REFERENCE_COUNT = 1000;
 
 export const findSearchBasedSymbolReferences = async (props: FindRelatedSymbolsRequest): Promise<FindRelatedSymbolsResponse | ServiceError> => sew(() =>
-    withOptionalAuth(async () => {
+    withOptionalAuth(async ({ org, prisma }) => {
         const {
             symbolName,
             language,
             revisionName = "HEAD",
             repoName,
         } = props;
+
+        // Prefer precise (SCIP based) results when the repo has a precise index.
+        // Falls back to search based heuristics otherwise.
+        if (repoName) {
+            const precise = await findPreciseRelatedSymbolsByName({
+                prisma,
+                org,
+                repoName,
+                revisionName,
+                symbolName,
+                kind: 'references',
+            });
+            if (precise && !isServiceError(precise) && precise.matchCount > 0) {
+                return toFindRelatedSymbolsResponse(prisma, precise);
+            }
+        }
 
         const query: QueryIR = {
             and: {
@@ -68,13 +85,29 @@ export const findSearchBasedSymbolReferences = async (props: FindRelatedSymbolsR
 
 
 export const findSearchBasedSymbolDefinitions = async (props: FindRelatedSymbolsRequest): Promise<FindRelatedSymbolsResponse | ServiceError> => sew(() =>
-    withOptionalAuth(async () => {
+    withOptionalAuth(async ({ org, prisma }) => {
         const {
             symbolName,
             language,
             revisionName = "HEAD",
             repoName
         } = props;
+
+        // Prefer precise (SCIP based) results when the repo has a precise index.
+        // Falls back to search based heuristics otherwise.
+        if (repoName) {
+            const precise = await findPreciseRelatedSymbolsByName({
+                prisma,
+                org,
+                repoName,
+                revisionName,
+                symbolName,
+                kind: 'definitions',
+            });
+            if (precise && !isServiceError(precise) && precise.matchCount > 0) {
+                return toFindRelatedSymbolsResponse(prisma, precise);
+            }
+        }
 
         const query: QueryIR = {
             and: {

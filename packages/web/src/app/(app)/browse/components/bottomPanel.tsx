@@ -16,6 +16,7 @@ import { useBrowseState } from "../hooks/useBrowseState";
 import { useBrowseParams } from "../hooks/useBrowseParams";
 import { getBrowsePath } from "../hooks/utils";
 import { ExploreMenu } from "@/ee/features/codeNav/components/exploreMenu";
+import { PreciseExploreMenu } from "@/features/preciseCodeNav/components/preciseExploreMenu";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { History } from "lucide-react";
@@ -39,7 +40,7 @@ export const BottomPanel = ({ order }: BottomPanelProps) => {
     const router = useRouter();
 
     const {
-        state: { selectedSymbolInfo, isBottomPanelCollapsed, bottomPanelSize, activeBottomPanelTab },
+        state: { selectedSymbolInfo, preciseSymbolInfo, isBottomPanelCollapsed, bottomPanelSize, activeBottomPanelTab },
         updateBrowseState,
     } = useBrowseState();
 
@@ -169,7 +170,11 @@ export const BottomPanel = ({ order }: BottomPanelProps) => {
                 id={"bottom-panel"}
             >
                 {activeBottomPanelTab === "explore" ? (
-                    !hasCodeNavEntitlement ? (
+                    preciseSymbolInfo && !(hasCodeNavEntitlement && selectedSymbolInfo) ? (
+                        <PreciseExploreMenu
+                            symbol={preciseSymbolInfo}
+                        />
+                    ) : !hasCodeNavEntitlement ? (
                         <div className="flex flex-col items-center justify-center h-full text-muted-foreground gap-2">
                             <VscSymbolMisc className="w-6 h-6" />
                             <p className="text-sm">

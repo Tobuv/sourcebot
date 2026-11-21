@@ -17,6 +17,9 @@ import { BrowseHighlightRange, getBrowsePath, HIGHLIGHT_RANGE_QUERY_PARAM } from
 import { rangeHighlightingExtension } from "./rangeHighlightingExtension";
 import { blameGutterExtension } from "./blameGutterExtension";
 import type { FileBlameResponse } from "@/features/git";
+import { preciseCodeNavExtension } from "@/features/preciseCodeNav/components/preciseCodeNavExtension";
+import { usePreciseCodeNavHandlers } from "@/features/preciseCodeNav/components/usePreciseCodeNavHandlers";
+import { usePreciseCodeNavStatus } from "@/features/preciseCodeNav/components/usePreciseCodeNavStatus";
 
 interface PureCodePreviewPanelProps {
     path: string;
@@ -41,6 +44,18 @@ export const PureCodePreviewPanel = ({
     const keymapExtension = useKeymapExtension(editorRef?.view);
     const hasCodeNavEntitlement = useHasEntitlement("code-nav");
     const router = useRouter();
+
+    // Precise (SCIP based) navigation takes precedence when an index exists for this
+    // revision. Otherwise, fall back to search based navigation (if licensed).
+    const { isAvailable: isPreciseCodeNavAvailable } = usePreciseCodeNavStatus(repoName, revisionName);
+    const preciseCodeNavHandlers = usePreciseCodeNavHandlers();
+    const isSearchBasedCodeNavEnabled = hasCodeNavEntitlement && !isPreciseCodeNavAvailable;
+    const preciseExtension = useMemo(() => {
+        if (!isPreciseCodeNavAvailable) {
+            return [];
+        }
+        return preciseCodeNavExtension({ repoName, revisionName, path }, preciseCodeNavHandlers);
+    }, [isPreciseCodeNavAvailable, repoName, revisionName, path, preciseCodeNavHandlers]);
 
     const handleBlameCommitClick = useCallback((commit: { hash: string; path: string }) => {
         router.push(getBrowsePath({
@@ -123,7 +138,8 @@ export const PureCodePreviewPanel = ({
                 }
             }),
             highlightRange ? rangeHighlightingExtension(highlightRange) : [],
-            hasCodeNavEntitlement ? symbolHoverTargetsExtension : [],
+            isSearchBasedCodeNavEnabled ? symbolHoverTargetsExtension : [],
+            preciseExtension,
             blame ? blameGutterExtension(
                 blame,
                 handleBlameCommitClick,
@@ -134,7 +150,8 @@ export const PureCodePreviewPanel = ({
         keymapExtension,
         languageExtension,
         highlightRange,
-        hasCodeNavEntitlement,
+        isSearchBasedCodeNavEnabled,
+        preciseExtension,
         blame,
         handleBlameCommitClick,
         handleBlameReblameClick,
@@ -200,7 +217,7 @@ export const PureCodePreviewPanel = ({
                         revisionName={revisionName}
                     />
                 )}
-                {editorRef && hasCodeNavEntitlement && (
+                {editorRef && isSearchBasedCodeNavEnabled && (
                     <SymbolHoverPopup
                         source="preview"
                         editorRef={editorRef}

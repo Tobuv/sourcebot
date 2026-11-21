@@ -2,6 +2,7 @@
 
 import { useNonEmptyQueryParam } from "@/hooks/useNonEmptyQueryParam";
 import { createContext, useCallback, useEffect, useState } from "react";
+import type { SymbolPosition } from "@/features/preciseCodeNav/types";
 
 export interface BrowseState {
     selectedSymbolInfo?: {
@@ -9,6 +10,10 @@ export interface BrowseState {
         repoName: string;
         revisionName: string;
         language: string;
+    }
+    /** Symbol selected through precise (SCIP based) code navigation. */
+    preciseSymbolInfo?: SymbolPosition & {
+        displayName: string;
     }
     isBottomPanelCollapsed: boolean;
     isFileTreePanelCollapsed: boolean;
@@ -20,6 +25,7 @@ export interface BrowseState {
 
 const defaultState: BrowseState = {
     selectedSymbolInfo: undefined,
+    preciseSymbolInfo: undefined,
     isBottomPanelCollapsed: true,
     isFileTreePanelCollapsed: false,
     isFileSearchOpen: false,
