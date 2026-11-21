@@ -75,6 +75,8 @@ model Repo {
 
   searchContexts SearchContext[]
 
+  scipIndexes ScipIndex[]
+
   @@unique([external_id, external_codeHostUrl, orgId])
   @@index([orgId])
   @@index([indexedAt])
@@ -661,4 +663,78 @@ model CustomLanguageModel {
 
   @@index([orgId, scope])
   @@index([createdById])
+}
+
+enum ScipIndexStatus {
+  PENDING
+  IN_PROGRESS
+  COMPLETED
+  FAILED
+}
+
+/// A precise code intelligence index (SCIP) generated for one language of a repo at a specific commit.
+model ScipIndex {
+  id String @id @default(cuid())
+
+  repo   Repo @relation(fields: [repoId], references: [id], onDelete: Cascade)
+  repoId Int
+
+  /// The indexer used to produce this index (e.g. "scip-typescript", "scip-go").
+  indexer    String
+  /// The commit the index was generated from.
+  commitHash String
+  status     ScipIndexStatus @default(PENDING)
+  error      String?
+
+  documentCount   Int @default(0)
+  occurrenceCount Int @default(0)
+
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  completedAt DateTime?
+
+  occurrences ScipOccurrence[]
+  symbols     ScipSymbol[]
+
+  @@index([repoId, status])
+  @@index([repoId, indexer])
+}
+
+/// A single occurrence of a symbol in a document. Positions are 0-based and use UTF-16 code units.
+model ScipOccurrence {
+  id BigInt @id @default(autoincrement())
+
+  index   ScipIndex @relation(fields: [indexId], references: [id], onDelete: Cascade)
+  indexId String
+
+  filePath  String
+  symbol    String
+  /// Bitset of SCIP SymbolRole values (1 = Definition, 2 = Import, 4 = WriteAccess, 8 = ReadAccess, ...).
+  roles     Int
+  startLine Int
+  startChar Int
+  endLine   Int
+  endChar   Int
+
+  @@index([indexId, filePath, startLine])
+  @@index([symbol])
+}
+
+/// Documentation / metadata for a symbol defined in an index.
+model ScipSymbol {
+  id BigInt @id @default(autoincrement())
+
+  index   ScipIndex @relation(fields: [indexId], references: [id], onDelete: Cascade)
+  indexId String
+
+  symbol        String
+  /// The last descriptor name of the symbol (e.g. "getRepoPath"). Used for name based lookups.
+  name          String
+  displayName   String?
+  kind          String?
+  signature     String?
+  documentation String?
+
+  @@index([symbol])
+  @@index([indexId, name])
 }

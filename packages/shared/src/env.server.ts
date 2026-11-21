@@ -318,6 +318,24 @@ const options = {
         FALLBACK_GITLAB_CLOUD_TOKEN: z.string().optional(),
         FALLBACK_GITEA_CLOUD_TOKEN: z.string().optional(),
 
+        // Precise code navigation (SCIP)
+        PRECISE_CODE_NAV_ENABLED: booleanSchema.default('true'),
+        /** Comma separated list of languages to index. Supported: typescript, go, python, java */
+        PRECISE_CODE_NAV_LANGUAGES: z.string().default('typescript,go,python,java'),
+        /**
+         * scip-java (Maven / Gradle / sbt) executes the repository's build, i.e. arbitrary code
+         * from the repository. It is therefore disabled unless explicitly allowed.
+         */
+        PRECISE_CODE_NAV_ALLOW_BUILD_EXECUTION: booleanSchema.default('false'),
+        PRECISE_CODE_NAV_INDEXER_TIMEOUT_SECONDS: numberSchema.default(60 * 30),
+        PRECISE_CODE_NAV_JOB_CONCURRENCY: numberSchema.default(1),
+        /** Indexes producing more occurrences than this are rejected to protect the database. */
+        PRECISE_CODE_NAV_MAX_OCCURRENCES: numberSchema.default(5_000_000),
+        SCIP_TYPESCRIPT_PATH: z.string().default('scip-typescript'),
+        SCIP_GO_PATH: z.string().default('scip-go'),
+        SCIP_PYTHON_PATH: z.string().default('scip-python'),
+        SCIP_JAVA_PATH: z.string().default('scip-java'),
+
         REDIS_URL: z.string().url().default("redis://localhost:6379"),
         REDIS_REMOVE_ON_COMPLETE: numberSchema.default(0),
         REDIS_REMOVE_ON_FAIL: numberSchema.default(100),

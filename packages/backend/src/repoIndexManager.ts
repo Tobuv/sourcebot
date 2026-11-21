@@ -57,6 +57,10 @@ export class RepoIndexManager {
         private settings: Settings,
         redis: Redis,
         private promClient: PromClient,
+        private hooks: {
+            /** Called after a repo was successfully indexed at `commitHash` (HEAD). */
+            onRepoIndexed?: (repo: Repo, commitHash: string) => Promise<void>;
+        } = {},
     ) {
         this.abortController = new AbortController();
 
@@ -597,6 +601,12 @@ export class RepoIndexManager {
                 });
 
                 logger.debug(`Completed index job ${job.data.jobId} for repo ${repo.name} (id: ${repo.id})`);
+
+                if (commitHash && this.hooks.onRepoIndexed) {
+                    await this.hooks.onRepoIndexed(repo, commitHash).catch((error) => {
+                        logger.error(`onRepoIndexed hook failed for repo ${repo.name} (id: ${repo.id}):`, error);
+                    });
+                }
             }
             else if (jobData.type === RepoIndexingJobType.CLEANUP) {
                 const repo = await this.db.repo.delete({

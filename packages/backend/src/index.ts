@@ -18,6 +18,7 @@ import { shutdownPosthog } from "./posthog.js";
 import { PromClient } from './promClient.js';
 import { RepoIndexManager } from "./repoIndexManager.js";
 import { redis } from "./redis.js";
+import { ScipIndexManager } from "./scip/scipIndexManager.js";
 
 const logger = createLogger('backend-entrypoint');
 
@@ -58,12 +59,18 @@ if (hasEntitlement('github-app')) {
 const connectionManager = new ConnectionManager(prisma, settings, redis, promClient);
 const repoPermissionSyncer = new RepoPermissionSyncer(prisma, settings, redis);
 const accountPermissionSyncer = new AccountPermissionSyncer(prisma, settings, redis);
-const repoIndexManager = new RepoIndexManager(prisma, settings, redis, promClient);
+const scipIndexManager = ScipIndexManager.isEnabled() ? new ScipIndexManager(prisma, redis) : undefined;
+const repoIndexManager = new RepoIndexManager(prisma, settings, redis, promClient, {
+    onRepoIndexed: async (repo, commitHash) => {
+        await scipIndexManager?.enqueue(repo, commitHash);
+    },
+});
 const configManager = new ConfigManager(prisma, connectionManager, env.CONFIG_PATH);
 const auditLogPruner = new AuditLogPruner(prisma);
 
 connectionManager.startScheduler();
 await repoIndexManager.startScheduler();
+await scipIndexManager?.startScheduler();
 auditLogPruner.startScheduler();
 
 if (env.PERMISSION_SYNC_ENABLED === 'true' && !hasEntitlement('permission-syncing')) {
@@ -102,6 +109,7 @@ const listenToShutdownSignals = () => {
             logger.info(`Received ${signal}, cleaning up...`);
 
             await repoIndexManager.dispose()
+            await scipIndexManager?.dispose()
             await connectionManager.dispose()
             await repoPermissionSyncer.dispose()
             await accountPermissionSyncer.dispose()

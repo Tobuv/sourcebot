@@ -1345,6 +1345,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@bufbuild/protobuf@npm:^2.11.0":
+  version: 2.17.0
+  resolution: "@bufbuild/protobuf@npm:2.17.0"
+  checksum: 10c0/29140e179408e9ed8601843f6c423658bd130e5cc2e4da470b7a305e4500054872f6f5f62884dc8a1652e85beed19bd5ba6d9482c323e773db84a6c26c183957
+  languageName: node
+  linkType: hard
+
 "@cfworker/json-schema@npm:^4.0.2":
   version: 4.1.1
   resolution: "@cfworker/json-schema@npm:4.1.1"
@@ -7584,6 +7591,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@scip-code/scip@npm:^0.10.0":
+  version: 0.10.0
+  resolution: "@scip-code/scip@npm:0.10.0"
+  dependencies:
+    "@bufbuild/protobuf": "npm:^2.11.0"
+  checksum: 10c0/1e336c65bfb0fba75d285f9ed483f7f94e416f82127e278b19c9875952365b1cf2485e077b29d8c6a23cfad37ea51e41d85c04acca74b4da46fcad99e923fc8e
+  languageName: node
+  linkType: hard
+
 "@selderee/plugin-htmlparser2@npm:^0.11.0":
   version: 0.11.0
   resolution: "@selderee/plugin-htmlparser2@npm:0.11.0"
@@ -8686,10 +8702,12 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@sourcebot/backend@workspace:packages/backend"
   dependencies:
+    "@bufbuild/protobuf": "npm:^2.11.0"
     "@coderabbitai/bitbucket": "npm:^1.1.3"
     "@gitbeaker/rest": "npm:^40.5.1"
     "@octokit/app": "npm:^16.1.1"
     "@octokit/rest": "npm:^21.0.2"
+    "@scip-code/scip": "npm:^0.10.0"
     "@sentry/cli": "npm:^2.42.2"
     "@sentry/node": "npm:^10.40.0"
     "@sentry/profiling-node": "npm:^10.40.0"
