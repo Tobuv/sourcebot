@@ -15,9 +15,70 @@ ARG NEXT_PUBLIC_LANGFUSE_PUBLIC_KEY
 ARG NEXT_PUBLIC_LANGFUSE_BASE_URL
 ARG NEXT_PUBLIC_BUILD_COMMIT_SHA
 
+# SCIP indexers to bundle for precise code navigation (comma separated).
+# Supported: typescript, python, go, java. Use an empty value to bundle none.
+# Approximate image size added: typescript + python ~85MB, go ~300MB (scip-go needs the
+# Go toolchain at runtime to load packages), java ~425MB (JDK, Maven and scip-java).
+# scip-java executes the repository's build, so it additionally requires
+# PRECISE_CODE_NAV_ALLOW_BUILD_EXECUTION=true at runtime.
+# @see: docs/docs/features/precise-code-navigation.mdx
+ARG PRECISE_CODE_NAV_INDEXERS="typescript,python,go"
+ARG SCIP_TYPESCRIPT_VERSION=0.6.2
+ARG SCIP_PYTHON_VERSION=0.6.8
+ARG SCIP_GO_VERSION=v0.2.10
+ARG SCIP_JAVA_VERSION=0.12.3
+ARG COURSIER_VERSION=v2.1.24
+
 FROM node:24-alpine3.23 AS node-alpine
 FROM golang:1.25-alpine AS go-alpine
+# scip-go requires Go >= 1.26.
+FROM golang:1.26-alpine AS go-scip-alpine
 # ----------------------------------
+
+# ------ SCIP indexers (precise code navigation) ------
+# Each stage writes its output to /out, which stays empty when the
+# corresponding language isn't selected so that it adds nothing to the image.
+FROM node-alpine AS scip-node-builder
+ARG PRECISE_CODE_NAV_INDEXERS
+ARG SCIP_TYPESCRIPT_VERSION
+ARG SCIP_PYTHON_VERSION
+RUN mkdir -p /out && \
+    packages=""; \
+    case ",$PRECISE_CODE_NAV_INDEXERS," in *,typescript,*) packages="$packages @sourcegraph/scip-typescript@$SCIP_TYPESCRIPT_VERSION";; esac; \
+    case ",$PRECISE_CODE_NAV_INDEXERS," in *,python,*) packages="$packages @sourcegraph/scip-python@$SCIP_PYTHON_VERSION";; esac; \
+    if [ -n "$packages" ]; then \
+        mkdir -p /out/scip-node && cd /out/scip-node && \
+        npm init -y > /dev/null && \
+        npm install --omit=dev --no-audit --no-fund $packages && \
+        rm -rf /root/.npm; \
+    fi
+
+FROM go-scip-alpine AS scip-go-builder
+ARG PRECISE_CODE_NAV_INDEXERS
+ARG SCIP_GO_VERSION
+# scip-go shells out to `go` to load packages, so the toolchain is bundled as well.
+RUN mkdir -p /out && \
+    case ",$PRECISE_CODE_NAV_INDEXERS," in *,go,*) \
+        CGO_ENABLED=0 GOBIN=/out/scip-bin go install github.com/scip-code/scip-go/cmd/scip-go@$SCIP_GO_VERSION && \
+        cp -a /usr/local/go /out/go && \
+        rm -rf /root/go /root/.cache;; \
+    esac
+
+FROM node-alpine AS scip-java-builder
+ARG PRECISE_CODE_NAV_INDEXERS
+ARG SCIP_JAVA_VERSION
+ARG COURSIER_VERSION
+RUN mkdir -p /out && \
+    case ",$PRECISE_CODE_NAV_INDEXERS," in *,java,*) \
+        apk add --no-cache openjdk17-jre-headless curl && \
+        curl -fsSL -o /tmp/coursier "https://github.com/coursier/coursier/releases/download/$COURSIER_VERSION/coursier" && \
+        chmod +x /tmp/coursier && \
+        mkdir -p /out/scip-bin && \
+        /tmp/coursier bootstrap --standalone -o /out/scip-bin/scip-java \
+            "com.sourcegraph:scip-java_2.13:$SCIP_JAVA_VERSION" \
+            --main com.sourcegraph.scip_java.ScipJava;; \
+    esac
+# ----------------------------------------------------
 
 # ------ Build Zoekt ------
 FROM go-alpine AS zoekt-builder
@@ -182,6 +243,27 @@ ENV SOURCEBOT_LOG_LEVEL=info
 # Configure dependencies
 RUN apk add --no-cache git ca-certificates bind-tools tini jansson wget supervisor uuidgen curl perl jq redis postgresql16 postgresql16-contrib openssl util-linux unzip && \
     apk upgrade --no-cache
+
+# Configure SCIP indexers (precise code navigation)
+ARG PRECISE_CODE_NAV_INDEXERS
+ENV PRECISE_CODE_NAV_LANGUAGES=$PRECISE_CODE_NAV_INDEXERS
+# scip-java needs a JDK and the build tool to compile the project, and bash for
+# the javac wrapper it injects into the build.
+RUN case ",$PRECISE_CODE_NAV_INDEXERS," in *,java,*) apk add --no-cache openjdk17-jdk maven bash;; esac
+ENV JAVA_HOME=/usr/lib/jvm/java-17-openjdk
+COPY --from=scip-node-builder /out/ /opt/
+COPY --from=scip-go-builder /out/ /opt/
+COPY --from=scip-java-builder /out/ /opt/
+RUN mkdir -p /opt/scip-bin && \
+    for bin in scip-typescript scip-python; do \
+        if [ -e "/opt/scip-node/node_modules/.bin/$bin" ]; then ln -s "/opt/scip-node/node_modules/.bin/$bin" "/opt/scip-bin/$bin"; fi; \
+    done
+ENV PATH=/opt/scip-bin:/opt/go/bin:$PATH
+# Keep downloaded dependencies (Go modules, Maven artifacts) on the data volume
+# so they survive restarts and aren't re-downloaded for every index.
+ENV GOPATH=$DATA_CACHE_DIR/scip-cache/go
+ENV GOCACHE=$DATA_CACHE_DIR/scip-cache/go-build
+ENV MAVEN_OPTS="-Dmaven.repo.local=$DATA_CACHE_DIR/scip-cache/m2"
 
 # Remove npm (unused — we use Yarn). The Node.js base image bundles npm
 # with its own transitive dependencies (minimatch, tar, picomatch, etc.)

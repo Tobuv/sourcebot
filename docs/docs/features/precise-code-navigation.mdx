@@ -26,6 +26,29 @@ Revisions without an index (e.g. other branches, or commits newer than the last 
 | Python | `pyproject.toml`, `setup.py`, `setup.cfg`, `requirements.txt`, `Pipfile` | [`scip-python`](https://github.com/sourcegraph/scip-python) |
 | Java / Kotlin / Scala | `pom.xml`, `build.gradle(.kts)`, `settings.gradle(.kts)`, `build.sbt` | [`scip-java`](https://github.com/sourcegraph/scip-java) |
 
+### Docker image
+
+The Docker image bundles the indexers selected by the `PRECISE_CODE_NAV_INDEXERS` build argument (default: `typescript,python,go`). Java is not bundled by default since it executes the repository's build and adds a JDK and Maven.
+
+| Indexers | Approximate image size added |
+|:---------|:-----------------------------|
+| `typescript`, `python` | ~85MB |
+| `go` (includes the Go toolchain, needed at runtime) | ~300MB |
+| `java` (includes a JDK, Maven and scip-java) | ~425MB |
+
+
+```bash
+# Bundle all indexers
+docker build --build-arg PRECISE_CODE_NAV_INDEXERS=typescript,python,go,java -t sourcebot .
+
+# Bundle none
+docker build --build-arg PRECISE_CODE_NAV_INDEXERS= -t sourcebot .
+```
+
+`PRECISE_CODE_NAV_LANGUAGES` defaults to the bundled set. Go modules and Maven artifacts downloaded while indexing are cached under `$DATA_CACHE_DIR/scip-cache`.
+
+### Running outside Docker
+
 The indexers must be installed on the worker:
 
 ```bash
