@@ -5,6 +5,7 @@ import { measure } from '@/lib/utils'
 import { highlightCode } from '@/lib/codeHighlight'
 import { SourceRange } from '@/features/search'
 import { CopyIconButton } from './copyIconButton'
+import { useTranslations } from "next-intl";
 
 interface LightweightCodeHighlighter {
     language: string;
@@ -30,6 +31,7 @@ const MAX_NUMBER_OF_CHARACTER_PER_LINE = 1000;
  * Inspired by: https://github.com/craftzdog/react-codemirror-runmode
  */
 export const LightweightCodeHighlighter = memo<LightweightCodeHighlighter>((props: LightweightCodeHighlighter) => {
+    const t = useTranslations('shared');
     const {
         language,
         children: code,
@@ -118,7 +120,7 @@ export const LightweightCodeHighlighter = memo<LightweightCodeHighlighter>((prop
     if (isFileTooLargeToDisplay) {
         return (
             <div className="font-mono text-sm px-2">
-                File too large to display in preview.
+                {t('fileTooLarge')}
             </div>
         );
     }

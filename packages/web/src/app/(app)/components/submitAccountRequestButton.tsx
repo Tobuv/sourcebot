@@ -7,9 +7,12 @@ import { useToast } from "@/components/hooks/use-toast"
 import { createAccountRequest } from "@/actions"
 import { isServiceError } from "@/lib/utils"
 import { useRouter } from "next/navigation"
+import { useTranslations } from "next-intl";
 
 
 export function SubmitAccountRequestButton() {
+    const t = useTranslations('shared');
+    const tCommon = useTranslations('common');
     const { toast } = useToast()
     const router = useRouter()
     const [isSubmitting, setIsSubmitting] = useState(false)
@@ -20,14 +23,14 @@ export function SubmitAccountRequestButton() {
         if (!isServiceError(result)) {
             if (result.existingRequest) {
                 toast({
-                    title: "Request Already Submitted",
-                    description: "Your request to join the organization has already been submitted. Please wait for it to be approved.",
+                    title: t('requestAlreadySubmitted'),
+                    description: t('requestAlreadySubmittedDescription'),
                     variant: "default",
                 })
             } else {
                 toast({
-                    title: "Request Submitted",
-                    description: "Your request to join the organization has been submitted.",
+                    title: t('requestSubmitted'),
+                    description: t('requestSubmittedDescription'),
                     variant: "default",
                 })
             }
@@ -35,8 +38,8 @@ export function SubmitAccountRequestButton() {
             router.refresh()
         } else {
             toast({
-                title: "Failed to Submit",
-                description: `There was an error submitting your request. Reason: ${result.message}`,
+                title: t('failedToSubmit'),
+                description: t('failedToSubmitDescription', { reason: result.message }),
                 variant: "destructive",
             })
         }
@@ -55,7 +58,7 @@ export function SubmitAccountRequestButton() {
                 disabled={isSubmitting}
             >
                 <Clock className="h-4 w-4" />
-                {isSubmitting ? "Submitting..." : "Submit Request"}
+                {isSubmitting ? tCommon('submitting') : t('submitRequest')}
             </Button>
         </form>
     )

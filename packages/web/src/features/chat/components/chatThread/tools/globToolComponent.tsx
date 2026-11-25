@@ -7,17 +7,19 @@ import { HoverCard, HoverCardContent, HoverCardTrigger } from "@/components/ui/h
 import { Separator } from "@/components/ui/separator";
 import { RepoHeader } from "./repoHeader";
 import { FileRow } from "./fileRow";
+import { useTranslations } from "next-intl";
 
 export const GlobToolComponent = (output: ToolResult<GlobMetadata>) => {
+    const t = useTranslations('chatTools');
     const stats = useMemo(() => {
         const { fileCount, repoCount } = output.metadata;
-        const fileLabel = `${fileCount} ${fileCount === 1 ? 'file' : 'files'}`;
+        const fileLabel = t('files', { count: fileCount });
         if (fileCount === 0 || repoCount <= 1) {
             return fileLabel;
         }
-        const repoLabel = `${repoCount} ${repoCount === 1 ? 'repo' : 'repos'}`;
+        const repoLabel = t('repos', { count: repoCount });
         return `${fileLabel} · ${repoLabel}`;
-    }, [output]);
+    }, [output, t]);
 
     const filesByRepo = useMemo(() => {
         const groups = new Map<string, GlobFile[]>();
@@ -36,9 +38,9 @@ export const GlobToolComponent = (output: ToolResult<GlobMetadata>) => {
                 <div className="flex-1 min-w-0">
                     <HoverCardTrigger asChild>
                         <span className="flex items-center gap-1.5 text-sm text-muted-foreground min-w-0 overflow-hidden">
-                            <span className="flex-shrink-0">Searched files</span>
+                            <span className="flex-shrink-0">{t('searchedFiles')}</span>
                             <code className="text-xs bg-muted px-1 py-0.5 rounded truncate text-foreground max-w-[300px]">{output.metadata.pattern}</code>
-                            {output.metadata.inputRepo && <><span className="flex-shrink-0">in</span><RepoBadge repo={output.metadata.inputRepo} /></>}
+                            {output.metadata.inputRepo && <><span className="flex-shrink-0">{t('in')}</span><RepoBadge repo={output.metadata.inputRepo} /></>}
                         </span>
                     </HoverCardTrigger>
                 </div>

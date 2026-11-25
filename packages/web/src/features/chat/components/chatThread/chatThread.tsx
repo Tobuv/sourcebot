@@ -33,6 +33,7 @@ import type { IdentityProviderMetadata } from '@/lib/identityProviders';
 import { getAskGhLoginWallData } from '../../actions';
 import type { TextAttachment } from "../../attachments";
 import type { ImageAttachment } from "../../imageAttachments";
+import { useTranslations } from "next-intl";
 
 type ChatHistoryState = {
     scrollOffset?: number;
@@ -67,6 +68,8 @@ export const ChatThread = ({
     isAuthenticated = false,
     chatName,
 }: ChatThreadProps) => {
+    const t = useTranslations('chatThread');
+    const tChat = useTranslations('chat');
     const [isErrorBannerVisible, setIsErrorBannerVisible] = useState(false);
     const hasSubmittedInputMessage = useRef(false);
     const { scrollRef, contentRef, scrollToBottom, isAtBottom } = useStickToBottom({ initial: false });
@@ -119,7 +122,7 @@ export const ChatThread = ({
     const sendMessage = useCallback((message: CreateUIMessage<SBChatMessage>) => {
         if (!selectedLanguageModel) {
             toast({
-                description: "Failed to send message. No language model selected.",
+                description: t('noModelSelected'),
                 variant: "destructive",
             });
             return;
@@ -152,7 +155,7 @@ export const ChatThread = ({
             ).then((response) => {
                 if (isServiceError(response)) {
                     toast({
-                        description: `❌ Failed to generate chat name. Reason: ${response.message}`,
+                        description: t('generateNameFailed', { reason: response.message }),
                         variant: "destructive",
                     });
                 }
@@ -167,7 +170,7 @@ export const ChatThread = ({
         messages.length,
         toast,
         chatId,
-        router,
+        router, t
     ]);
 
 
@@ -337,7 +340,7 @@ export const ChatThread = ({
         const result = await duplicateChat({ chatId: defaultChatId, newName });
         if (isServiceError(result)) {
             toast({
-                description: `Failed to duplicate chat: ${result.message}`,
+                description: t('duplicateFailed', { reason: result.message }),
                 variant: "destructive",
             });
             return null;
@@ -346,7 +349,7 @@ export const ChatThread = ({
         captureEvent('wa_chat_duplicated', { chatId: defaultChatId });
         router.push(`/chat/${result.id}`);
         return result.id;
-    }, [defaultChatId, toast, router, captureEvent]);
+    }, [defaultChatId, toast, router, captureEvent, t]);
 
     return (
         <>
@@ -367,7 +370,7 @@ export const ChatThread = ({
                         {
                             messagePairs.length === 0 ? (
                                 <div className="flex items-center justify-center text-center h-full min-h-full">
-                                    <p className="text-muted-foreground">no messages</p>
+                                    <p className="text-muted-foreground">{t('noMessages')}</p>
                                 </div>
                             ) : (
                                 <>
@@ -456,7 +459,7 @@ export const ChatThread = ({
                     </>
                 ) : (
                     <div className="flex flex-row items-center justify-center gap-3 p-4 border rounded-md bg-muted/50">
-                        <p className="text-sm text-muted-foreground">This chat is read-only.</p>
+                        <p className="text-sm text-muted-foreground">{t('readOnly')}</p>
                         <Button
                             variant="outline"
                             size="sm"
@@ -464,13 +467,13 @@ export const ChatThread = ({
                             onClick={() => setIsDuplicateDialogOpen(true)}
                         >
                             <CopyIcon className="h-4 w-4" />
-                            Duplicate
+                            {t('duplicate')}
                         </Button>
                         <DuplicateChatDialog
                             isOpen={isDuplicateDialogOpen}
                             onOpenChange={setIsDuplicateDialogOpen}
                             onDuplicate={onDuplicate}
-                            currentName={chatName ?? 'Untitled chat'}
+                            currentName={chatName ?? tChat('untitled')}
                         />
                     </div>
                 )}

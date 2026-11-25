@@ -8,6 +8,7 @@ import { createPortal } from "react-dom";
 import { VscFiles } from "react-icons/vsc";
 import { FileSuggestion, RefineSuggestion, SkillSuggestion, Suggestion } from "./types";
 import { SparklesIcon } from "lucide-react";
+import { useTranslations } from "next-intl";
 
 interface SuggestionBoxProps {
     selectedIndex: number;
@@ -22,8 +23,9 @@ export const SuggestionBox = forwardRef<HTMLDivElement, SuggestionBoxProps>(({
     onInsertSuggestion,
     isLoading,
     suggestions,
-    emptyMessage = "No results found",
+    emptyMessage,
 }, ref) => {
+    const t = useTranslations('chatBox');
 
     return createPortal(
         <div
@@ -43,7 +45,7 @@ export const SuggestionBox = forwardRef<HTMLDivElement, SuggestionBoxProps>(({
                 (suggestions.length === 0) ? (
                     <div className="flex flex-col gap-2 px-1 py-0.5 w-full">
                         <p className="text-sm text-muted-foreground">
-                            {emptyMessage}
+                            {emptyMessage ?? t('noResults')}
                         </p>
                     </div>
                 ) :
@@ -103,6 +105,7 @@ const FileSuggestionListItem = ({ file }: { file: FileSuggestion }) => {
 }
 
 const SkillSuggestionListItem = ({ skill }: { skill: SkillSuggestion }) => {
+    const t = useTranslations('chatBox');
     return (
         <>
             <SparklesIcon className="w-4 h-4 flex-shrink-0 mt-1" />
@@ -110,7 +113,7 @@ const SkillSuggestionListItem = ({ skill }: { skill: SkillSuggestion }) => {
                 <span className="text-sm font-medium font-mono">
                     /{skill.name}
                     {skill.scope === 'WORKSPACE' && (
-                        <span className="ml-2 font-sans text-xs font-normal text-muted-foreground">workspace</span>
+                        <span className="ml-2 font-sans text-xs font-normal text-muted-foreground">{t('workspaceSkill')}</span>
                     )}
                 </span>
                 <span className="text-xs text-muted-foreground line-clamp-2">

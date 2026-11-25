@@ -1,4 +1,14 @@
-import { Suggestion } from "./searchSuggestionsBox";
+/**
+ * A suggestion whose description is a message key in the `searchBar` namespace,
+ * translated where it is rendered.
+ */
+export type TranslatableSuggestion = {
+    value: string;
+    descriptionKey:
+        | 'modes.visibilityPublic' | 'modes.visibilityPrivate' | 'modes.visibilityAny'
+        | 'modes.forkYes' | 'modes.forkNo' | 'modes.forkOnly'
+        | 'modes.archivedYes' | 'modes.archivedNo' | 'modes.archivedOnly';
+}
 
 /**
  * List of search prefixes that can be used while the
@@ -21,48 +31,48 @@ export enum SearchPrefix {
     context = "context:",
 }
 
-export const visibilityModeSuggestions: Suggestion[] = [
+export const visibilityModeSuggestions: TranslatableSuggestion[] = [
     {
         value: "public",
-        description: "Only include results from public repositories."
+        descriptionKey: 'modes.visibilityPublic'
     },
     {
         value: "private",
-        description: "Only include results from private repositories."
+        descriptionKey: 'modes.visibilityPrivate'
     },
     {
         value: "any",
-        description: "Include results from both public and private repositories (default)."
+        descriptionKey: 'modes.visibilityAny'
     },
 ];
 
-export const forkModeSuggestions: Suggestion[] = [
+export const forkModeSuggestions: TranslatableSuggestion[] = [
     {
         value: "yes",
-        description: "Include results from forked repositories (default)."
+        descriptionKey: 'modes.forkYes'
     },
     {
         value: "no",
-        description: "Exclude results from forked repositories."
+        descriptionKey: 'modes.forkNo'
     },
     {
         value: "only",
-        description: "Only include results from forked repositories."
+        descriptionKey: 'modes.forkOnly'
     }
 ];
 
-export const archivedModeSuggestions: Suggestion[] = [
+export const archivedModeSuggestions: TranslatableSuggestion[] = [
     {
         value: "yes",
-        description: "Include results from archived repositories (default)."
+        descriptionKey: 'modes.archivedYes'
     },
     {
         value: "no",
-        description: "Exclude results from archived repositories."
+        descriptionKey: 'modes.archivedNo'
     },
     {
         value: "only",
-        description: "Only include results from archived repositories."
+        descriptionKey: 'modes.archivedOnly'
     }
 ];
 

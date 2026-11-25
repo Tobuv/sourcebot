@@ -4,15 +4,17 @@ import { FindSymbolDefinitionsMetadata, ToolResult } from "@/features/tools";
 import { Separator } from "@/components/ui/separator";
 import { VscSymbolMisc } from "react-icons/vsc";
 import { RepoBadge } from "./repoBadge";
+import { useTranslations } from "next-intl";
 
 export const FindSymbolDefinitionsToolComponent = ({ metadata }: ToolResult<FindSymbolDefinitionsMetadata>) => {
-    const label = `${metadata.matchCount} ${metadata.matchCount === 1 ? 'definition' : 'definitions'}`;
+    const t = useTranslations('chatTools');
+    const label = t('definitions', { count: metadata.matchCount });
 
     return (
         <div className="flex items-center gap-2 select-none cursor-default text-sm text-muted-foreground">
-            <span className="flex-shrink-0">Resolved</span>
+            <span className="flex-shrink-0">{t('resolved')}</span>
             <code className="inline-flex items-center gap-1 text-xs bg-muted px-1 py-0.5 rounded truncate text-foreground max-w-[300px]"><VscSymbolMisc className="flex-shrink-0" />{metadata.symbol}</code>
-            <span className="flex-shrink-0">in</span>
+            <span className="flex-shrink-0">{t('in')}</span>
             <RepoBadge repo={metadata.repoInfo} />
             <span className="flex-1" />
             <span className="text-xs flex-shrink-0">{label}</span>

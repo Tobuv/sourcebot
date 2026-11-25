@@ -26,14 +26,17 @@ import {
 } from "lucide-react"
 import Image from "next/image"
 import Link from "next/link"
-import { useCallback, useState } from "react"
+import { useCallback, useMemo, useState } from "react"
+import { useTranslations } from "next-intl"
 
 
 
 
 
 
-const tutorialSteps = [
+type TutorialTranslator = ReturnType<typeof useTranslations<'chatTutorial'>>;
+
+const getTutorialSteps = (t: TutorialTranslator) => [
     {
         leftContent: (
             <div className="flex flex-col h-full p-8 justify-between gap-4">
@@ -42,11 +45,10 @@ const tutorialSteps = [
                         Ask Source<span className="text-[#851EE6]">bot.</span>
                     </h2>
                     <p className="text-lg">
-                        Ask questions about your <span className="font-bold">entire codebase</span> in natural language.
-                        Get back responses grounded in code with <span className="font-bold">inline citations</span>.
+                        {t.rich('intro', { b: (chunks) => <span className="font-bold">{chunks}</span> })}
                     </p>
                     <p className="text-md text-muted-foreground">
-                        Ask NexusCode is an agentic search tool that can answer questions about your codebase by searching, reading files, navigating references, and more. Supports any <Link href="https://docs.sourcebot.dev/docs/configuration/language-model-providers" className="underline">compatible LLM.</Link>
+                        {t.rich('introDetails', { link: (chunks) => <Link href="https://docs.sourcebot.dev/docs/configuration/language-model-providers" className="underline">{chunks}</Link> })}
                     </p>
                 </div>
                 <div className="space-y-3 mx-auto flex flex-wrap justify-center gap-4">
@@ -80,21 +82,21 @@ const tutorialSteps = [
             <div className="flex flex-col h-full p-8 space-y-6">
                 <h2 className="text-3xl font-bold leading-tight flex items-center gap-2">
                     <ScanSearchIcon className="inline-block h-8 w-8 text-primary" />
-                    Search Scopes
+                    {t('scopesTitle')}
                 </h2>
                 <p className="text-lg">
-                    {`When asking NexusCode a question, you can select one or more scopes to focus the search.`}
+                    {t('scopesIntro')}
                 </p>
 
                 <div className="flex flex-col mb-2 text-muted-foreground">
-                    <p className="mb-4">There are two types of search scopes:</p>
+                    <p className="mb-4">{t('scopesTypes')}</p>
                     <div className="flex gap-2 mb-2">
                         <BookMarkedIcon className="h-4 w-4 text-muted-foreground flex-shrink-0 mt-1" />
-                        <span><strong>Repository</strong>: A single repository.</span>
+                        <span>{t.rich('scopeRepository', { b: (chunks) => <strong>{chunks}</strong> })}</span>
                     </div>
                     <div className="flex gap-2">
                         <LibraryBigIcon className="h-4 w-4 text-muted-foreground flex-shrink-0 mt-1" />
-                        <span><strong>Reposet</strong>: A collection of repositories (<Link href="https://docs.sourcebot.dev/docs/features/search/search-contexts" className="underline">configuration docs</Link>).</span>
+                        <span>{t.rich('scopeReposet', { b: (chunks) => <strong>{chunks}</strong>, link: (chunks) => <Link href="https://docs.sourcebot.dev/docs/features/search/search-contexts" className="underline">{chunks}</Link> })}</span>
                     </div>
                 </div>
             </div>
@@ -102,7 +104,7 @@ const tutorialSteps = [
         rightContent: (
             <Image
                 src={searchScopeDemo}
-                alt="Search scope demo"
+                alt={t('scopeDemoAlt')}
                 className="w-full h-full object-cover"
             />
         ),
@@ -112,30 +114,30 @@ const tutorialSteps = [
             <div className="flex flex-col h-full p-8 space-y-6">
                 <h2 className="text-3xl font-bold leading-tight flex items-center gap-2">
                     <AtSignIcon className="inline-block h-8 w-8 text-primary" />
-                    Mentions
+                    {t('mentionsTitle')}
                 </h2>
                 <p className="text-lg">
-                    @ mention specific <FileIcon className="inline-block h-4 w-4 mb-1 ml-0.5" /> files to add them to the {`model's`} context. Suggestions will be scoped to the selected search scopes.
+                    {t.rich('mentionsIntro', { icon: () => <FileIcon className="inline-block h-4 w-4 mb-1 ml-0.5" /> })}
                 </p>
 
                 <div className="flex flex-col">
-                    <p className="mb-3 text-muted-foreground"><strong>Coming soon</strong></p>
+                    <p className="mb-3 text-muted-foreground"><strong>{t('comingSoon')}</strong></p>
                     <div className="space-y-2 text-muted-foreground">
                         <div className="flex gap-2">
                             <FolderIcon className="h-4 w-4 flex-shrink-0 mt-1" />
-                            <span><strong>Directories</strong>: Include entire folders as context</span>
+                            <span>{t.rich('mentionDirectories', { b: (chunks) => <strong>{chunks}</strong> })}</span>
                         </div>
                         <div className="flex gap-2">
                             <GitCommitHorizontalIcon className="h-4 w-4 flex-shrink-0 mt-1" />
-                            <span><strong>Commits</strong>: Reference specific git commits</span>
+                            <span>{t.rich('mentionCommits', { b: (chunks) => <strong>{chunks}</strong> })}</span>
                         </div>
                         <div className="flex gap-2">
                             <BookTextIcon className="h-4 w-4 flex-shrink-0 mt-1" />
-                            <span><strong>Docs</strong>: Link to external docs and wikis</span>
+                            <span>{t.rich('mentionDocs', { b: (chunks) => <strong>{chunks}</strong> })}</span>
                         </div>
                         <div className="flex gap-2">
                             <TicketIcon className="h-4 w-4 flex-shrink-0 mt-1" />
-                            <span><strong>Issues</strong>: GitHub issues, Jira tickets, and more</span>
+                            <span>{t.rich('mentionIssues', { b: (chunks) => <strong>{chunks}</strong> })}</span>
                         </div>
                     </div>
                 </div>
@@ -144,7 +146,7 @@ const tutorialSteps = [
         rightContent: (
             <Image
                 src={mentionsDemo}
-                alt="Mentions demo"
+                alt={t('mentionsDemoAlt')}
                 className="w-full h-full object-cover"
             />
         ),
@@ -154,17 +156,17 @@ const tutorialSteps = [
             <div className="flex flex-col h-full p-8 space-y-6">
                 <h2 className="text-3xl font-bold leading-tight flex items-center gap-2">
                     <ArrowLeftRightIcon className="inline-block h-8 w-8 text-primary" />
-                    Inline Citations
+                    {t('citationsTitle')}
                 </h2>
                 <p className="text-lg">
-                    {`NexusCode searches your codebase and provides responses with clickable citations that link directly to relevant sections of code.`}
+                    {t('citationsIntro')}
                 </p>
             </div>
         ),
         rightContent: (
             <Image
                 src={citationsDemo}
-                alt="Citations demo"
+                alt={t('citationsDemoAlt')}
                 className="w-full h-full object-cover"
             />
         ),
@@ -174,19 +176,19 @@ const tutorialSteps = [
             <div className="flex flex-col h-full p-8 space-y-6">
                 <h2 className="text-3xl font-bold leading-tight flex items-center gap-2">
                     <CircleCheckIcon className="inline-block h-8 w-8 text-primary" />
-                    You&apos;re all set!
+                    {t('allSetTitle')}
                 </h2>
                 <p className="text-lg">
-                    You can now ask NexusCode any question about your codebase. Checkout the <Link href="https://docs.sourcebot.dev/docs/features/ask/overview" className="underline">docs</Link> for more information.
+                    {t.rich('allSetIntro', { link: (chunks) => <Link href="https://docs.sourcebot.dev/docs/features/ask/overview" className="underline">{chunks}</Link> })}
                 </p>
                 <p className="text-lg">
-                    <span className="font-bold">Hit a bug?</span> Open up <Link href="https://github.com/sourcebot-dev/sourcebot/issues" className="underline">an issue</Link>.
+                    {t.rich('hitBug', { b: (chunks) => <span className="font-bold">{chunks}</span>, link: (chunks) => <Link href="https://github.com/sourcebot-dev/sourcebot/issues" className="underline">{chunks}</Link> })}
                 </p>
                 <p className="text-lg">
-                    <span className="font-bold">Feature request?</span> Open a <Link href="https://github.com/sourcebot-dev/sourcebot/discussions" className="underline">discussion</Link>.
+                    {t.rich('featureRequest', { b: (chunks) => <span className="font-bold">{chunks}</span>, link: (chunks) => <Link href="https://github.com/sourcebot-dev/sourcebot/discussions" className="underline">{chunks}</Link> })}
                 </p>
                 <p className="text-lg">
-                    <span className="font-bold">Anything else?</span> <Link href="https://www.sourcebot.dev/contact" className="underline">Contact us</Link>.
+                    {t.rich('anythingElse', { b: (chunks) => <span className="font-bold">{chunks}</span>, link: (chunks) => <Link href="https://www.sourcebot.dev/contact" className="underline">{chunks}</Link> })}
                 </p>
             </div>
         ),
@@ -203,6 +205,8 @@ interface TutorialDialogProps {
 }
 
 export const TutorialDialog = ({ isOpen: _isOpen }: TutorialDialogProps) => {
+    const t = useTranslations('chatTutorial');
+    const tutorialSteps = useMemo(() => getTutorialSteps(t), [t]);
     const [isOpen, setIsOpen] = useState(_isOpen);
     const onClose = useCallback(() => {
         setIsOpen(false);
@@ -233,7 +237,7 @@ export const TutorialDialog = ({ isOpen: _isOpen }: TutorialDialogProps) => {
                 className="sm:max-w-[900px] p-0 flex flex-col h-[525px] overflow-hidden rounded-xl border-none bg-transparent"
                 closeButtonClassName="text-white"
             >
-                <DialogTitle className="sr-only">Ask NexusCode tutorial</DialogTitle>
+                <DialogTitle className="sr-only">{t('dialogTitle')}</DialogTitle>
                 <div className="relative flex h-full">
                     {/* Left Column (Text Content & Navigation) */}
                     <div className="flex-1 flex flex-col justify-between bg-background">
@@ -254,7 +258,7 @@ export const TutorialDialog = ({ isOpen: _isOpen }: TutorialDialogProps) => {
                                     )}
                                 >
                                     <ChevronLeft className="w-4 h-4" />
-                                    Previous
+                                    {t('previous')}
                                 </Button>
                             </div>
 
@@ -275,11 +279,11 @@ export const TutorialDialog = ({ isOpen: _isOpen }: TutorialDialogProps) => {
                             <div className="w-36 flex justify-end">
                                 {isLastStep ? (
                                     <Button onClick={onClose}>
-                                        Get Started
+                                        {t('getStarted')}
                                     </Button>
                                 ) : (
                                     <Button onClick={nextStep}>
-                                        Next
+                                        {t('next')}
                                         <ChevronRight className="w-4 h-4" />
                                     </Button>
                                 )}

@@ -51,22 +51,47 @@ export const isImageFile = (file: File) => file.type.startsWith('image/');
  * Validates a set of images against the per-message limits.
  * Returns an error message, or `undefined` if the images are valid.
  */
-export const validateImageAttachments = (images: ImageAttachment[]): string | undefined => {
+/**
+ * User facing error messages for image attachments. The defaults are English
+ * (used by the API); the UI passes translated messages.
+ */
+export type ImageAttachmentErrorMessages = {
+    tooMany: (max: number) => string;
+    imageTooLarge: (name: string, limit: string) => string;
+    totalTooLarge: (limit: string) => string;
+    unreadable: (name: string) => string;
+    browserCannotProcess: () => string;
+    tooLargeAfterCompression: (name: string, limit: string) => string;
+};
+
+export const defaultImageAttachmentErrorMessages: ImageAttachmentErrorMessages = {
+    tooMany: (max) => `A message can have at most ${max} images.`,
+    imageTooLarge: (name, limit) => `Image "${name}" is larger than the ${limit} limit.`,
+    totalTooLarge: (limit) => `Images exceed the ${limit} total limit per message.`,
+    unreadable: (name) => `"${name}" could not be read as an image.`,
+    browserCannotProcess: () => 'Your browser could not process the image.',
+    tooLargeAfterCompression: (name, limit) => `"${name}" is too large even after compression (limit ${limit}).`,
+};
+
+export const validateImageAttachments = (
+    images: ImageAttachment[],
+    messages: ImageAttachmentErrorMessages = defaultImageAttachmentErrorMessages,
+): string | undefined => {
     if (images.length > MAX_IMAGES_PER_MESSAGE) {
-        return `A message can have at most ${MAX_IMAGES_PER_MESSAGE} images.`;
+        return messages.tooMany(MAX_IMAGES_PER_MESSAGE);
     }
 
     let total = 0;
     for (const image of images) {
         const size = getImageByteLength(image);
         if (size > MAX_IMAGE_BYTES) {
-            return `Image "${image.name}" is larger than the ${formatBytes(MAX_IMAGE_BYTES)} limit.`;
+            return messages.imageTooLarge(image.name, formatBytes(MAX_IMAGE_BYTES));
         }
         total += size;
     }
 
     if (total > MAX_TOTAL_IMAGE_BYTES) {
-        return `Images exceed the ${formatBytes(MAX_TOTAL_IMAGE_BYTES)} total limit per message.`;
+        return messages.totalTooLarge(formatBytes(MAX_TOTAL_IMAGE_BYTES));
     }
 
     return undefined;

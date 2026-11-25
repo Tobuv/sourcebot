@@ -21,12 +21,13 @@ import { useSuggestionsData } from "./useSuggestionsData";
 import { useToast } from "@/components/hooks/use-toast";
 import { SearchContextQuery } from "@/lib/types";
 import isEqual from "fast-deep-equal/react";
-import { createPastedTextAttachment, readFileAsTextAttachment, shouldConvertPasteToAttachment, TextAttachment, validateAttachments } from "../../attachments";
+import { AttachmentErrorMessages, createPastedTextAttachment, readFileAsTextAttachment, shouldConvertPasteToAttachment, TextAttachment, validateAttachments } from "../../attachments";
 import { AttachmentChip } from "../attachmentChip";
-import { ImageAttachment, isImageFile, validateImageAttachments } from "../../imageAttachments";
+import { ImageAttachment, ImageAttachmentErrorMessages, isImageFile, validateImageAttachments } from "../../imageAttachments";
 import { processImageFile } from "../../imageProcessing";
 import { ImageAttachmentChip } from "../imageAttachmentChip";
 import { getLanguageModelKey } from "../../utils";
+import { useTranslations } from "next-intl";
 
 interface ChatBoxProps {
     onSubmit: (children: Descendant[], editor: CustomEditor, attachments: TextAttachment[], images: ImageAttachment[]) => void;
@@ -86,6 +87,21 @@ const ChatBoxComponent = ({
         languageModels,
     });
     const { toast } = useToast();
+    const t = useTranslations('chatBox');
+    const tAttachmentErrors = useMemo((): AttachmentErrorMessages => ({
+        tooMany: (max) => t('attachments.tooMany', { max }),
+        fileTooLarge: (name, limit) => t('attachments.fileTooLarge', { name, limit }),
+        totalTooLarge: (limit) => t('attachments.totalTooLarge', { limit }),
+        notText: (name) => t('attachments.notText', { name }),
+    }), [t]);
+    const tImageErrors = useMemo((): ImageAttachmentErrorMessages => ({
+        tooMany: (max) => t('images.tooMany', { max }),
+        imageTooLarge: (name, limit) => t('images.imageTooLarge', { name, limit }),
+        totalTooLarge: (limit) => t('images.totalTooLarge', { limit }),
+        unreadable: (name) => t('images.unreadable', { name }),
+        browserCannotProcess: () => t('images.browserCannotProcess'),
+        tooLargeAfterCompression: (name, limit) => t('images.tooLargeAfterCompression', { name, limit }),
+    }), [t]);
     // The selected model is persisted in local storage and may be stale, so look up
     // its capabilities in the current list of configured models.
     const supportsImageInput = useMemo(() => {
@@ -116,7 +132,7 @@ const ChatBoxComponent = ({
         }
 
         const next = [...attachmentsRef.current, ...newAttachments];
-        const error = validateAttachments(next);
+        const error = validateAttachments(next, tAttachmentErrors);
         if (error) {
             toast({ description: `⚠️ ${error}`, variant: "destructive" });
             return false;
@@ -125,7 +141,7 @@ const ChatBoxComponent = ({
         attachmentsRef.current = next;
         setAttachments(next);
         return true;
-    }, [toast]);
+    }, [toast, tAttachmentErrors]);
 
     const addImages = useCallback(async (files: File[]) => {
         if (files.length === 0) {
@@ -134,13 +150,13 @@ const ChatBoxComponent = ({
 
         if (!supportsImageInput) {
             toast({
-                description: `⚠️ The selected model does not accept images. Choose a model with image input enabled to attach images.`,
+                description: t('modelNoImages'),
                 variant: "destructive",
             });
             return;
         }
 
-        const results = await Promise.all(files.map(processImageFile));
+        const results = await Promise.all(files.map((file) => processImageFile(file, tImageErrors)));
         const valid: ImageAttachment[] = [];
         for (const result of results) {
             if ('error' in result) {
@@ -154,19 +170,19 @@ const ChatBoxComponent = ({
         }
 
         const next = [...imagesRef.current, ...valid];
-        const error = validateImageAttachments(next);
+        const error = validateImageAttachments(next, tImageErrors);
         if (error) {
             toast({ description: `⚠️ ${error}`, variant: "destructive" });
             return;
         }
         imagesRef.current = next;
         setImages(next);
-    }, [supportsImageInput, toast]);
+    }, [supportsImageInput, toast, t, tImageErrors]);
 
     const addFiles = useCallback(async (allFiles: File[]) => {
         addImages(allFiles.filter(isImageFile));
         const files = allFiles.filter((file) => !isImageFile(file));
-        const results = await Promise.all(files.map(readFileAsTextAttachment));
+        const results = await Promise.all(files.map((file) => readFileAsTextAttachment(file, tAttachmentErrors)));
         const valid: TextAttachment[] = [];
         for (const result of results) {
             if ('error' in result) {
@@ -176,7 +192,7 @@ const ChatBoxComponent = ({
             }
         }
         addAttachments(valid);
-    }, [addAttachments, addImages, toast]);
+    }, [addAttachments, addImages, toast, tAttachmentErrors]);
 
     const onPaste = useCallback((event: ClipboardEvent<HTMLDivElement>) => {
         const files = Array.from(event.clipboardData.files);
@@ -192,10 +208,10 @@ const ChatBoxComponent = ({
             event.preventDefault();
             const added = addAttachments([createPastedTextAttachment(text, attachmentsRef.current)]);
             if (added) {
-                toast({ description: "Large paste was added as an attachment." });
+                toast({ description: t('largePasteAttached') });
             }
         }
-    }, [addAttachments, addFiles, toast]);
+    }, [addAttachments, addFiles, toast, t]);
 
     const onDragOver = useCallback((event: DragEvent<HTMLDivElement>) => {
         if (isDisabled || !event.dataTransfer.types.includes('Files')) {
@@ -309,14 +325,14 @@ const ChatBoxComponent = ({
         if (isSubmitDisabled) {
             if (isSubmitDisabledReason === "no-language-model-selected") {
                 toast({
-                    description: "⚠️ You must select a language model",
+                    description: t('selectModelRequired'),
                     variant: "destructive",
                 });
             }
 
             if (isSubmitDisabledReason === "images-not-supported") {
                 toast({
-                    description: "⚠️ The selected model does not accept images. Remove the images or choose a model with image input enabled.",
+                    description: t('removeImagesOrChangeModel'),
                     variant: "destructive",
                 });
             }
@@ -329,7 +345,7 @@ const ChatBoxComponent = ({
         setAttachments([]);
         imagesRef.current = [];
         setImages([]);
-    }, [_onSubmit, editor, attachments, images, isSubmitDisabled, isSubmitDisabledReason, toast]);
+    }, [_onSubmit, editor, attachments, images, isSubmitDisabled, isSubmitDisabledReason, toast, t]);
 
     const onInsertSuggestion = useCallback((suggestion: Suggestion) => {
         switch (suggestion.type) {
@@ -492,7 +508,7 @@ const ChatBoxComponent = ({
             )}
             <Editable
                 className="w-full focus-visible:outline-none focus-visible:ring-0 bg-background text-base disabled:cursor-not-allowed disabled:opacity-50 md:text-sm max-h-64 overflow-y-auto"
-                placeholder="Ask a question about your code. @mention files, type / to use a skill, or select search scopes to refine your query."
+                placeholder={t('placeholder')}
                 renderElement={renderElement}
                 renderLeaf={renderLeaf}
                 onKeyDown={onKeyDown}
@@ -548,7 +564,7 @@ const ChatBoxComponent = ({
                             onClick={onStop}
                         >
                             <StopCircleIcon className="w-4 h-4" />
-                            Stop
+                            {t('stop')}
                         </Button>
                     ) : (
                         <Tooltip>
@@ -585,7 +601,7 @@ const ChatBoxComponent = ({
                     onInsertSuggestion={onInsertSuggestion}
                     isLoading={isLoading}
                     suggestions={suggestions}
-                    emptyMessage={suggestionMode === 'skill' ? "No skills yet. Create one in Settings → Skills." : undefined}
+                    emptyMessage={suggestionMode === 'skill' ? t('noSkillsYet') : undefined}
                 />
             )}
         </div>

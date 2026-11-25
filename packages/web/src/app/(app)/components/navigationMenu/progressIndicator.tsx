@@ -13,6 +13,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useMemo } from "react";
+import { useTranslations } from "next-intl";
 
 interface ProgressIndicatorProps {
     numberOfReposWithFirstTimeIndexingJobsInProgress: number;
@@ -25,6 +26,8 @@ export const ProgressIndicator = ({
 }: ProgressIndicatorProps) => {
     const router = useRouter();
     const { toast } = useToast();
+    const t = useTranslations('nav');
+    const tCommon = useTranslations('common');
 
     if (numRepos === 0) {
         return null;
@@ -44,7 +47,7 @@ export const ProgressIndicator = ({
             </TooltipTrigger>
             <TooltipContent className="p-4 w-72">
                 <div className="flex flex-row gap-1 items-center">
-                    <p className="text-md font-medium">{`Syncing ${numReposString} ${numRepos === 1 ? 'repository' : 'repositories'}`}</p>
+                    <p className="text-md font-medium">{t('syncingRepos', { count: numReposString, total: numRepos })}</p>
                     <Button
                         variant="ghost"
                         size="icon"
@@ -52,7 +55,7 @@ export const ProgressIndicator = ({
                         onClick={() => {
                             router.refresh();
                             toast({
-                                description: "Page refreshed",
+                                description: tCommon('pageRefreshed'),
                             });
                         }}
                     >
@@ -68,7 +71,7 @@ export const ProgressIndicator = ({
                 {numRepos > sampleRepos.length && (
                     <div className="mt-2">
                         <Link href={`/repos`} className="text-sm text-link hover:underline">
-                            {`View ${numRepos - sampleRepos.length} more`}
+                            {t('viewMore', { count: numRepos - sampleRepos.length })}
                         </Link>
                     </div>
                 )}

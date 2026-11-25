@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { CheckCircle2, Copy } from "lucide-react";
 import { useCallback, useState } from "react";
+import { useTranslations } from "next-intl";
 
 interface CopyIconButtonProps {
     onCopy: () => boolean;
@@ -11,6 +12,7 @@ interface CopyIconButtonProps {
 }
 
 export const CopyIconButton = ({ onCopy, className }: CopyIconButtonProps) => {
+    const t = useTranslations('common');
     const [copied, setCopied] = useState(false);
 
     const onClick = useCallback(() => {
@@ -27,7 +29,7 @@ export const CopyIconButton = ({ onCopy, className }: CopyIconButtonProps) => {
             size="sm"
             className={cn("h-6 w-6 text-muted-foreground", className)}
             onClick={onClick}
-            aria-label="Copy to clipboard"
+            aria-label={t('copyToClipboard')}
         >
             {copied ? (
                 <CheckCircle2 className="h-3 w-3 text-green-500" />

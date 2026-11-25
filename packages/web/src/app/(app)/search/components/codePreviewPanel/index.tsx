@@ -8,6 +8,7 @@ import { SetStateAction, Dispatch, useMemo } from "react";
 import { unwrapServiceError } from "@/lib/utils";
 import { getFileSource } from "@/app/api/(client)/client";
 
+import { useTranslations } from "next-intl";
 interface CodePreviewPanelProps {
     previewedFile: SearchResultFile;
     selectedMatchIndex: number;
@@ -22,6 +23,8 @@ export const CodePreviewPanel = ({
     onSelectedMatchIndexChange,
 }: CodePreviewPanelProps) => {
 
+    const t = useTranslations('search');
+    const tCommon = useTranslations('common');
     // If there are multiple branches pointing to the same revision of this file, it doesn't
     // matter which branch we use here, so use the first one.
     const branch = useMemo(() => {
@@ -52,13 +55,13 @@ export const CodePreviewPanel = ({
     if (isLoading || isPending) {
         return <div className="flex flex-col items-center justify-center h-full">
             <SymbolIcon className="h-6 w-6 animate-spin" />
-            <p className="font-semibold text-center">Loading...</p>
+            <p className="font-semibold text-center">{tCommon('loading')}</p>
         </div>
     }
 
     if (isError) {
         return (
-            <p>Failed to load file source</p>
+            <p>{t('failedToLoadFile')}</p>
         )
     }
 

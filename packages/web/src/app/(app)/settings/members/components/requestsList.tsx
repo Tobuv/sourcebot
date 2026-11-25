@@ -13,6 +13,7 @@ import { useCallback, useMemo, useState } from "react";
 import { approveAccountRequest, rejectAccountRequest } from "@/actions";
 import { useRouter } from "next/navigation";
 import useCaptureEvent from "@/hooks/useCaptureEvent";
+import { useTranslations } from "next-intl";
 
 interface Request {
     id: string;
@@ -28,6 +29,7 @@ interface RequestsListProps {
 }
 
 export const RequestsList = ({ requests, currentUserRole }: RequestsListProps) => {
+    const t = useTranslations('members');
     const [searchQuery, setSearchQuery] = useState("")
     const [dateSort, setDateSort] = useState<"newest" | "oldest">("newest")
     const [isApproveRequestDialogOpen, setIsApproveRequestDialogOpen] = useState(false)
@@ -58,40 +60,40 @@ export const RequestsList = ({ requests, currentUserRole }: RequestsListProps) =
             .then((response) => {
                 if (isServiceError(response)) {
                     toast({
-                        description: `❌ Failed to approve request. Reason: ${response.message}`
+                        description: t('approveFailed', { reason: response.message })
                     })
                     captureEvent('wa_requests_list_approve_request_fail', {
                         errorCode: response.errorCode,
                     })
                 } else {
                     toast({
-                        description: `✅ Request approved successfully.`
+                        description: t('approved')
                     })
                     captureEvent('wa_requests_list_approve_request_success', {})
                     router.refresh();
                 }
             });
-    }, [toast, router, captureEvent]);
+    }, [toast, router, captureEvent, t]);
 
     const onRejectRequest = useCallback((requestId: string) => {
         rejectAccountRequest(requestId)
             .then((response) => {
                 if (isServiceError(response)) {
                     toast({
-                        description: `❌ Failed to reject request.`
+                        description: t('rejectFailed')
                     })
                     captureEvent('wa_requests_list_reject_request_fail', {
                         errorCode: response.errorCode,
                     })
                 } else {
                     toast({
-                        description: `✅ Request rejected successfully.`
+                        description: t('rejected')
                     })
                     captureEvent('wa_requests_list_reject_request_success', {})
                     router.refresh();
                 }
             });
-    }, [toast, router, captureEvent]);
+    }, [toast, router, captureEvent, t]);
 
     return (
         <div className="w-full mx-auto space-y-6">
@@ -99,7 +101,7 @@ export const RequestsList = ({ requests, currentUserRole }: RequestsListProps) =
                 <div className="relative flex-1">
                     <Search className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
                     <Input
-                        placeholder="Filter by name or email..."
+                        placeholder={t('filterPlaceholder')}
                         className="pl-9"
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
@@ -111,8 +113,8 @@ export const RequestsList = ({ requests, currentUserRole }: RequestsListProps) =
                         <SelectValue placeholder="Date" />
                     </SelectTrigger>
                     <SelectContent>
-                        <SelectItem value="newest">Newest</SelectItem>
-                        <SelectItem value="oldest">Oldest</SelectItem>
+                        <SelectItem value="newest">{t('newest')}</SelectItem>
+                        <SelectItem value="oldest">{t('oldest')}</SelectItem>
                     </SelectContent>
                 </Select>
             </div>
@@ -121,9 +123,9 @@ export const RequestsList = ({ requests, currentUserRole }: RequestsListProps) =
                 <div className="max-h-[600px] overflow-y-auto divide-y">
                     {requests.length === 0 || (filteredRequests.length === 0 && searchQuery.length > 0) ? (
                         <div className="flex flex-col items-center justify-center h-96 p-4">
-                            <p className="font-medium text-sm">No Pending Requests Found</p>
+                            <p className="font-medium text-sm">{t('noRequests')}</p>
                             <p className="text-sm text-muted-foreground mt-2">
-                                {filteredRequests.length === 0 && searchQuery.length > 0 ? "No pending requests found matching your filters." : "There are currently no pending requests to join your organization."}
+                                {filteredRequests.length === 0 && searchQuery.length > 0 ? t('noRequestsFiltered') : t('noRequestsHint')}
                             </p>
                         </div>
                     ) : (
@@ -149,7 +151,7 @@ export const RequestsList = ({ requests, currentUserRole }: RequestsListProps) =
                                                 }}
                                             >
                                                 <CheckCircle className="h-4 w-4" />
-                                                Approve
+                                                {t('approve')}
                                             </Button>
                                             <Button
                                                 variant="outline"
@@ -161,7 +163,7 @@ export const RequestsList = ({ requests, currentUserRole }: RequestsListProps) =
                                                 }}
                                             >
                                                 <XCircle className="h-4 w-4" />
-                                                Reject
+                                                {t('reject')}
                                             </Button>
                                         </>
                                     )}
@@ -179,14 +181,14 @@ export const RequestsList = ({ requests, currentUserRole }: RequestsListProps) =
             >
                 <AlertDialogContent>
                     <AlertDialogHeader>
-                        <AlertDialogTitle>Approve Request</AlertDialogTitle>
+                        <AlertDialogTitle>{t('approveTitle')}</AlertDialogTitle>
                         <AlertDialogDescription>
-                            Are you sure you want to approve the request from <strong>{requestToAction?.email}</strong>? They will be added as a member to your organization.
+                            {t.rich('approveConfirm', { email: requestToAction?.email ?? '', b: (chunks) => <strong>{chunks}</strong> })}
                         </AlertDialogDescription>
                     </AlertDialogHeader>
                     <AlertDialogFooter>
                         <AlertDialogCancel>
-                            Back
+                            {t('back')}
                         </AlertDialogCancel>
                         <AlertDialogAction
                             className="bg-primary text-primary-foreground hover:bg-primary/90"
@@ -194,7 +196,7 @@ export const RequestsList = ({ requests, currentUserRole }: RequestsListProps) =
                                 onApproveRequest(requestToAction?.id ?? "");
                             }}
                         >
-                            Approve
+                            {t('approve')}
                         </AlertDialogAction>
                     </AlertDialogFooter>
                 </AlertDialogContent>
@@ -207,14 +209,14 @@ export const RequestsList = ({ requests, currentUserRole }: RequestsListProps) =
             >
                 <AlertDialogContent>
                     <AlertDialogHeader>
-                        <AlertDialogTitle>Reject Request</AlertDialogTitle>
+                        <AlertDialogTitle>{t('rejectTitle')}</AlertDialogTitle>
                         <AlertDialogDescription>
-                            Are you sure you want to reject the request from <strong>{requestToAction?.email}</strong>?
+                            {t.rich('rejectConfirm', { email: requestToAction?.email ?? '', b: (chunks) => <strong>{chunks}</strong> })}
                         </AlertDialogDescription>
                     </AlertDialogHeader>
                     <AlertDialogFooter>
                         <AlertDialogCancel>
-                            Back
+                            {t('back')}
                         </AlertDialogCancel>
                         <AlertDialogAction
                             className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
@@ -222,7 +224,7 @@ export const RequestsList = ({ requests, currentUserRole }: RequestsListProps) =
                                 onRejectRequest(requestToAction?.id ?? "");
                             }}
                         >
-                            Reject
+                            {t('reject')}
                         </AlertDialogAction>
                     </AlertDialogFooter>
                 </AlertDialogContent>

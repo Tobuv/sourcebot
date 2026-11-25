@@ -21,6 +21,7 @@ import {
 import { isServiceError } from "@/lib/utils";
 import { Loader2 } from "lucide-react";
 import { useState } from "react";
+import { useTranslations } from "next-intl";
 
 export type SkillEditorState =
     | { mode: 'create', initialValues?: Partial<SkillInput> }
@@ -59,13 +60,14 @@ const getInitialValues = (state: SkillEditorState | null): SkillInput => {
  * Note: render with a `key` that changes per opened skill so the form state resets.
  */
 export const SkillEditorDialog = ({ state, isOwner, onOpenChange, onSaved }: SkillEditorDialogProps) => {
+    const t = useTranslations('skills');
     const { toast } = useToast();
     const [values, setValues] = useState<SkillInput>(() => getInitialValues(state));
     const [errors, setErrors] = useState<Partial<Record<keyof SkillInput, string>>>({});
     const [isSaving, setIsSaving] = useState(false);
 
     const isReadOnly = state?.mode === 'view';
-    const title = state?.mode === 'create' ? 'New skill' : state?.mode === 'edit' ? 'Edit skill' : 'View skill';
+    const title = state?.mode === 'create' ? t('dialogNew') : state?.mode === 'edit' ? t('dialogEdit') : t('dialogView');
 
     const onSave = async () => {
         if (!state || isReadOnly) {
@@ -94,7 +96,7 @@ export const SkillEditorDialog = ({ state, isOwner, onOpenChange, onSaved }: Ski
             return;
         }
 
-        toast({ description: `✅ Saved skill /${result.name}` });
+        toast({ description: t('saved', { name: result.name }) });
         onSaved(result);
     };
 
@@ -104,13 +106,13 @@ export const SkillEditorDialog = ({ state, isOwner, onOpenChange, onSaved }: Ski
                 <DialogHeader>
                     <DialogTitle>{title}</DialogTitle>
                     <DialogDescription>
-                        Skills are reusable instructions for Ask NexusCode. Use one by typing <code>/{values.name || 'name'}</code> in the chat box{values.autoInvoke ? ', or let the agent load it automatically when your question matches its description' : ''}.
+                        {t.rich(values.autoInvoke ? 'dialogDescriptionAuto' : 'dialogDescription', { name: values.name || t('namePlaceholder'), code: (chunks) => <code>{chunks}</code> })}
                     </DialogDescription>
                 </DialogHeader>
 
                 <div className="flex flex-col gap-4 overflow-y-auto px-1 -mx-1">
                     <div className="flex flex-col gap-1.5">
-                        <Label htmlFor="skill-name">Name</Label>
+                        <Label htmlFor="skill-name">{t('name')}</Label>
                         <div className="flex items-center gap-1">
                             <span className="text-muted-foreground font-mono text-sm">/</span>
                             <Input
@@ -128,31 +130,31 @@ export const SkillEditorDialog = ({ state, isOwner, onOpenChange, onSaved }: Ski
                     </div>
 
                     <div className="flex flex-col gap-1.5">
-                        <Label htmlFor="skill-description">Description</Label>
+                        <Label htmlFor="skill-description">{t('descriptionLabel')}</Label>
                         <Textarea
                             id="skill-description"
                             value={values.description}
                             maxLength={SKILL_DESCRIPTION_MAX_LENGTH}
                             rows={2}
-                            placeholder="What the skill does and when to use it, e.g. &quot;Review a pull request for bugs and style issues. Use when the user asks to review a PR or diff.&quot;"
+                            placeholder={t('descriptionPlaceholder')}
                             disabled={isReadOnly}
                             onChange={(event) => setValues({ ...values, description: event.target.value })}
                         />
                         <p className="text-xs text-muted-foreground">
-                            The agent uses the description to decide when to load the skill automatically.
+                            {t('descriptionHint')}
                         </p>
                         {errors.description && <p className="text-xs text-destructive">{errors.description}</p>}
                     </div>
 
                     <div className="flex flex-col gap-1.5">
-                        <Label htmlFor="skill-instructions">Instructions</Label>
+                        <Label htmlFor="skill-instructions">{t('instructions')}</Label>
                         <Textarea
                             id="skill-instructions"
                             value={values.instructions}
                             maxLength={SKILL_INSTRUCTIONS_MAX_LENGTH}
                             rows={12}
                             className="font-mono text-xs"
-                            placeholder={"Markdown instructions the agent follows when the skill is used.\n\n## Steps\n1. ...\n2. ..."}
+                            placeholder={t('instructionsPlaceholder')}
                             disabled={isReadOnly}
                             onChange={(event) => setValues({ ...values, instructions: event.target.value })}
                         />
@@ -161,7 +163,7 @@ export const SkillEditorDialog = ({ state, isOwner, onOpenChange, onSaved }: Ski
 
                     <div className="flex flex-col sm:flex-row gap-4">
                         <div className="flex flex-col gap-1.5 sm:w-1/2">
-                            <Label>Scope</Label>
+                            <Label>{t('scope')}</Label>
                             <Select
                                 value={values.scope}
                                 disabled={isReadOnly}
@@ -171,9 +173,9 @@ export const SkillEditorDialog = ({ state, isOwner, onOpenChange, onSaved }: Ski
                                     <SelectValue />
                                 </SelectTrigger>
                                 <SelectContent>
-                                    <SelectItem value="PERSONAL">Personal (only you)</SelectItem>
+                                    <SelectItem value="PERSONAL">{t('scopePersonal')}</SelectItem>
                                     <SelectItem value="WORKSPACE" disabled={!isOwner}>
-                                        Workspace (all members){!isOwner ? ' · owners only' : ''}
+                                        {t('scopeWorkspace')}{!isOwner ? t('ownersOnly') : ''}
                                     </SelectItem>
                                 </SelectContent>
                             </Select>
@@ -181,9 +183,9 @@ export const SkillEditorDialog = ({ state, isOwner, onOpenChange, onSaved }: Ski
 
                         <div className="flex items-start justify-between gap-3 sm:w-1/2 rounded-md border p-3">
                             <div className="flex flex-col gap-0.5">
-                                <Label htmlFor="skill-auto-invoke">Auto-invoke</Label>
+                                <Label htmlFor="skill-auto-invoke">{t('autoInvoke')}</Label>
                                 <span className="text-xs text-muted-foreground">
-                                    Let the agent load this skill when relevant.
+                                    {t('autoInvokeHint')}
                                 </span>
                             </div>
                             <Switch
@@ -203,7 +205,7 @@ export const SkillEditorDialog = ({ state, isOwner, onOpenChange, onSaved }: Ski
                     {!isReadOnly && (
                         <Button onClick={onSave} disabled={isSaving}>
                             {isSaving && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
-                            Save
+                            {t('save')}
                         </Button>
                     )}
                 </DialogFooter>

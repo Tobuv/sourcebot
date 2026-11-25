@@ -6,8 +6,10 @@ import { Button } from "@/components/ui/button"
 import { completeOnboarding } from "@/actions"
 import { isServiceError } from "@/lib/utils"
 import { useToast } from "@/components/hooks/use-toast"
+import { useTranslations } from "next-intl";
 
 export function CompleteOnboardingButton() {
+    const t = useTranslations('onboard');
     const [isLoading, setIsLoading] = useState(false)
     const router = useRouter()
     const { toast } = useToast()
@@ -21,7 +23,7 @@ export function CompleteOnboardingButton() {
             if (isServiceError(result)) {
                 toast({
                     title: "Error",
-                    description: "Failed to complete onboarding. Please try again.",
+                    description: t('completeFailed'),
                     variant: "destructive",
                 })
                 setIsLoading(false)
@@ -33,7 +35,7 @@ export function CompleteOnboardingButton() {
             console.error("Error completing onboarding:", error)
             toast({
                 title: "Error",
-                description: "Failed to complete onboarding. Please try again.",
+                description: t('completeFailed'),
                 variant: "destructive",
             })
             setIsLoading(false)
@@ -46,7 +48,7 @@ export function CompleteOnboardingButton() {
             disabled={isLoading}
             className="w-full"
         >
-            {isLoading ? "Completing..." : "Complete Onboarding →"}
+            {isLoading ? t('completing') : t('complete')}
         </Button>
     )
 } 

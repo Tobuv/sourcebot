@@ -7,6 +7,7 @@ import { DynamicToolUIPart } from "ai";
 import { ChevronDown, PlugIcon } from "lucide-react";
 import { useCallback, useState } from "react";
 import { MCP_TOOL_NAME_SEPARATOR, McpToolOutput } from "../../../mcpConnectors/mcpConnectorUtils";
+import { useTranslations } from "next-intl";
 
 const isMcpToolOutput = (output: unknown): output is McpToolOutput => {
     return typeof output === 'object' && output !== null && 'server' in output && 'tool' in output && 'output' in output;
@@ -16,6 +17,7 @@ const isMcpToolOutput = (output: unknown): output is McpToolOutput => {
  * Renders a call to a tool from a third-party MCP server.
  */
 export const McpToolComponent = ({ part }: { part: DynamicToolUIPart }) => {
+    const t = useTranslations('chatTools');
     const [isExpanded, setIsExpanded] = useState(false);
 
     const output = part.state === 'output-available' && isMcpToolOutput(part.output) ? part.output : undefined;
@@ -64,20 +66,20 @@ export const McpToolComponent = ({ part }: { part: DynamicToolUIPart }) => {
                         onClick={() => setIsExpanded((value) => !value)}
                         className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors flex-shrink-0"
                     >
-                        <span>Details</span>
+                        <span>{t('details')}</span>
                         <ChevronDown className={cn("h-3 w-3 transition-transform -rotate-90", isExpanded && "rotate-0")} />
                     </button>
                 )}
             </div>
             {hasInput && isExpanded && (
                 <div className="rounded-lg border border-border text-xs overflow-y-auto max-h-72">
-                    <Section label="Request" onCopy={onCopyRequest}>
+                    <Section label={t('requestPlain')} onCopy={onCopyRequest}>
                         <pre className="whitespace-pre-wrap break-all font-mono">{requestText}</pre>
                     </Section>
                     {responseText !== undefined && (
                         <>
                             <div className="border-t border-border" />
-                            <Section label="Response" onCopy={onCopyResponse}>
+                            <Section label={t('response')} onCopy={onCopyResponse}>
                                 <pre className={cn("whitespace-pre-wrap break-all font-mono", isError && "text-destructive")}>
                                     {responseText}
                                 </pre>

@@ -6,8 +6,11 @@ import { TriangleAlert } from "lucide-react";
 import { useCallback, useEffect } from "react";
 import { dismissMobileUnsupportedSplashScreen } from "@/actions";
 import useCaptureEvent from "@/hooks/useCaptureEvent";
+import { useTranslations } from "next-intl";
 
 export const MobileUnsupportedSplashScreen = () => {
+    const t = useTranslations('shared');
+    const tCommon = useTranslations('common');
     const captureEvent = useCaptureEvent();
 
     useEffect(() => {
@@ -24,17 +27,17 @@ export const MobileUnsupportedSplashScreen = () => {
             <Card className="flex flex-col items-center text-center mb-10 p-4 max-w-sm">
                 <TriangleAlert className="w-10 h-10 mb-4 text-yellow-600/90 dark:text-yellow-300/90" />
                 <div className="text-2xl font-semibold flex items-center mb-2">
-                    Mobile is not supported.
+                    {t('mobileUnsupported')}
                 </div>
                 <p className="text-sm text-muted-foreground mb-8">
-                    NexusCode on mobile is still a work in progress. Please use a desktop computer to get the best experience.
+                    {t('mobileUnsupportedDescription')}
                 </p>
                     <Button
                         className="w-full"
                         variant="outline"
                         onClick={onDismissed}
                     >
-                        Continue anyway
+                        {tCommon('continueAnyway')}
                     </Button>
             </Card>
         </div>

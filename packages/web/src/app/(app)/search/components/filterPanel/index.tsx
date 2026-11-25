@@ -12,6 +12,7 @@ import { Filter } from "./filter";
 import { LANGUAGES_QUERY_PARAM, REPOS_QUERY_PARAM, useFilteredMatches } from "./useFilterMatches";
 import { useGetSelectedFromQuery } from "./useGetSelectedFromQuery";
 
+import { useTranslations } from "next-intl";
 interface FilePanelProps {
     matches: SearchResultFile[];
     repoInfo: Record<number, RepositoryInfo>;
@@ -42,6 +43,7 @@ export const FilterPanel = ({
     onFilterChange,
     isStreaming,
 }: FilePanelProps) => {
+    const t = useTranslations('search');
     const router = useRouter();
     const searchParams = useSearchParams();
 
@@ -137,8 +139,8 @@ export const FilterPanel = ({
     return (
         <div className="p-3 flex flex-col gap-3 h-full">
             <Filter
-                title="Filter By Repository"
-                searchPlaceholder={`Filter ${numRepos} repositories`}
+                title={t('filterByRepository')}
+                searchPlaceholder={t('filterRepositories', { count: numRepos })}
                 entries={visibleRepos}
                 onEntryClicked={(key) => {
                     const newRepos = { ...repos };
@@ -161,8 +163,8 @@ export const FilterPanel = ({
                 isStreaming={isStreaming}
             />
             <Filter
-                title="Filter By Language"
-                searchPlaceholder={`Filter ${numLanguages} languages`}
+                title={t('filterByLanguage')}
+                searchPlaceholder={t('filterLanguages', { count: numLanguages })}
                 entries={visibleLanguages}
                 onEntryClicked={(key) => {
                     const newLanguages = { ...languages };

@@ -4,6 +4,7 @@ import { useMemo } from "react";
 import { Suggestion } from "./searchSuggestionsBox";
 import { SearchPrefix } from "./constants";
 import { useHasEntitlement } from "@/features/entitlements/useHasEntitlement";
+import { useTranslations } from "next-intl";
 
 const negate = (prefix: SearchPrefix) => {
     return `-${prefix}`;
@@ -11,87 +12,88 @@ const negate = (prefix: SearchPrefix) => {
 
 export const useRefineModeSuggestions = () => {
     const isSearchContextsEnabled = useHasEntitlement('search-contexts');
+    const t = useTranslations('searchBar.refine');
 
     const suggestions = useMemo((): Suggestion[] => {
         return [
             ...(isSearchContextsEnabled ? [
                 {
                     value: SearchPrefix.context,
-                    description: "Include only results from the given search context.",
+                    description: t('context'),
                     spotlight: true,
                 },
                 {
                     value: negate(SearchPrefix.context),
-                    description: "Exclude results from the given search context."
+                    description: t('contextNegated')
                 },
             ] : []),
             {
                 value: SearchPrefix.visibility,
-                description: "Filter on repository visibility."
+                description: t('visibility')
             },
             {
                 value: SearchPrefix.repo,
-                description: "Include only results from the given repository.",
+                description: t('repo'),
                 spotlight: true,
             },
             {
                 value: negate(SearchPrefix.repo),
-                description: "Exclude results from the given repository."
+                description: t('repoNegated')
             },
             {
                 value: SearchPrefix.lang,
-                description: "Include only results from the given language.",
+                description: t('lang'),
                 spotlight: true,
             },
             {
                 value: negate(SearchPrefix.lang),
-                description: "Exclude results from the given language."
+                description: t('langNegated')
             },
             {
                 value: SearchPrefix.file,
-                description: "Include only results from filepaths matching the given search pattern.",
+                description: t('file'),
                 spotlight: true,
             },
             {
                 value: negate(SearchPrefix.file),
-                description: "Exclude results from file paths matching the given search pattern."
+                description: t('fileNegated')
             },
             {
                 value: SearchPrefix.rev,
-                description: "Search a given branch or tag instead of the default branch.",
+                description: t('rev'),
                 spotlight: true,
             },
             {
                 value: negate(SearchPrefix.rev),
-                description: "Exclude results from the given branch or tag."
+                description: t('revNegated')
             },
             {
                 value: SearchPrefix.sym,
-                description: "Include only symbols matching the given search pattern.",
+                description: t('sym'),
                 spotlight: true,
             },
             {
                 value: negate(SearchPrefix.sym),
-                description: "Exclude results from symbols matching the given search pattern."
+                description: t('symNegated')
             },
             {
                 value: SearchPrefix.content,
-                description: "Include only results from files if their content matches the given search pattern."
+                description: t('content')
             },
             {
                 value: negate(SearchPrefix.content),
-                description: "Exclude results from files if their content matches the given search pattern."
+                description: t('contentNegated')
             },
             {
                 value: SearchPrefix.archived,
-                description: "Include results from archived repositories.",
+                description: t('archived'),
             },
             {
                 value: SearchPrefix.fork,
-                description: "Include only results from forked repositories."
+                description: t('fork')
             },
         ];
-    }, [isSearchContextsEnabled]);
+    }, [isSearchContextsEnabled, t]);
 
     return suggestions;
 }

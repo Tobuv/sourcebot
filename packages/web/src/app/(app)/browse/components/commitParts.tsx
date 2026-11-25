@@ -8,6 +8,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip
 import { UserAvatar } from "@/components/userAvatar";
 import { cn } from "@/lib/utils";
 import type { Author } from "./commitAuthors";
+import { useTranslations } from "next-intl";
 
 interface AuthorsAvatarGroupProps {
     authors: Author[];
@@ -42,20 +43,23 @@ interface CommitBodyToggleProps {
     onPressedChange: (pressed: boolean) => void;
 }
 
-export const CommitBodyToggle = ({ pressed, onPressedChange }: CommitBodyToggleProps) => (
+export const CommitBodyToggle = ({ pressed, onPressedChange }: CommitBodyToggleProps) => {
+    const t = useTranslations('browse');
+    return (
     <Tooltip>
         <TooltipTrigger asChild>
             <Toggle
                 pressed={pressed}
                 onPressedChange={onPressedChange}
-                aria-label="Open commit details"
+                aria-label={t('openCommitDetails')}
             >
                 <MoreHorizontal />
             </Toggle>
         </TooltipTrigger>
-        <TooltipContent>Open commit details</TooltipContent>
+        <TooltipContent>{t('openCommitDetails')}</TooltipContent>
     </Tooltip>
-);
+    );
+};
 
 interface CommitBodyProps {
     body: string;

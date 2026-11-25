@@ -6,11 +6,15 @@ import { useQuery } from "@tanstack/react-query";
 import { listCommits } from "@/app/api/(client)/client";
 import { isServiceError } from "@/lib/utils";
 import { useBrowseParams } from "../hooks/useBrowseParams";
-import { formatAuthorsText, getCommitAuthors } from "./commitAuthors";
+import { authorsTextFormatFromTranslator, formatAuthorsText, getCommitAuthors } from "./commitAuthors";
 import { AuthorsAvatarGroup } from "./commitParts";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useTranslations } from "next-intl";
+import { useDateFnsLocale } from "@/i18n/dateLocale";
 
 export const LatestCommitInfo = () => {
+    const t = useTranslations('browse');
+    const dateLocale = useDateFnsLocale();
     const { repoName, revisionName, path } = useBrowseParams();
 
     const { data: commit, isPending } = useQuery({
@@ -50,13 +54,13 @@ export const LatestCommitInfo = () => {
         return null;
     }
 
-    const relativeDate = formatDistanceToNow(new Date(commit.date), { addSuffix: true });
+    const relativeDate = formatDistanceToNow(new Date(commit.date), { addSuffix: true, locale: dateLocale });
 
     return (
         <div className="flex flex-row items-center gap-2 min-w-0 overflow-hidden">
             <AuthorsAvatarGroup authors={authors} />
             <span className="text-sm font-medium flex-shrink-0" title={authors.map((a) => a.name).join(", ")}>
-                {formatAuthorsText(authors)}
+                {formatAuthorsText(authors, authorsTextFormatFromTranslator(t))}
             </span>
             <span className="text-sm text-muted-foreground truncate" title={commit.message}>
                 {commit.message}

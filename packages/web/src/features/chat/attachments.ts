@@ -44,22 +44,43 @@ export const formatBytes = (bytes: number) => {
  * Validates a set of attachments against the per-message limits.
  * Returns an error message, or `undefined` if the attachments are valid.
  */
-export const validateAttachments = (attachments: TextAttachment[]): string | undefined => {
+/**
+ * User facing error messages for attachments. The defaults are English (used by
+ * the API); the UI passes translated messages.
+ */
+export type AttachmentErrorMessages = {
+    tooMany: (max: number) => string;
+    fileTooLarge: (name: string, limit: string) => string;
+    totalTooLarge: (limit: string) => string;
+    notText: (name: string) => string;
+};
+
+export const defaultAttachmentErrorMessages: AttachmentErrorMessages = {
+    tooMany: (max) => `A message can have at most ${max} attachments.`,
+    fileTooLarge: (name, limit) => `"${name}" is larger than the ${limit} limit.`,
+    totalTooLarge: (limit) => `Attachments exceed the ${limit} total limit per message.`,
+    notText: (name) => `"${name}" is not a text file. Only text files can be attached.`,
+};
+
+export const validateAttachments = (
+    attachments: TextAttachment[],
+    messages: AttachmentErrorMessages = defaultAttachmentErrorMessages,
+): string | undefined => {
     if (attachments.length > MAX_ATTACHMENTS_PER_MESSAGE) {
-        return `A message can have at most ${MAX_ATTACHMENTS_PER_MESSAGE} attachments.`;
+        return messages.tooMany(MAX_ATTACHMENTS_PER_MESSAGE);
     }
 
     let total = 0;
     for (const attachment of attachments) {
         const size = getByteLength(attachment.content);
         if (size > MAX_ATTACHMENT_BYTES) {
-            return `"${attachment.name}" is larger than the ${formatBytes(MAX_ATTACHMENT_BYTES)} limit.`;
+            return messages.fileTooLarge(attachment.name, formatBytes(MAX_ATTACHMENT_BYTES));
         }
         total += size;
     }
 
     if (total > MAX_TOTAL_ATTACHMENT_BYTES) {
-        return `Attachments exceed the ${formatBytes(MAX_TOTAL_ATTACHMENT_BYTES)} total limit per message.`;
+        return messages.totalTooLarge(formatBytes(MAX_TOTAL_ATTACHMENT_BYTES));
     }
 
     return undefined;
@@ -82,14 +103,17 @@ export const isProbablyText = (bytes: Uint8Array) => {
     }
 }
 
-export const readFileAsTextAttachment = async (file: File): Promise<TextAttachment | { error: string }> => {
+export const readFileAsTextAttachment = async (
+    file: File,
+    messages: AttachmentErrorMessages = defaultAttachmentErrorMessages,
+): Promise<TextAttachment | { error: string }> => {
     if (file.size > MAX_ATTACHMENT_BYTES) {
-        return { error: `"${file.name}" is larger than the ${formatBytes(MAX_ATTACHMENT_BYTES)} limit.` };
+        return { error: messages.fileTooLarge(file.name, formatBytes(MAX_ATTACHMENT_BYTES)) };
     }
 
     const bytes = new Uint8Array(await file.arrayBuffer());
     if (!isProbablyText(bytes)) {
-        return { error: `"${file.name}" is not a text file. Only text files can be attached.` };
+        return { error: messages.notText(file.name) };
     }
 
     const content = new TextDecoder('utf-8').decode(bytes);

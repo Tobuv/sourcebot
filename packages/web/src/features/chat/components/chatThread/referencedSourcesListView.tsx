@@ -8,6 +8,7 @@ import { FileReference, FileSource, Reference } from "../../types";
 import { tryResolveFileReference } from '../../utils';
 import { ReferencedFileSourceListItemContainer } from "./referencedFileSourceListItemContainer";
 import isEqual from 'fast-deep-equal/react';
+import { useTranslations } from "next-intl";
 
 interface ReferencedSourcesListViewProps {
     references: FileReference[];
@@ -30,6 +31,7 @@ const ReferencedSourcesListViewComponent = ({
     onHoveredReferenceChanged,
     onSelectedReferenceChanged,
 }: ReferencedSourcesListViewProps) => {
+    const t = useTranslations('chatThread');
     const scrollAreaRef = useRef<HTMLDivElement>(null);
     const editorRefsMap = useRef<Map<string, ReactCodeMirrorRef>>(new Map());
     const [collapsedFileIds, setCollapsedFileIds] = useState<string[]>([]);
@@ -177,7 +179,7 @@ const ReferencedSourcesListViewComponent = ({
     if (sources.length === 0) {
         return (
             <div className="p-4 text-center text-muted-foreground text-sm">
-                No file references found
+                {t('noFileReferences')}
             </div>
         );
     }

@@ -9,6 +9,7 @@ import { changePasswordInputSchema, MIN_PASSWORD_LENGTH } from "@/features/accou
 import { isServiceError } from "@/lib/utils";
 import { Loader2 } from "lucide-react";
 import { FormEvent, useState } from "react";
+import { useTranslations } from "next-intl";
 
 interface AccountPageProps {
     email?: string;
@@ -17,26 +18,27 @@ interface AccountPageProps {
 }
 
 export const AccountPage = ({ email, hasPassword, isCredentialsLoginEnabled }: AccountPageProps) => {
+    const t = useTranslations('settings.account');
     return (
         <div className="flex flex-col gap-6">
             <div>
-                <h3 className="text-lg font-medium">Account</h3>
+                <h3 className="text-lg font-medium">{t('title')}</h3>
                 <p className="text-sm text-muted-foreground">
-                    {email ? <>Signed in as <span className="font-medium text-foreground">{email}</span>.</> : 'Manage your account.'}
+                    {email ? t.rich('signedInAs', { email, b: (chunks) => <span className="font-medium text-foreground">{chunks}</span> }) : t('manage')}
                 </p>
             </div>
 
             <div className="flex flex-col gap-3 rounded-md border p-4 max-w-lg">
                 <div>
-                    <h4 className="text-sm font-medium">Password</h4>
+                    <h4 className="text-sm font-medium">{t('password')}</h4>
                     <p className="text-xs text-muted-foreground">
-                        Changing your password signs you out on all other devices.
+                        {t('passwordHint')}
                     </p>
                 </div>
                 {!isCredentialsLoginEnabled ? (
-                    <p className="text-sm text-muted-foreground">Email and password login is disabled on this instance.</p>
+                    <p className="text-sm text-muted-foreground">{t('credentialsDisabled')}</p>
                 ) : !hasPassword ? (
-                    <p className="text-sm text-muted-foreground">Your account signs in with an identity provider and has no password.</p>
+                    <p className="text-sm text-muted-foreground">{t('noPassword')}</p>
                 ) : (
                     <ChangePasswordForm />
                 )}
@@ -46,6 +48,7 @@ export const AccountPage = ({ email, hasPassword, isCredentialsLoginEnabled }: A
 }
 
 const ChangePasswordForm = () => {
+    const t = useTranslations('settings.account');
     const { toast } = useToast();
     const [currentPassword, setCurrentPassword] = useState('');
     const [newPassword, setNewPassword] = useState('');
@@ -64,7 +67,7 @@ const ChangePasswordForm = () => {
             }
         }
         if (confirmPassword !== newPassword) {
-            fieldErrors.confirmPassword ??= 'The passwords do not match.';
+            fieldErrors.confirmPassword ??= t('passwordsDoNotMatch');
         }
         setErrors(fieldErrors);
         if (Object.keys(fieldErrors).length > 0 || !parsed.success) {
@@ -87,7 +90,7 @@ const ChangePasswordForm = () => {
         setCurrentPassword('');
         setNewPassword('');
         setConfirmPassword('');
-        toast({ description: "✅ Password changed. Other devices have been signed out." });
+        toast({ description: t('passwordChanged') });
     };
 
     const field = (id: string, label: string, value: string, onChange: (value: string) => void, autoComplete: string, hint?: string) => (
@@ -108,12 +111,12 @@ const ChangePasswordForm = () => {
 
     return (
         <form onSubmit={onSubmit} className="flex flex-col gap-3">
-            {field('currentPassword', 'Current password', currentPassword, setCurrentPassword, 'current-password')}
-            {field('newPassword', 'New password', newPassword, setNewPassword, 'new-password', `At least ${MIN_PASSWORD_LENGTH} characters.`)}
-            {field('confirmPassword', 'Confirm new password', confirmPassword, setConfirmPassword, 'new-password')}
+            {field('currentPassword', t('currentPassword'), currentPassword, setCurrentPassword, 'current-password')}
+            {field('newPassword', t('newPassword'), newPassword, setNewPassword, 'new-password', t('newPasswordHint', { min: MIN_PASSWORD_LENGTH }))}
+            {field('confirmPassword', t('confirmPassword'), confirmPassword, setConfirmPassword, 'new-password')}
             <Button type="submit" disabled={isSaving} className="self-start">
                 {isSaving && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
-                Change password
+                {t('changePassword')}
             </Button>
         </form>
     );

@@ -10,6 +10,7 @@ import { ProviderButton } from "@/app/components/providerButton";
 import { AuthSecurityNotice } from "@/app/components/authSecurityNotice";
 import type { IdentityProviderMetadata } from "@/lib/identityProviders";
 import Link from "next/link";
+import { useTranslations } from "next-intl";
 
 interface AuthMethodSelectorProps {
     providers: IdentityProviderMetadata[];
@@ -28,6 +29,8 @@ export const AuthMethodSelector = ({
     securityNoticeClosable = false,
     hideSecurityNotice = false
 }: AuthMethodSelectorProps) => {
+    const t = useTranslations('login');
+    const tCommon = useTranslations('common');
     const onSignInWithOauth = useCallback((provider: string) => {
         // Call the optional analytics callback first
         onProviderClick?.(provider);
@@ -50,8 +53,8 @@ export const AuthMethodSelector = ({
     if (oauthProviders.length === 0 && !hasCredentials && !hasMagicLink) {
         return (
             <div className="flex flex-col items-center justify-center w-full gap-2">
-                <p className="text-center font-medium">No authentication methods available. Please contact your administrator to configure authentication.</p>
-                <Link href="https://docs.sourcebot.dev/docs/configuration/auth/overview" target="_blank" rel="noopener" className="text-link hover:underline">Learn more</Link>
+                <p className="text-center font-medium">{t('noAuthMethods')}</p>
+                <Link href="https://docs.sourcebot.dev/docs/configuration/auth/overview" target="_blank" rel="noopener" className="text-link hover:underline">{tCommon('learnMore')}</Link>
             </div>
         )
     }

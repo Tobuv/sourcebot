@@ -11,6 +11,7 @@ import { verifyCredentialsRequestSchema } from "@/lib/schemas";
 import { useState } from "react";
 import { Loader2 } from "lucide-react";
 import useCaptureEvent from "@/hooks/useCaptureEvent";
+import { useTranslations } from "next-intl";
 
 interface CredentialsFormProps {
     callbackUrl?: string;
@@ -19,6 +20,7 @@ interface CredentialsFormProps {
 
 export const CredentialsForm = ({ callbackUrl, context }: CredentialsFormProps) => {
     const captureEvent = useCaptureEvent();
+    const t = useTranslations('login');
     const [isLoading, setIsLoading] = useState(false);
     const form = useForm<z.infer<typeof verifyCredentialsRequestSchema>>({
         resolver: zodResolver(verifyCredentialsRequestSchema),
@@ -53,7 +55,7 @@ export const CredentialsForm = ({ callbackUrl, context }: CredentialsFormProps) 
                     name="email"
                     render={({ field }) => (
                         <FormItem className="mb-4">
-                            <FormLabel>Email</FormLabel>
+                            <FormLabel>{t('email')}</FormLabel>
                             <FormControl>
                                 <Input
                                     placeholder="email@example.com"
@@ -70,7 +72,7 @@ export const CredentialsForm = ({ callbackUrl, context }: CredentialsFormProps) 
                     name="password"
                     render={({ field }) => (
                         <FormItem className="mb-8">
-                            <FormLabel>Password</FormLabel>
+                            <FormLabel>{t('password')}</FormLabel>
                             <FormControl>
                                 <Input
                                     type="password"
@@ -88,7 +90,7 @@ export const CredentialsForm = ({ callbackUrl, context }: CredentialsFormProps) 
                     disabled={isLoading}
                 >
                     {isLoading ? <Loader2 className="animate-spin mr-2" /> : ""}
-                    {context === "login" ? "Sign in with credentials" : "Sign up with credentials"}
+                    {context === "login" ? t('signInWithCredentials') : t('signUpWithCredentials')}
                 </Button>
             </form>
         </Form>

@@ -1,4 +1,8 @@
 import { withSentryConfig } from "@sentry/nextjs";
+import createNextIntlPlugin from "next-intl/plugin";
+
+// @see: src/i18n/request.ts
+const withNextIntl = createNextIntlPlugin("./src/i18n/request.ts");
 
 
 /** @type {import('next').NextConfig} */
@@ -84,7 +88,7 @@ const nextConfig = {
     } : {}),
 };
 
-export default withSentryConfig(nextConfig, {
+export default withSentryConfig(withNextIntl(nextConfig), {
     // For all available options, see:
     org: process.env.SENTRY_ORG,
     project: process.env.SENTRY_WEBAPP_PROJECT,

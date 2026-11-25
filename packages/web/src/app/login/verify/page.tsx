@@ -14,6 +14,7 @@ import { SourcebotLogo } from "@/app/components/sourcebotLogo"
 import useCaptureEvent from "@/hooks/useCaptureEvent"
 import { Footer } from "@/app/components/footer"
 import { SOURCEBOT_SUPPORT_EMAIL } from "@/lib/constants"
+import { useTranslations } from "next-intl"
 
 function VerifyPageContent() {
     const [value, setValue] = useState("")
@@ -21,6 +22,7 @@ function VerifyPageContent() {
     const email = searchParams.get("email")
     const router = useRouter()
     const captureEvent = useCaptureEvent();
+    const t = useTranslations('login');
 
     const handleSubmit = useCallback(() => {
         if (email && value.length === 6) {
@@ -51,9 +53,12 @@ function VerifyPageContent() {
                     </div>
                     <Card className="w-full shadow-lg border-muted/40">
                         <CardHeader className="space-y-1">
-                            <CardTitle className="text-2xl font-bold text-center">Verify your email</CardTitle>
+                            <CardTitle className="text-2xl font-bold text-center">{t('verifyTitle')}</CardTitle>
                             <CardDescription className="text-center">
-                                Enter the 6-digit code we sent to <span className="font-semibold text-primary">{email}</span>
+                                {t.rich('verifyDescription', {
+                                    email,
+                                    highlight: (chunks) => <span className="font-semibold text-primary">{chunks}</span>,
+                                })}
                             </CardDescription>
                         </CardHeader>
 
@@ -83,16 +88,19 @@ function VerifyPageContent() {
                         <CardFooter className="flex flex-col space-y-4 pt-0">
                             <Button variant="ghost" className="w-full text-sm" size="sm" onClick={() => window.history.back()}>
                                 <ArrowLeft className="mr-2 h-4 w-4" />
-                                Back to login
+                                {t('backToLogin')}
                             </Button>
                         </CardFooter>
                     </Card>
                     <div className="mt-8 text-center text-sm text-muted-foreground">
                         <p>
-                            Having trouble?{" "}
-                            <a href={`mailto:${SOURCEBOT_SUPPORT_EMAIL}`} className="text-primary hover:underline">
-                                Contact support
-                            </a>
+                            {t.rich('havingTrouble', {
+                                link: (chunks) => (
+                                    <a href={`mailto:${SOURCEBOT_SUPPORT_EMAIL}`} className="text-primary hover:underline">
+                                        {chunks}
+                                    </a>
+                                ),
+                            })}
                         </p>
                     </div>
                 </div>
@@ -103,6 +111,7 @@ function VerifyPageContent() {
 }
 
 function LoadingVerifyPage() {
+    const t = useTranslations('common');
     return (
         <div className="min-h-screen flex flex-col items-center justify-center p-4 bg-gradient-to-b from-background to-muted/30">
             <div className="w-full max-w-md">
@@ -111,7 +120,7 @@ function LoadingVerifyPage() {
                 </div>
                 <Card className="w-full shadow-lg border-muted/40">
                     <CardHeader className="space-y-1">
-                        <CardTitle className="text-2xl font-bold text-center">Loading...</CardTitle>
+                        <CardTitle className="text-2xl font-bold text-center">{t('loading')}</CardTitle>
                     </CardHeader>
                 </Card>
             </div>

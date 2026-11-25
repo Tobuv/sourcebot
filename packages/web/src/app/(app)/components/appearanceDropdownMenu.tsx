@@ -3,12 +3,14 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger } from "@/compon
 import { Settings2Icon } from "lucide-react"
 import { AppearanceDropdownMenuGroup } from "./appearanceDropdownMenuGroup"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
+import { useTranslations } from "next-intl"
 
 interface AppearanceDropdownMenuProps {
     className?: string;
 }
 
 export const AppearanceDropdownMenu = ({ className }: AppearanceDropdownMenuProps) => {
+    const t = useTranslations('appearance');
     return (
         <DropdownMenu>
             <Tooltip
@@ -22,7 +24,7 @@ export const AppearanceDropdownMenu = ({ className }: AppearanceDropdownMenuProp
                     </DropdownMenuTrigger>
                 </TooltipTrigger>
                 <TooltipContent>
-                    Appearance settings
+                    {t('settings')}
                 </TooltipContent>
             </Tooltip>
             <DropdownMenuContent>

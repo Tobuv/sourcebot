@@ -16,6 +16,7 @@ import { Link2Icon, LockIcon } from "lucide-react";
 import { SessionUser } from "@/auth";
 import { InvitePanel } from "./ee/invitePanel";
 import { captureEvent } from "@/hooks/useCaptureEvent";
+import { useTranslations } from "next-intl";
 
 interface ShareChatPopoverProps {
     chatId: string;
@@ -36,6 +37,7 @@ export const ShareChatPopover = ({
     isChatSharingEnabledInCurrentPlan,
     isChatSharingEnabled,
 }: ShareChatPopoverProps) => {
+    const t = useTranslations('chatShare');
     const [visibility, setVisibility] = useState(_visibility);
     const [sharedWithUsers, setSharedWithUsers] = useState(_sharedWithUsers);
 
@@ -48,7 +50,7 @@ export const ShareChatPopover = ({
         const response = await updateChatVisibility({ chatId, visibility: newVisibility });
         if (isServiceError(response)) {
             toast({
-                description: `Failed to update visibility: ${response.message}`,
+                description: t('visibilityUpdateFailed', { reason: response.message }),
                 variant: "destructive",
             });
             return false;
@@ -60,17 +62,17 @@ export const ShareChatPopover = ({
                 toVisibility: newVisibility,
             });
             toast({
-                description: "✅ Chat visibility updated"
+                description: t('visibilityUpdated')
             });
             return true;
         }
-    }, [chatId, toast, visibility]);
+    }, [chatId, toast, visibility, t]);
 
     const onUnshareChatWithUser = useCallback(async (userId: string) => {
         const response = await unshareChatWithUser({ chatId, userId });
         if (isServiceError(response)) {
             toast({
-                description: `Failed to remove invited user: ${response.message}`,
+                description: t('removeUserFailed', { reason: response.message }),
                 variant: "destructive",
             });
             return false;
@@ -78,11 +80,11 @@ export const ShareChatPopover = ({
             setSharedWithUsers(prev => prev.filter(u => u.id !== userId));
             captureEvent('wa_chat_user_removed', { chatId });
             toast({
-                description: "✅ Access removed"
+                description: t('accessRemoved')
             });
             return true;
         }
-    }, [chatId, toast]);
+    }, [chatId, toast, t]);
 
 
     const onShareChatWithUsers = useCallback(async (users: SessionUser[]) => {
@@ -93,7 +95,7 @@ export const ShareChatPopover = ({
 
         if (isServiceError(response)) {
             toast({
-                description: `Failed to share with ${users.length} user${users.length > 1 ? 's' : ''}`,
+                description: t('shareFailed', { count: users.length }),
                 variant: "destructive",
             });
             return false;
@@ -104,12 +106,12 @@ export const ShareChatPopover = ({
                 numUsersInvited: users.length,
             });
             toast({
-                description: `✅ Invited ${users.length} user${users.length > 1 ? 's' : ''}`
+                description: t('invited', { count: users.length })
             });
             setView('main');
             return true;
         }
-    }, [chatId, toast]);
+    }, [chatId, toast, t]);
 
     const onOpenChange = useCallback((open: boolean) => {
         _setIsOpen(open);
@@ -141,7 +143,7 @@ export const ShareChatPopover = ({
                     ) : (
                         <LockIcon className="h-4 w-4" />
                     )}
-                    Share
+                    {t('share')}
                 </Button>
             </PopoverTrigger>
             <PopoverContent align="end" className="w-[420px] p-0">

@@ -19,6 +19,7 @@ import { Metadata } from 'next';
 import { SBChatMessage } from '@/features/chat/types';
 import { env, hasEntitlement } from '@sourcebot/shared';
 import { captureEvent } from '@/lib/posthog';
+import { getTranslations } from "next-intl/server";
 
 interface PageProps {
     params: Promise<{
@@ -28,6 +29,7 @@ interface PageProps {
 
 export const generateMetadata = async ({ params }: PageProps): Promise<Metadata> => {
     const { id } = await params;
+    const t = await getTranslations('chat');
 
     const chat = await __unsafePrisma.chat.findUnique({
         where: {
@@ -37,23 +39,23 @@ export const generateMetadata = async ({ params }: PageProps): Promise<Metadata>
 
     if (!chat) {
         return {
-            title: 'Chat | NexusCode',
+            title: `${t('metaTitle')} | NexusCode`,
         };
     }
 
     // Only show detailed metadata for public chats
     if (chat.visibility !== ChatVisibility.PUBLIC) {
         return {
-            title: 'Private Chat | NexusCode',
-            description: 'Login to view',
+            title: `${t('metaPrivateTitle')} | NexusCode`,
+            description: t('metaLoginToView'),
         };
     }
 
-    const chatName = chat.name ?? 'Untitled chat';
+    const chatName = chat.name ?? t('untitled');
     const messages = chat.messages as unknown as SBChatMessage[];
     const firstUserMessage = messages.find(m => m.role === 'user');
 
-    let description = 'A chat on NexusCode';
+    let description = t('metaDescription');
     if (firstUserMessage) {
         const textPart = firstUserMessage.parts.find(p => p.type === 'text');
         if (textPart && textPart.type === 'text') {

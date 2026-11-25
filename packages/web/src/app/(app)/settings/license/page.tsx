@@ -6,8 +6,12 @@ import { isServiceError } from "@/lib/utils";
 import { ServiceErrorException } from "@/lib/serviceError";
 import { authenticatedPage } from "@/middleware/authenticatedPage";
 import { OrgRole } from "@sourcebot/db";
+import { getTranslations, getLocale } from "next-intl/server";
+import { getIntlLocale } from "@/i18n/dateLocale";
 
 export default authenticatedPage(async () => {
+    const t = await getTranslations('settings.license');
+    const locale = await getLocale();
     const licenseKey = getLicenseKey();
     const entitlements = getEntitlements();
     const plan = getPlan();
@@ -16,26 +20,25 @@ export default authenticatedPage(async () => {
         return (
             <div className="flex flex-col gap-6">
                 <div>
-                    <h3 className="text-lg font-medium">License</h3>
-                    <p className="text-sm text-muted-foreground">View your license details.</p>
+                    <h3 className="text-lg font-medium">{t('title')}</h3>
+                    <p className="text-sm text-muted-foreground">{t('description')}</p>
                 </div>
 
                 <div className="flex flex-col items-center justify-center p-8 border rounded-md bg-card">
                     <Info className="h-12 w-12 text-muted-foreground mb-4" />
-                    <h3 className="text-lg font-medium mb-2">No License Found</h3>
+                    <h3 className="text-lg font-medium mb-2">{t('notFound')}</h3>
                     <p className="text-sm text-muted-foreground text-center max-w-md mb-6">
-                        Check out the <a href="https://docs.sourcebot.dev/docs/license-key" target="_blank" rel="noopener noreferrer" className="text-primary">docs</a> for more information.
+                        {t.rich('notFoundDescription', { link: (chunks) => <a href="https://docs.sourcebot.dev/docs/license-key" target="_blank" rel="noopener noreferrer" className="text-primary">{chunks}</a> })}
                     </p>
                     <div className="mb-8 max-w-md rounded-lg bg-slate-50 p-4 dark:bg-slate-800">
                         <p className="text-base text-center">
-                            Want to try out NexusCode&apos;s enterprise features? Reach out to us and we&apos;ll get back to you within
-                            a couple hours with a trial license.
+                            {t('trialPitch')}
                         </p>
                     </div>
                     <Button asChild>
                         <a href={`https://sourcebot.dev/contact`} target="_blank" rel="noopener noreferrer">
                             <Mail className="h-4 w-4 mr-2" />
-                            Request a trial license
+                            {t('requestTrial')}
                         </a>
                     </Button>
                 </div>
@@ -58,56 +61,56 @@ export default authenticatedPage(async () => {
         <div className="flex flex-col gap-6">
             <div className="flex items-start justify-between">
                 <div>
-                    <h3 className="text-lg font-medium">License</h3>
-                    <p className="text-sm text-muted-foreground">View your license details.</p>
+                    <h3 className="text-lg font-medium">{t('title')}</h3>
+                    <p className="text-sm text-muted-foreground">{t('description')}</p>
                 </div>
 
                 <Button asChild>
                     <a href={`mailto:team@sourcebot.dev?subject=License Support - ${licenseKey.id}&body=License ID: ${licenseKey.id}`}>
                         <Mail className="h-4 w-4 mr-2" />
-                        Contact Support
+                        {t('contactSupport')}
                     </a>
                 </Button>
             </div>
 
             <div className="grid gap-6">
                 <div className="border rounded-md p-6 bg-card">
-                    <h4 className="text-base font-medium mb-4">License Details</h4>
+                    <h4 className="text-base font-medium mb-4">{t('details')}</h4>
 
                     <div className="grid gap-4">
                         <div className="grid grid-cols-2 gap-4">
-                            <div className="text-sm text-muted-foreground">License ID</div>
+                            <div className="text-sm text-muted-foreground">{t('id')}</div>
                             <div className="text-sm font-mono">{licenseKey.id}</div>
                         </div>
 
                         <div className="grid grid-cols-2 gap-4">
-                            <div className="text-sm text-muted-foreground">Plan</div>
+                            <div className="text-sm text-muted-foreground">{t('plan')}</div>
                             <div className="text-sm font-mono">{plan}</div>
                         </div>
 
                         <div className="grid grid-cols-2 gap-4">
-                            <div className="text-sm text-muted-foreground">Entitlements</div>
-                            <div className="text-sm font-mono">{entitlements?.join(", ") || "None"}</div>
+                            <div className="text-sm text-muted-foreground">{t('entitlements')}</div>
+                            <div className="text-sm font-mono">{entitlements?.join(", ") || t('none')}</div>
                         </div>
 
                         <div className="grid grid-cols-2 gap-4">
-                            <div className="text-sm text-muted-foreground">Seats</div>
+                            <div className="text-sm text-muted-foreground">{t('seats')}</div>
                             <div className="text-sm font-mono">
-                                {isUnlimited ? 'Unlimited' : `${numMembers} / ${seats}`}
+                                {isUnlimited ? t('unlimited') : `${numMembers} / ${seats}`}
                             </div>
                         </div>
 
                         <div className="grid grid-cols-2 gap-4">
-                            <div className="text-sm text-muted-foreground">Expiry Date</div>
+                            <div className="text-sm text-muted-foreground">{t('expiryDate')}</div>
                             <div className={`text-sm font-mono ${isExpired ? 'text-destructive' : ''}`}>
-                                {expiryDate.toLocaleString("en-US", {
+                                {expiryDate.toLocaleString(getIntlLocale(locale), {
                                     hour: "2-digit",
                                     minute: "2-digit",
                                     month: "long",
                                     day: "numeric",
                                     year: "numeric",
                                     timeZoneName: "short"
-                                })} {isExpired && '(Expired)'}
+                                })} {isExpired && t('expired')}
                             </div>
                         </div>
                     </div>

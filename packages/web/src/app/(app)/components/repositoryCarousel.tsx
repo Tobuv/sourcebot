@@ -11,6 +11,7 @@ import clsx from "clsx";
 import Autoscroll from "embla-carousel-auto-scroll";
 import Image from "next/image";
 import Link from "next/link";
+import { useTranslations } from "next-intl";
 
 interface RepositoryCarouselProps {
     displayRepos: RepositoryQuery[];
@@ -21,21 +22,22 @@ export function RepositoryCarousel({
     displayRepos,
     numberOfReposWithIndex,
 }: RepositoryCarouselProps) {
+    const t = useTranslations('shared');
     if (numberOfReposWithIndex === 0) {
         return (
             <div className="flex flex-col items-center gap-3">
-                <span className="text-sm">No repositories found</span>
+                <span className="text-sm">{t('noRepositoriesFound')}</span>
 
                 <div className="w-full max-w-lg">
                     <div className="flex flex-row items-center gap-2 border rounded-md p-4 justify-center">
                         <span className="text-sm text-muted-foreground">
-                            <>
-                                Create a{" "}
-                                <Link href={`/settings/connections`} className="text-blue-500 hover:underline inline-flex items-center gap-1">
-                                    connection
-                                </Link>{" "}
-                                to start indexing repositories
-                            </>
+                            {t.rich('createConnectionToIndex', {
+                                link: (chunks) => (
+                                    <Link href={`/settings/connections`} className="text-blue-500 hover:underline inline-flex items-center gap-1">
+                                        {chunks}
+                                    </Link>
+                                ),
+                            })}
                         </span>
                     </div>
                 </div>
@@ -46,14 +48,17 @@ export function RepositoryCarousel({
     return (
         <div className="flex flex-col items-center gap-3">
             <span className="text-sm">
-                {`${numberOfReposWithIndex} `}
-                <Link
-                    href={`/repos`}
-                    className="text-link hover:underline"
-                >
-                    {numberOfReposWithIndex > 1 ? 'repositories' : 'repository'}
-                </Link>
-                {` indexed`}
+                {t.rich('reposIndexed', {
+                    count: numberOfReposWithIndex,
+                    link: (chunks) => (
+                        <Link
+                            href={`/repos`}
+                            className="text-link hover:underline"
+                        >
+                            {chunks}
+                        </Link>
+                    ),
+                })}
             </span>
             <Carousel
                 opts={{

@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useTranslations } from "next-intl";
 
 interface CommitsPaginationProps {
     page: number;
@@ -23,6 +24,7 @@ const buildHref = (page: number, extraParams?: Record<string, string | undefined
 };
 
 export const CommitsPagination = ({ page, perPage, totalCount, extraParams }: CommitsPaginationProps) => {
+    const t = useTranslations('browse');
     const hasPrev = page > 1;
     const hasNext = page * perPage < totalCount;
 
@@ -38,22 +40,22 @@ export const CommitsPagination = ({ page, perPage, totalCount, extraParams }: Co
             {hasPrev ? (
                 <Link href={buildHref(page - 1, extraParams)} className={linkClass}>
                     <ChevronLeft className="h-4 w-4" />
-                    Previous
+                    {t('previous')}
                 </Link>
             ) : (
                 <span className={cn(disabledClass)} aria-disabled="true">
                     <ChevronLeft className="h-4 w-4" />
-                    Previous
+                    {t('previous')}
                 </span>
             )}
             {hasNext ? (
                 <Link href={buildHref(page + 1, extraParams)} className={linkClass}>
-                    Next
+                    {t('next')}
                     <ChevronRight className="h-4 w-4" />
                 </Link>
             ) : (
                 <span className={cn(disabledClass)} aria-disabled="true">
-                    Next
+                    {t('next')}
                     <ChevronRight className="h-4 w-4" />
                 </span>
             )}

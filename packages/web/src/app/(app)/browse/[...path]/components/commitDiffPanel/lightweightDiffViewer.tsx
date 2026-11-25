@@ -9,6 +9,7 @@ import { Highlighter, highlightTree } from "@lezer/highlight";
 import { Fragment, ReactNode, useEffect, useMemo, useState } from "react";
 import { DiffLine, parseHunkLines } from "./hunkParser";
 import { pairForSplit, SplitRow } from "./splitPairing";
+import { useTranslations } from "next-intl";
 
 interface LightweightDiffViewerProps {
     hunks: DiffHunk[];
@@ -49,6 +50,7 @@ const MARKER: Record<'add' | 'del' | 'context', string> = {
 const MAX_NUMBER_OF_CHARACTER_PER_LINE = 1000;
 
 export const LightweightDiffViewer = ({ hunks, oldPath, newPath }: LightweightDiffViewerProps) => {
+    const t = useTranslations('browse');
     const filename = (newPath ?? oldPath ?? '').split('/').pop() ?? '';
     const highlighter = useCodeMirrorHighlighter();
 
@@ -74,7 +76,7 @@ export const LightweightDiffViewer = ({ hunks, oldPath, newPath }: LightweightDi
     if (isDiffTooLargeToDisplay) {
         return (
             <div className="p-4 text-sm text-muted-foreground">
-                Diff too large to display in preview.
+                {t('diffTooLarge')}
             </div>
         );
     }

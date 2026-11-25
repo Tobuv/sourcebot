@@ -8,6 +8,7 @@ import { Copy, Check } from "lucide-react"
 import { useToast } from "@/components/hooks/use-toast"
 import { setInviteLinkEnabled } from "@/actions"
 import { isServiceError } from "@/lib/utils"
+import { useTranslations } from "next-intl";
 
 interface InviteLinkToggleProps {
     inviteLinkEnabled: boolean
@@ -15,6 +16,7 @@ interface InviteLinkToggleProps {
 }
 
 export function InviteLinkToggle({ inviteLinkEnabled, inviteLink }: InviteLinkToggleProps) {
+    const t = useTranslations('orgAccess');
     const [enabled, setEnabled] = useState(inviteLinkEnabled)
     const [isLoading, setIsLoading] = useState(false)
     const [copied, setCopied] = useState(false)
@@ -29,7 +31,7 @@ export function InviteLinkToggle({ inviteLinkEnabled, inviteLink }: InviteLinkTo
             if (isServiceError(result)) {
                 toast({
                     title: "Error",
-                    description: "Failed to update invite link setting",
+                    description: t('inviteLinkFailed'),
                     variant: "destructive",
                 })
                 return
@@ -41,7 +43,7 @@ export function InviteLinkToggle({ inviteLinkEnabled, inviteLink }: InviteLinkTo
             console.error("Error updating invite link setting:", error)
             toast({
                 title: "Error",
-                description: "Failed to update invite link setting",
+                description: t('inviteLinkFailed'),
                 variant: "destructive",
             })
         } finally {
@@ -60,7 +62,7 @@ export function InviteLinkToggle({ inviteLinkEnabled, inviteLink }: InviteLinkTo
             console.error("Failed to copy text: ", err)
             toast({
                 title: "Error",
-                description: "Failed to copy invite link to clipboard",
+                description: t('inviteLinkCopyFailed'),
                 variant: "destructive",
             })
         }
@@ -71,11 +73,11 @@ export function InviteLinkToggle({ inviteLinkEnabled, inviteLink }: InviteLinkTo
             <div className="flex items-start justify-between gap-4">
                 <div className="flex-1 min-w-0">
                     <h3 className="font-medium text-[var(--foreground)] mb-2">
-                        Enable invite link
+                        {t('inviteLinkTitle')}
                     </h3>
                     <div className="max-w-2xl">
                         <p className="text-sm text-[var(--muted-foreground)] leading-relaxed">
-                            When enabled, team members can use the invite link to join your organization without requiring approval.
+                            {t('inviteLinkDescription')}
                         </p>
                     </div>
                 </div>
@@ -97,7 +99,7 @@ export function InviteLinkToggle({ inviteLinkEnabled, inviteLink }: InviteLinkTo
                     <div className="space-y-2">
                         <div className="flex gap-2">
                             <Input
-                                value={inviteLink || "Failed to fetch invite link: org doesn't have inviteId property."}
+                                value={inviteLink || t('inviteLinkMissing')}
                                 readOnly
                                 className={`flex-1 bg-[var(--muted)] border-[var(--border)] ${
                                     inviteLink ? 'text-[var(--foreground)]' : 'text-red-500'
@@ -120,7 +122,7 @@ export function InviteLinkToggle({ inviteLinkEnabled, inviteLink }: InviteLinkTo
                     </div>
                     
                     <p className="text-sm text-[var(--muted-foreground)]">
-                        You can find this link again in the <strong>Settings → Members</strong> page.
+                        {t.rich('inviteLinkFindAgain', { b: (chunks) => <strong>{chunks}</strong> })}
                     </p>
                 </div>
             </div>

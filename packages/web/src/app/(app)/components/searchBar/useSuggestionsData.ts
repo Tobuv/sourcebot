@@ -20,6 +20,8 @@ import {
 } from "react-icons/vsc";
 import { useSearchHistory } from "@/hooks/useSearchHistory";
 import { getFormattedDate, isServiceError, unwrapServiceError } from "@/lib/utils";
+import { useLocale } from "next-intl";
+import { getIntlLocale } from "@/i18n/dateLocale";
 
 
 interface Props {
@@ -34,6 +36,7 @@ export const useSuggestionsData = ({
     suggestionMode,
     suggestionQuery,
 }: Props) => {
+    const intlLocale = getIntlLocale(useLocale());
     const { data: repoSuggestions, isLoading: _isLoadingRepos } = useQuery({
         queryKey: ["repoSuggestions", suggestionQuery],
         queryFn: () => unwrapServiceError(listRepos({
@@ -143,9 +146,9 @@ export const useSuggestionsData = ({
     const searchHistorySuggestions = useMemo(() => {
         return searchHistory.map(search => ({
             value: search.query,
-            description: getFormattedDate(new Date(search.date)),
+            description: getFormattedDate(new Date(search.date), intlLocale),
         } satisfies Suggestion));
-    }, [searchHistory]);
+    }, [searchHistory, intlLocale]);
 
     const isLoadingSuggestions = useMemo(() => {
         return isLoadingSymbols || isLoadingFiles || isLoadingRepos || isLoadingSearchContexts;

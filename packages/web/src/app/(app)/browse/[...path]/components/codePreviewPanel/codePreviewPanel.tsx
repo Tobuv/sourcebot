@@ -12,6 +12,7 @@ import { BlameAgeLegend } from "./blameAgeLegend";
 import { BlameViewToggle } from "./blameViewToggle";
 import { PureCodePreviewPanel } from "./pureCodePreviewPanel";
 import { getFileBlame, getFileSource } from '@/features/git';
+import { getTranslations } from "next-intl/server";
 
 const formatFileSize = (bytes: number): string => {
     if (bytes < 1024) {
@@ -36,6 +37,8 @@ interface CodePreviewPanelProps {
 }
 
 export const CodePreviewPanel = async ({ path, repoName, revisionName, previewRef, blame }: CodePreviewPanelProps) => {
+    const tCommon = await getTranslations('common');
+    const t = await getTranslations('browse');
     const contentRef = previewRef ?? revisionName;
 
     const [fileSourceResponse, repoInfoResponse, blameResponse] = await Promise.all([
@@ -112,7 +115,7 @@ export const CodePreviewPanel = async ({ path, repoName, revisionName, previewRe
                             alt={codeHostInfo.codeHostName}
                             className={cn('w-4 h-4 flex-shrink-0', codeHostInfo.iconClassName)}
                         />
-                        <span className="text-sm font-medium">Open in {codeHostInfo.codeHostName}</span>
+                        <span className="text-sm font-medium">{tCommon('openInCodeHost', { host: codeHostInfo.codeHostName })}</span>
                     </a>
                 )}
             </div>
@@ -126,7 +129,7 @@ export const CodePreviewPanel = async ({ path, repoName, revisionName, previewRe
                         blame={blame ?? false}
                     />
                     <span className="text-sm text-muted-foreground">
-                        {lineCount.toLocaleString()} lines · {fileSize}
+                        {t('lineCount', { count: lineCount })} · {fileSize}
                     </span>
                     {blame && (
                         <>
@@ -168,13 +171,13 @@ export const CodePreviewPanel = async ({ path, repoName, revisionName, previewRe
                                         path,
                                         pathType: 'blob',
                                     })}
-                                    aria-label="Close preview"
+                                    aria-label={t('closePreview')}
                                 >
                                     <X className="h-4 w-4" />
                                 </Link>
                             </Button>
                         </TooltipTrigger>
-                        <TooltipContent>Close preview</TooltipContent>
+                        <TooltipContent>{t('closePreview')}</TooltipContent>
                     </Tooltip>
                 </div>
             )}

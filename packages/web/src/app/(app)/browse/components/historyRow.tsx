@@ -11,6 +11,8 @@ import { useBrowseParams } from "../hooks/useBrowseParams";
 import { BrowsePathType, getBrowsePath, PREVIEW_REF_QUERY_PARAM } from "../hooks/utils";
 import { formatAuthorsText, getCommitAuthors } from "./commitAuthors";
 import { AuthorsAvatarGroup, CommitActionLink } from "./commitParts";
+import { useDateFnsLocale } from "@/i18n/dateLocale";
+import { useTranslations } from "next-intl";
 
 interface HistoryRowProps {
     commit: Commit;
@@ -21,10 +23,12 @@ interface HistoryRowProps {
 }
 
 export const HistoryRow = ({ commit, repoName, revisionName, path, pathType }: HistoryRowProps) => {
+    const t = useTranslations('browse');
+    const dateLocale = useDateFnsLocale();
     const browseParams = useBrowseParams();
     const searchParams = useSearchParams();
     const shortSha = commit.hash.slice(0, 7);
-    const relativeDate = formatDistanceToNow(new Date(commit.date), { addSuffix: true });
+    const relativeDate = formatDistanceToNow(new Date(commit.date), { addSuffix: true, locale: dateLocale });
     const isBlobPath = pathType === 'blob';
 
     const isSelected =
@@ -117,13 +121,13 @@ export const HistoryRow = ({ commit, repoName, revisionName, path, pathType }: H
                 {isBlobPath && (
                     <CommitActionLink
                         href={viewCodeHref}
-                        label="View code at this commit"
+                        label={t('viewCodeAtCommit')}
                         icon={<FileCode className="h-3 w-3" />}
                     />
                 )}
                 <CommitActionLink
                     href={viewRepoHref}
-                    label="View repository at this commit"
+                    label={t('viewRepoAtCommit')}
                     icon={<Code className="h-3 w-3" />}
                 />
             </div>

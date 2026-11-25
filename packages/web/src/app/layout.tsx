@@ -10,6 +10,9 @@ import { SessionProvider } from "next-auth/react";
 import { env, SOURCEBOT_VERSION } from "@sourcebot/shared";
 import { PlanProvider } from "@/features/entitlements/planProvider";
 import { getEntitlements } from "@sourcebot/shared";
+import { NextIntlClientProvider } from "next-intl";
+import { getLocale } from "next-intl/server";
+import { ZodErrorMapProvider } from "@/i18n/zodErrorMap";
 
 export const metadata: Metadata = {
   metadataBase: env.AUTH_URL ? new URL(env.AUTH_URL) : undefined,
@@ -24,14 +27,16 @@ export const metadata: Metadata = {
   manifest: "/manifest.json",
 };
 
-export default function RootLayout({
+export default async function RootLayout({
     children,
 }: Readonly<{
     children: React.ReactNode;
 }>) {
+    const locale = await getLocale();
+
     return (
         <html
-            lang="en"
+            lang={locale === 'zh' ? 'zh-CN' : locale}
             // @see : https://github.com/pacocoursey/next-themes?tab=readme-ov-file#with-app
             suppressHydrationWarning
         >
@@ -59,6 +64,8 @@ export default function RootLayout({
         )}
       </head>
             <body>
+                <NextIntlClientProvider>
+                <ZodErrorMapProvider />
                 <Toaster />
                 <SessionProvider>
                     <PlanProvider entitlements={getEntitlements()}>
@@ -86,6 +93,7 @@ export default function RootLayout({
                         </PostHogProvider>
                     </PlanProvider>
                 </SessionProvider>
+                </NextIntlClientProvider>
             </body>
         </html>
     );

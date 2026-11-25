@@ -6,13 +6,14 @@ import React, { useCallback, useMemo, useRef } from "react";
 import { FileTreeItemComponent } from "./fileTreeItemComponent";
 import { getBrowsePath } from "@/app/(app)/browse/hooks/utils";
 import { useBrowseParams } from "@/app/(app)/browse/hooks/useBrowseParams";
+import { useTranslations } from "next-intl";
 
-const renderLoadingSkeleton = (depth: number) => {
+const renderLoadingSkeleton = (depth: number, label: string) => {
     return (
         <div className="flex items-center gap-1 p-0.5 text-sm text-muted-foreground" style={{ paddingLeft: `${depth * 16}px` }}>
             <div className="w-5 h-4" />
             <div className="h-3 w-3 rounded-full border-2 border-muted-foreground/30 border-t-muted-foreground animate-spin" />
-            <span>Loading...</span>
+            <span>{label}</span>
         </div>
     );
 }
@@ -25,6 +26,7 @@ interface PureFileTreePanelProps {
 }
 
 export const PureFileTreePanel = ({ tree, openPaths, path, onTreeNodeClicked }: PureFileTreePanelProps) => {
+    const tCommon = useTranslations('common');
     const scrollAreaRef = useRef<HTMLDivElement>(null);
     const { repoName, revisionName } = useBrowseParams();
 
@@ -71,13 +73,13 @@ export const PureFileTreePanel = ({ tree, openPaths, path, onTreeNodeClicked }: 
                                 This relies on the fact that you cannot have empty tress in git.
                                 @see: https://archive.kernel.org/oldwiki/git.wiki.kernel.org/index.php/GitFaq.html#Can_I_add_empty_directories.3F
                             */}
-                            {node.type === 'tree' && node.children.length === 0 && openPaths.has(node.path) && renderLoadingSkeleton(depth)}
+                            {node.type === 'tree' && node.children.length === 0 && openPaths.has(node.path) && renderLoadingSkeleton(depth, tCommon('loading'))}
                         </React.Fragment>
                     );
                 })}
             </>
         );
-    }, [onTreeNodeClicked, path, repoName, revisionName, openPaths]);
+    }, [onTreeNodeClicked, path, repoName, revisionName, openPaths, tCommon]);
 
     const renderedTree = useMemo(() => renderTree(tree), [tree, renderTree]);
 

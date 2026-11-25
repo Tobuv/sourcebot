@@ -14,6 +14,7 @@ import { Info } from "lucide-react";
 import Link from "next/link";
 import { Suspense } from "react";
 import { ConnectionJobsTable } from "../components/connectionJobsTable";
+import { getTranslations } from "next-intl/server";
 
 interface ConnectionDetailPageProps {
     params: Promise<{
@@ -22,6 +23,7 @@ interface ConnectionDetailPageProps {
 }
 
 export default async function ConnectionDetailPage(props: ConnectionDetailPageProps) {
+    const t = await getTranslations('connections');
     const params = await props.params;
     const { id } = params;
 
@@ -93,7 +95,7 @@ export default async function ConnectionDetailPage(props: ConnectionDetailPagePr
         <div>
             <BackButton
                 href={`/settings/connections`}
-                name="Back to connections"
+                name={t('backToConnections')}
                 className="mb-2"
             />
             <div className="flex flex-col gap-2 mb-6">
@@ -113,13 +115,13 @@ export default async function ConnectionDetailPage(props: ConnectionDetailPagePr
                 <Card>
                     <CardHeader className="pb-3">
                         <CardTitle className="text-sm font-medium flex items-center gap-1.5">
-                            Created
+                            {t('created')}
                             <Tooltip>
                                 <TooltipTrigger asChild>
                                     <Info className="h-3.5 w-3.5 text-muted-foreground cursor-help" />
                                 </TooltipTrigger>
                                 <TooltipContent>
-                                    <p>When this connection was first added to NexusCode</p>
+                                    <p>{t('createdHint')}</p>
                                 </TooltipContent>
                             </Tooltip>
                         </CardTitle>
@@ -132,13 +134,13 @@ export default async function ConnectionDetailPage(props: ConnectionDetailPagePr
                 <Card>
                     <CardHeader className="pb-3">
                         <CardTitle className="text-sm font-medium flex items-center gap-1.5">
-                            Last synced
+                            {t('lastSynced')}
                             <Tooltip>
                                 <TooltipTrigger asChild>
                                     <Info className="h-3.5 w-3.5 text-muted-foreground cursor-help" />
                                 </TooltipTrigger>
                                 <TooltipContent>
-                                    <p>The last time this connection was successfully synced</p>
+                                    <p>{t('lastSyncedHint')}</p>
                                 </TooltipContent>
                             </Tooltip>
                         </CardTitle>
@@ -151,13 +153,13 @@ export default async function ConnectionDetailPage(props: ConnectionDetailPagePr
                 <Card>
                     <CardHeader className="pb-3">
                         <CardTitle className="text-sm font-medium flex items-center gap-1.5">
-                            Scheduled
+                            {t('scheduled')}
                             <Tooltip>
                                 <TooltipTrigger asChild>
                                     <Info className="h-3.5 w-3.5 text-muted-foreground cursor-help" />
                                 </TooltipTrigger>
                                 <TooltipContent>
-                                    <p>When the connection will be resynced next. Modifying the config will also trigger a resync.</p>
+                                    <p>{t('scheduledHint')}</p>
                                 </TooltipContent>
                             </Tooltip>
                         </CardTitle>
@@ -170,8 +172,8 @@ export default async function ConnectionDetailPage(props: ConnectionDetailPagePr
 
             <Card>
                 <CardHeader>
-                    <CardTitle>Sync History</CardTitle>
-                    <CardDescription>History of all sync jobs for this connection.</CardDescription>
+                    <CardTitle>{t('syncHistory')}</CardTitle>
+                    <CardDescription>{t('syncHistoryDescription')}</CardDescription>
                 </CardHeader>
                 <CardContent>
                     <Suspense fallback={<Skeleton className="h-96 w-full" />}>

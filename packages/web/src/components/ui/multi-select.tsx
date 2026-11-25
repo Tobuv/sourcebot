@@ -28,6 +28,7 @@ import {
     CommandList,
     CommandSeparator,
 } from "@/components/ui/command";
+import { useTranslations } from "next-intl";
 
 /**
  * Variants for the multi-select component to handle different styles.
@@ -138,7 +139,7 @@ export const MultiSelect = React.forwardRef<
             ...props
         },
         ref
-    ) => {
+    ) => {        const tCommon = useTranslations('common');
         const [selectedValues, setSelectedValues] =
             React.useState<string[]>(defaultValue);
         const [isPopoverOpen, setIsPopoverOpen] = React.useState(false);
@@ -296,7 +297,7 @@ export const MultiSelect = React.forwardRef<
                             onKeyDown={handleInputKeyDown}
                         />
                         <CommandList>
-                            <CommandEmpty>No results found.</CommandEmpty>
+                            <CommandEmpty>{tCommon('noResultsFound')}</CommandEmpty>
                             <CommandGroup>
 
                                 {options.map((option) => {

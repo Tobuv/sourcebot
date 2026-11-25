@@ -5,13 +5,16 @@ import { isServiceError } from "@/lib/utils";
 import { format } from "date-fns";
 import { FileCode } from "lucide-react";
 import Link from "next/link";
-import { formatAuthorsText, getCommitAuthors } from "../../../components/commitAuthors";
+import { authorsTextFormatFromTranslator, formatAuthorsText, getCommitAuthors } from "../../../components/commitAuthors";
 import { AuthorsAvatarGroup } from "../../../components/commitParts";
 import { getBrowsePath } from "../../../hooks/utils";
 import { CommitHashLine } from "./commitHashLine";
 import { CommitMessage } from "./commitMessage";
 import { computeTotalChangeCounts, DiffStat } from "./diffStat";
 import { FileDiffList } from "./fileDiffList";
+import { getTranslations } from "next-intl/server";
+import { getLocale } from "next-intl/server";
+import { getDateFnsLocale } from "@/i18n/dateLocale";
 
 interface FullCommitDiffPanelProps {
     repoName: string;
@@ -23,6 +26,8 @@ interface FullCommitDiffPanelProps {
 const EMPTY_TREE_SHA = '4b825dc642cb6eb9a060e54bf8d69288fbee4904';
 
 export const FullCommitDiffPanel = async ({ repoName, commitSha }: FullCommitDiffPanelProps) => {
+    const t = await getTranslations('browse');
+    const dateLocale = getDateFnsLocale(await getLocale());
     const [commitResponse, initialDiffResponse] = await Promise.all([
         getCommit({
             repo: repoName,
@@ -38,7 +43,7 @@ export const FullCommitDiffPanel = async ({ repoName, commitSha }: FullCommitDif
     if (isServiceError(commitResponse)) {
         return (
             <div className="p-6 text-sm text-destructive">
-                Error loading commit: {commitResponse.message}
+                {t('errorLoadingCommit', { message: commitResponse.message })}
             </div>
         );
     }
@@ -57,14 +62,14 @@ export const FullCommitDiffPanel = async ({ repoName, commitSha }: FullCommitDif
     if (isServiceError(diffResponse)) {
         return (
             <div className="p-6 text-sm text-destructive">
-                Error loading diff: {diffResponse.message}
+                {t('errorLoadingDiff', { message: diffResponse.message })}
             </div>
         );
     }
 
     const baseSha = commitResponse.parents.length > 0 ? commitResponse.parents[0] : null;
     const subject = commitResponse.message.split('\n')[0];
-    const formattedDate = format(new Date(commitResponse.date), 'MMM d, yyyy');
+    const formattedDate = format(new Date(commitResponse.date), 'PP', { locale: dateLocale });
     const totalChangeCounts = computeTotalChangeCounts(diffResponse.files);
     const authors = getCommitAuthors(commitResponse);
 
@@ -87,11 +92,11 @@ export const FullCommitDiffPanel = async ({ repoName, commitSha }: FullCommitDif
                                     })}
                                 >
                                     <FileCode className="h-4 w-4 mr-1" />
-                                    Browse files
+                                    {t('browseFiles')}
                                 </Link>
                             </Button>
                         </TooltipTrigger>
-                        <TooltipContent>View code at this commit</TooltipContent>
+                        <TooltipContent>{t('viewCodeAtCommit')}</TooltipContent>
                     </Tooltip>
                 </div>
                 <div className="flex flex-row items-center gap-2 text-sm text-muted-foreground">
@@ -100,9 +105,9 @@ export const FullCommitDiffPanel = async ({ repoName, commitSha }: FullCommitDif
                         className="font-medium text-foreground"
                         title={authors.map((a) => a.name).join(", ")}
                     >
-                        {formatAuthorsText(authors)}
+                        {formatAuthorsText(authors, authorsTextFormatFromTranslator(t))}
                     </span>
-                    <span>committed on {formattedDate}</span>
+                    <span>{t('committedOn', { date: formattedDate })}</span>
                 </div>
                 <CommitHashLine
                     repoName={repoName}
@@ -112,12 +117,12 @@ export const FullCommitDiffPanel = async ({ repoName, commitSha }: FullCommitDif
             </div>
             <div className="flex flex-row items-center justify-between gap-2 px-4 py-2 border-b shrink-0">
                 <h2 className="text-sm font-medium">
-                    {diffResponse.files.length} file{diffResponse.files.length > 1 ? 's' : ''} changed
+                    {t('filesChanged', { count: diffResponse.files.length })}
                 </h2>
                 <DiffStat {...totalChangeCounts} />
             </div>
             {diffResponse.files.length === 0 ? (
-                <div className="p-4 text-sm text-muted-foreground">No files changed.</div>
+                <div className="p-4 text-sm text-muted-foreground">{t('noFilesChanged')}</div>
             ) : (
                 <FileDiffList
                     files={diffResponse.files}

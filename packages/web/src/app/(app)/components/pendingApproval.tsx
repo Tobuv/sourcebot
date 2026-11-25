@@ -2,7 +2,9 @@ import { LogoutEscapeHatch } from "@/app/components/logoutEscapeHatch"
 import { SourcebotLogo } from "@/app/components/sourcebotLogo"
 import { auth } from "@/auth"
 
+import { getTranslations } from "next-intl/server";
 export const PendingApprovalCard = async () => {
+    const t = await getTranslations('shared');
     const session = await auth()
     const userId = session?.user?.id
 
@@ -30,10 +32,10 @@ export const PendingApprovalCard = async () => {
                         
                         <div className="space-y-2">
                             <h1 className="text-2xl font-semibold text-[var(--foreground)]">
-                                Approval Pending
+                                {t('approvalPending')}
                             </h1>
                             <p className="text-[var(--muted-foreground)] text-base">
-                                Your request is being reviewed.
+                                {t('requestBeingReviewed')}
                             </p>
                         </div>
                     </div>
@@ -45,7 +47,7 @@ export const PendingApprovalCard = async () => {
                                 <span className="block w-2 h-2 bg-[var(--accent-foreground)] rounded-full opacity-60 animate-pulse" style={{ animationDelay: '0.15s' }}></span>
                                 <span className="block w-2 h-2 bg-[var(--accent-foreground)] rounded-full opacity-80 animate-pulse" style={{ animationDelay: '0.3s' }}></span>
                             </div>
-                            <span className="text-[var(--accent-foreground)]">Awaiting review</span>
+                            <span className="text-[var(--accent-foreground)]">{t('awaitingReview')}</span>
                         </div>
                     </div>
 

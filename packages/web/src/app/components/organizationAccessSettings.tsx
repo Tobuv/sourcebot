@@ -5,11 +5,13 @@ import { getOrgMetadata } from "@/lib/utils"
 import { SINGLE_TENANT_ORG_ID } from "@/lib/constants"
 import { __unsafePrisma } from "@/prisma"
 import { hasEntitlement, env } from "@sourcebot/shared"
+import { getTranslations } from "next-intl/server";
 
 export async function OrganizationAccessSettings() {
+    const t = await getTranslations('orgAccess');
     const org = await __unsafePrisma.org.findUnique({ where: { id: SINGLE_TENANT_ORG_ID } });
     if (!org) {
-        return <div>Error loading organization</div>
+        return <div>{t('errorLoadingOrg')}</div>
     }
 
     const metadata = getOrgMetadata(org);

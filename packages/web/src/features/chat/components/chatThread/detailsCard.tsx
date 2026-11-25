@@ -27,6 +27,7 @@ import { ReadFileToolComponent } from './tools/readFileToolComponent';
 import { LoadSkillToolComponent } from './tools/loadSkillToolComponent';
 import { McpToolComponent } from './tools/mcpToolComponent';
 import { ToolOutputGuard } from './tools/toolOutputGuard';
+import { useTranslations } from "next-intl";
 
 
 interface DetailsCardProps {
@@ -48,6 +49,7 @@ const DetailsCardComponent = ({
     metadata,
     thinkingSteps,
 }: DetailsCardProps) => {
+    const t = useTranslations('chatThread');
     const captureEvent = useCaptureEvent();
 
     const toolCallCount = useMemo(() => thinkingSteps.flat().filter(part => part.type.startsWith('tool-') || part.type === 'dynamic-tool').length, [thinkingSteps]);
@@ -74,12 +76,12 @@ const DetailsCardComponent = ({
                                     {isThinking ? (
                                         <>
                                             <Loader2 className="w-4 h-4 animate-spin mr-1 flex-shrink-0" />
-                                            Thinking...
+                                            {t('thinking')}
                                         </>
                                     ) : (
                                         <>
                                             <InfoIcon className="w-4 h-4 mr-1 flex-shrink-0" />
-                                            Details
+                                            {t('details')}
                                         </>
                                     )}
                                 </p>
@@ -91,7 +93,7 @@ const DetailsCardComponent = ({
                                                 <TooltipTrigger asChild>
                                                     <div className="flex items-center text-xs cursor-help">
                                                         <ScanSearchIcon className="w-3 h-3 mr-1 flex-shrink-0" />
-                                                        {metadata.selectedSearchScopes.length} search scope{metadata.selectedSearchScopes.length === 1 ? '' : 's'}
+                                                        {t('searchScopes', { count: metadata.selectedSearchScopes.length })}
                                                     </div>
                                                 </TooltipTrigger>
                                                 <TooltipContent side="bottom">
@@ -119,18 +121,18 @@ const DetailsCardComponent = ({
                                                 <TooltipTrigger asChild>
                                                     <div className="flex items-center text-xs cursor-help">
                                                         <Zap className="w-3 h-3 mr-1 flex-shrink-0" />
-                                                        {getShortenedNumberDisplayString(metadata.totalTokens, 0)} tokens
+                                                        {t('tokens', { count: getShortenedNumberDisplayString(metadata.totalTokens, 0) })}
                                                     </div>
                                                 </TooltipTrigger>
                                                 <TooltipContent side="bottom">
                                                     <div className="space-y-1 text-xs">
                                                         <div className="flex justify-between gap-4">
-                                                            <span className="text-muted-foreground">Input</span>
+                                                            <span className="text-muted-foreground">{t('tokensInput')}</span>
                                                             <span>{metadata.totalInputTokens?.toLocaleString() ?? '—'}</span>
                                                         </div>
                                                         {!!metadata.totalCacheReadTokens && (
                                                             <div className="flex justify-between gap-4 pl-2">
-                                                                <span className="text-muted-foreground">Cache read</span>
+                                                                <span className="text-muted-foreground">{t('tokensCacheRead')}</span>
                                                                 <span>
                                                                     {metadata.totalCacheReadTokens.toLocaleString()}
                                                                     {metadata.totalInputTokens ? ` (${Math.round(metadata.totalCacheReadTokens / metadata.totalInputTokens * 100)}%)` : ''}
@@ -139,16 +141,16 @@ const DetailsCardComponent = ({
                                                         )}
                                                         {!!metadata.totalCacheWriteTokens && (
                                                             <div className="flex justify-between gap-4 pl-2">
-                                                                <span className="text-muted-foreground">Cache write</span>
+                                                                <span className="text-muted-foreground">{t('tokensCacheWrite')}</span>
                                                                 <span>{metadata.totalCacheWriteTokens.toLocaleString()}</span>
                                                             </div>
                                                         )}
                                                         <div className="flex justify-between gap-4">
-                                                            <span className="text-muted-foreground">Output</span>
+                                                            <span className="text-muted-foreground">{t('tokensOutput')}</span>
                                                             <span>{metadata.totalOutputTokens?.toLocaleString() ?? '—'}</span>
                                                         </div>
                                                         <div className="flex justify-between gap-4 border-t border-border pt-1">
-                                                            <span className="text-muted-foreground">Total</span>
+                                                            <span className="text-muted-foreground">{t('tokensTotal')}</span>
                                                             <span>{metadata.totalTokens.toLocaleString()}</span>
                                                         </div>
                                                     </div>
@@ -158,13 +160,13 @@ const DetailsCardComponent = ({
                                         {metadata?.totalResponseTimeMs && (
                                             <div className="flex items-center text-xs">
                                                 <Clock className="w-3 h-3 mr-1 flex-shrink-0" />
-                                                {Math.round(metadata.totalResponseTimeMs / 1000)} seconds
+                                                {t('seconds', { count: Math.round(metadata.totalResponseTimeMs / 1000) })}
                                             </div>
                                         )}
                                         {toolCallCount > 0 && (
                                             <div className="flex items-center text-xs">
                                                 <Wrench className="w-3 h-3 mr-1 flex-shrink-0" />
-                                                {toolCallCount} tool call{toolCallCount === 1 ? '' : 's'}
+                                                {t('toolCalls', { count: toolCallCount })}
                                             </div>
                                         )}
                                     </>
@@ -197,6 +199,7 @@ export const DetailsCard = memo(DetailsCardComponent, isEqual);
 
 
 const ThinkingSteps = ({ thinkingSteps, isStreaming, isThinking }: { thinkingSteps: SBChatMessagePart[][], isStreaming: boolean, isThinking: boolean }) => {
+    const t = useTranslations('chatThread');
     const { scrollRef, contentRef, scrollToBottom } = useStickToBottom();
     const [shouldStick, setShouldStick] = useState(isThinking);
     const prevIsThinking = usePrevious(isThinking);
@@ -217,7 +220,7 @@ const ThinkingSteps = ({ thinkingSteps, isStreaming, isThinking }: { thinkingSte
                     isStreaming ? (
                         <Skeleton className="h-24 w-full" />
                     ) : (
-                        <p className="text-sm text-muted-foreground">No thinking steps</p>
+                        <p className="text-sm text-muted-foreground">{t('noThinkingSteps')}</p>
                     )
                 ) : thinkingSteps.map((step, index) => (
                     <div key={index}>
@@ -235,6 +238,7 @@ const ThinkingSteps = ({ thinkingSteps, isStreaming, isThinking }: { thinkingSte
 
 
 export const StepPartRenderer = ({ part }: { part: SBChatMessagePart }) => {
+    const tTools = useTranslations('chatTools');
     switch (part.type) {
         case 'reasoning':
         case 'text':
@@ -248,7 +252,7 @@ export const StepPartRenderer = ({ part }: { part: SBChatMessagePart }) => {
             return (
                 <ToolOutputGuard
                     part={part}
-                    loadingText="Reading file..."
+                    loadingText={tTools('loading.readFile')}
                 >
                     {(output) => <ReadFileToolComponent {...output} />}
                 </ToolOutputGuard>
@@ -257,7 +261,7 @@ export const StepPartRenderer = ({ part }: { part: SBChatMessagePart }) => {
             return (
                 <ToolOutputGuard
                     part={part}
-                    loadingText={'Searching...'}
+                    loadingText={tTools('loading.search')}
                 >
                     {(output) => <GrepToolComponent {...output} />}
                 </ToolOutputGuard>
@@ -266,7 +270,7 @@ export const StepPartRenderer = ({ part }: { part: SBChatMessagePart }) => {
             return (
                 <ToolOutputGuard
                     part={part}
-                    loadingText="Searching files..."
+                    loadingText={tTools('loading.searchFiles')}
                 >
                     {(output) => <GlobToolComponent {...output} />}
                 </ToolOutputGuard>
@@ -275,7 +279,7 @@ export const StepPartRenderer = ({ part }: { part: SBChatMessagePart }) => {
             return (
                 <ToolOutputGuard
                     part={part}
-                    loadingText="Resolving definitions..."
+                    loadingText={tTools('loading.definitions')}
                 >
                     {(output) => <FindSymbolDefinitionsToolComponent {...output} />}
                 </ToolOutputGuard>
@@ -284,7 +288,7 @@ export const StepPartRenderer = ({ part }: { part: SBChatMessagePart }) => {
             return (
                 <ToolOutputGuard
                     part={part}
-                    loadingText="Resolving references..."
+                    loadingText={tTools('loading.references')}
                 >
                     {(output) => <FindSymbolReferencesToolComponent {...output} />}
                 </ToolOutputGuard>
@@ -293,7 +297,7 @@ export const StepPartRenderer = ({ part }: { part: SBChatMessagePart }) => {
             return (
                 <ToolOutputGuard
                     part={part}
-                    loadingText="Listing repositories..."
+                    loadingText={tTools('loading.listRepos')}
                 >
                     {(output) => <ListReposToolComponent {...output} />}
                 </ToolOutputGuard>
@@ -302,7 +306,7 @@ export const StepPartRenderer = ({ part }: { part: SBChatMessagePart }) => {
             return (
                 <ToolOutputGuard
                     part={part}
-                    loadingText="Listing commits..."
+                    loadingText={tTools('loading.listCommits')}
                 >
                     {(output) => <ListCommitsToolComponent {...output} />}
                 </ToolOutputGuard>
@@ -311,7 +315,7 @@ export const StepPartRenderer = ({ part }: { part: SBChatMessagePart }) => {
             return (
                 <ToolOutputGuard
                     part={part}
-                    loadingText="Comparing revisions..."
+                    loadingText={tTools('loading.compare')}
                 >
                     {(output) => <GetDiffToolComponent {...output} />}
                 </ToolOutputGuard>
@@ -320,7 +324,7 @@ export const StepPartRenderer = ({ part }: { part: SBChatMessagePart }) => {
             return (
                 <ToolOutputGuard
                     part={part}
-                    loadingText="Listing tree..."
+                    loadingText={tTools('loading.listTree')}
                 >
                     {(output) => <ListTreeToolComponent {...output} />}
                 </ToolOutputGuard>
@@ -329,7 +333,7 @@ export const StepPartRenderer = ({ part }: { part: SBChatMessagePart }) => {
             return (
                 <ToolOutputGuard
                     part={part}
-                    loadingText="Loading skill..."
+                    loadingText={tTools('loading.loadSkill')}
                 >
                     {(output) => <LoadSkillToolComponent {...output} />}
                 </ToolOutputGuard>

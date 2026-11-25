@@ -458,10 +458,27 @@ export const isServiceError = (data: unknown): data is ServiceError => {
         'message' in data;
 }
 
-export const getFormattedDate = (date: Date) => {
+export const getFormattedDate = (date: Date, locale?: string) => {
     const now = new Date();
     const diffMinutes = (now.getTime() - date.getTime()) / (1000 * 60);
     const isFuture = diffMinutes < 0;
+
+    // Non-English locales use the platform's relative time formatting.
+    if (locale && !locale.startsWith('en')) {
+        const rtf = new Intl.RelativeTimeFormat(locale, { numeric: 'auto' });
+        const absMinutes = Math.abs(diffMinutes);
+        const sign = isFuture ? 1 : -1;
+        if (absMinutes < 1) {
+            return rtf.format(0, 'second');
+        } else if (absMinutes < 60) {
+            return rtf.format(sign * Math.floor(absMinutes), 'minute');
+        } else if (absMinutes < 60 * 24) {
+            return rtf.format(sign * Math.floor(absMinutes / 60), 'hour');
+        } else if (absMinutes < 60 * 24 * 30) {
+            return rtf.format(sign * Math.floor(absMinutes / (60 * 24)), 'day');
+        }
+        return rtf.format(sign * Math.floor(absMinutes / (60 * 24 * 30)), 'month');
+    }
 
     // Use absolute values for calculations
     const minutes = Math.abs(diffMinutes);

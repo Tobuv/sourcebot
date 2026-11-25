@@ -28,6 +28,7 @@ import { CodeHostType } from "@sourcebot/db"
 import { useHotkeys } from "react-hotkeys-hook"
 import { indexRepo } from "@/features/workerApi/actions"
 import { RepoActionsDropdown } from "./repoActionsDropdown"
+import { useTranslations } from "next-intl";
 
 // @see: https://v0.app/chat/repo-indexing-status-uhjdDim8OUS
 
@@ -63,14 +64,8 @@ const getStatusBadge = (status: Repo["latestJobStatus"]) => {
         return "-";
     }
 
-    const labels = {
-        PENDING: "Pending",
-        IN_PROGRESS: "In Progress",
-        COMPLETED: "Completed",
-        FAILED: "Failed",
-    }
 
-    return <Badge className={statusBadgeVariants({ status })}>{labels[status]}</Badge>
+    return <Badge className={statusBadgeVariants({ status })}><StatusLabel status={status} /></Badge>
 }
 
 interface ColumnsContext {
@@ -95,7 +90,7 @@ export const getColumns = (context: ColumnsContext): ColumnDef<Repo>[] => [
                     variant="ghost" 
                     onClick={() => context.onSortChange('displayName')}
                 >
-                    Repository
+                    <Label id="colRepository" />
                     <Icon className="ml-2 h-4 w-4" />
                 </Button>
             )
@@ -150,7 +145,7 @@ export const getColumns = (context: ColumnsContext): ColumnDef<Repo>[] => [
                                 </span>
                             </TooltipTrigger>
                             <TooltipContent>
-                                <span>This is the first time NexusCode is indexing this repository. It may take a few minutes to complete.</span>
+                                <span><Label id="firstIndex" /></span>
                             </TooltipContent>
                         </Tooltip>
                     )}
@@ -161,7 +156,7 @@ export const getColumns = (context: ColumnsContext): ColumnDef<Repo>[] => [
     {
         accessorKey: "latestJobStatus",
         size: 150,
-        header: "Lastest status",
+        header: () => <SharedLabel id="colLatestStatus" />,
         cell: ({ row }) => getStatusBadge(row.getValue("latestJobStatus")),
     },
     {
@@ -178,7 +173,7 @@ export const getColumns = (context: ColumnsContext): ColumnDef<Repo>[] => [
                     variant="ghost"
                     onClick={() => context.onSortChange('indexedAt')}
                 >
-                    Last synced
+                    <SharedLabel id="colLastSynced" />
                     <Icon className="ml-2 h-4 w-4" />
                 </Button>
             )
@@ -197,7 +192,7 @@ export const getColumns = (context: ColumnsContext): ColumnDef<Repo>[] => [
     {
         accessorKey: "indexedCommitHash",
         size: 150,
-        header: "Synced commit",
+        header: () => <Label id="colSyncedCommit" />,
         cell: ({ row }) => {
             const hash = row.getValue("indexedCommitHash") as string | null;
             if (!hash) {
@@ -280,6 +275,9 @@ export const ReposTable = ({
     initialSortOrder,
     stats,
 }: ReposTableProps) => {
+    const t = useTranslations('repos');
+    const tConn = useTranslations('connections');
+    const tCommon = useTranslations('common');
     const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({})
     const [rowSelection, setRowSelection] = useState({})
     const [searchValue, setSearchValue] = useState(initialSearch)
@@ -352,12 +350,12 @@ export const ReposTable = ({
         if (!isServiceError(response)) {
             const { jobId } = response;
             toast({
-                description: `✅ Repository sync triggered successfully. Job ID: ${jobId}`,
+                description: t('syncTriggered', { jobId }),
             });
             router.refresh();
         } else {
             toast({
-                description: `❌ Failed to sync repository. ${response.message}`,
+                description: t('syncFailed', { reason: response.message }),
             });
         }
     };
@@ -391,7 +389,7 @@ export const ReposTable = ({
                 <InputGroup className="max-w-sm">
                     <InputGroupInput
                         ref={searchInputRef}
-                        placeholder="Filter repositories..."
+                        placeholder={t('filterRepositories')}
                         value={searchValue}
                         onChange={(event) => setSearchValue(event.target.value)}
                         className="ring-0"
@@ -407,15 +405,15 @@ export const ReposTable = ({
                     onValueChange={updateStatusFilter}
                 >
                     <SelectTrigger className="w-[180px]">
-                        <SelectValue placeholder="Filter by status" />
+                        <SelectValue placeholder={tConn('filterByStatus')} />
                     </SelectTrigger>
                     <SelectContent>
-                        <SelectItem value="all">Filter by status</SelectItem>
-                        <SelectItem value="COMPLETED">Completed ({stats.numCompleted})</SelectItem>
-                        <SelectItem value="IN_PROGRESS">In progress ({stats.numInProgress})</SelectItem>
-                        <SelectItem value="PENDING">Pending ({stats.numPending})</SelectItem>
-                        <SelectItem value="FAILED">Failed ({stats.numFailed})</SelectItem>
-                        <SelectItem value="none">No status ({stats.numNoJobs})</SelectItem>
+                        <SelectItem value="all">{tConn('filterByStatus')}</SelectItem>
+                        <SelectItem value="COMPLETED">{tConn('filterCompleted', { count: stats.numCompleted })}</SelectItem>
+                        <SelectItem value="IN_PROGRESS">{tConn('filterInProgress', { count: stats.numInProgress })}</SelectItem>
+                        <SelectItem value="PENDING">{tConn('filterPending', { count: stats.numPending })}</SelectItem>
+                        <SelectItem value="FAILED">{tConn('filterFailed', { count: stats.numFailed })}</SelectItem>
+                        <SelectItem value="none">{tConn('filterNoStatus', { count: stats.numNoJobs })}</SelectItem>
                     </SelectContent>
                 </Select>
                 <Button
@@ -424,12 +422,12 @@ export const ReposTable = ({
                     onClick={() => {
                         router.refresh();
                         toast({
-                            description: "Page refreshed",
+                            description: tCommon('pageRefreshed'),
                         });
                     }}
                 >
                     <RefreshCwIcon className="w-3 h-3" />
-                    Refresh
+                    {tConn('refresh')}
                 </Button>
             </div>
             <div className="rounded-md border">
@@ -467,7 +465,7 @@ export const ReposTable = ({
                         ) : (
                             <TableRow>
                                 <TableCell colSpan={columns.length} className="h-24 text-center">
-                                    No results.
+                                    {tConn('noResults')}
                                 </TableCell>
                             </TableRow>
                         )}
@@ -476,7 +474,7 @@ export const ReposTable = ({
             </div>
             <div className="flex items-center justify-end space-x-2 py-4">
                 <div className="flex-1 text-sm text-muted-foreground">
-                    {totalCount} {totalCount !== 1 ? 'repositories' : 'repository'} total
+                    {tCommon('repositoriesTotal', { count: totalCount })}
                     {totalPages > 1 && ` • Page ${currentPage} of ${totalPages}`}
                 </div>
                 <div className="space-x-2">
@@ -490,7 +488,7 @@ export const ReposTable = ({
                         }}
                         disabled={currentPage <= 1}
                     >
-                        Previous
+                        {tConn('previous')}
                     </Button>
                     <Button 
                         variant="outline" 
@@ -502,10 +500,29 @@ export const ReposTable = ({
                         }}
                         disabled={currentPage >= totalPages}
                     >
-                        Next
+                        {tConn('next')}
                     </Button>
                 </div>
             </div>
         </div>
     )
+}
+
+type RepoLabelKey = 'colRepository' | 'colRevision' | 'colType' | 'colSyncedCommit' | 'firstIndex' | 'revisionNotIndexed';
+type ConnectionLabelKey = 'colStatus' | 'colLatestStatus' | 'colLastSynced' | 'colStarted' | 'colCompleted' | 'colDuration' | 'colJobId';
+
+/** Text rendered from column definitions, translated to the current locale. */
+const Label = ({ id }: { id: RepoLabelKey }) => {
+    const t = useTranslations('repos');
+    return <>{t(id)}</>;
+}
+
+const SharedLabel = ({ id }: { id: ConnectionLabelKey }) => {
+    const t = useTranslations('connections');
+    return <>{t(id)}</>;
+}
+
+const StatusLabel = ({ status }: { status: 'PENDING' | 'IN_PROGRESS' | 'COMPLETED' | 'FAILED' }) => {
+    const t = useTranslations('connections');
+    return <>{t(`status.${status}`)}</>;
 }

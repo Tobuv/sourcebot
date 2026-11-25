@@ -13,6 +13,9 @@ import { CommitRow } from "./commitRow";
 import { CommitsPagination } from "./commitsPagination";
 import { DateFilter } from "./dateFilter";
 import { getBrowsePath } from "@/app/(app)/browse/hooks/utils";
+import { getTranslations } from "next-intl/server";
+import { getLocale } from "next-intl/server";
+import { getDateFnsLocale } from "@/i18n/dateLocale";
 
 interface CommitsPanelProps {
     path: string;
@@ -28,6 +31,8 @@ const COMMITS_PER_PAGE = 35;
 const AUTHORS_PER_PAGE = 100;
 
 export const CommitsPanel = async ({ path, repoName, revisionName, page, author, since, until }: CommitsPanelProps) => {
+    const t = await getTranslations('browse');
+    const dateLocale = getDateFnsLocale(await getLocale());
     const skip = (page - 1) * COMMITS_PER_PAGE;
 
     // The URL stores dates as YYYY-MM-DD. Always pass explicit timestamps to
@@ -64,13 +69,13 @@ export const CommitsPanel = async ({ path, repoName, revisionName, page, author,
     ]);
 
     if (isServiceError(commitsResponse)) {
-        return <div className="p-4 text-sm">Error loading commits: {commitsResponse.message}</div>;
+        return <div className="p-4 text-sm">{t('errorLoadingCommits', { message: commitsResponse.message })}</div>;
     }
     if (isServiceError(repoInfoResponse)) {
-        return <div className="p-4 text-sm">Error loading repo info: {repoInfoResponse.message}</div>;
+        return <div className="p-4 text-sm">{t('errorLoadingRepoInfo', { message: repoInfoResponse.message })}</div>;
     }
     if (isServiceError(authorsResponse)) {
-        return <div className="p-4 text-sm">Error loading commit authors: {authorsResponse.message}</div>;
+        return <div className="p-4 text-sm">{t('errorLoadingCommitAuthors', { message: authorsResponse.message })}</div>;
     }
     // Fall back to 'blob' if the lookup fails so PathHeader still renders.
     const headerPathType = isServiceError(pathTypeResponse) ? 'blob' : pathTypeResponse;
@@ -91,7 +96,7 @@ export const CommitsPanel = async ({ path, repoName, revisionName, page, author,
     for (const commit of commits) {
         const date = new Date(commit.date);
         const key = format(date, "yyyy-MM-dd");
-        const label = `Commits on ${format(date, "MMM d, yyyy")}`;
+        const label = t('commitsOn', { date: format(date, 'PP', { locale: dateLocale }) });
         const existing = groups.get(key);
         if (existing) {
             existing.commits.push(commit);
@@ -104,7 +109,7 @@ export const CommitsPanel = async ({ path, repoName, revisionName, page, author,
         <div className="flex flex-col h-full">
             <div className="flex flex-row py-1 px-2 items-center justify-between gap-2">
                 <div className="flex flex-row items-center gap-2 min-w-0">
-                    <span className="text-sm text-muted-foreground flex-shrink-0">History for</span>
+                    <span className="text-sm text-muted-foreground flex-shrink-0">{t('historyFor')}</span>
                     <PathHeader
                         path={path}
                         pathType={headerPathType}
@@ -128,14 +133,14 @@ export const CommitsPanel = async ({ path, repoName, revisionName, page, author,
                 {isEmpty ? (
                     hasFilters ? (
                         <div className="flex flex-col items-center justify-center gap-3 py-12">
-                            <p className="text-sm text-muted-foreground">No commits match these filters</p>
+                            <p className="text-sm text-muted-foreground">{t('noCommitsMatchFilters')}</p>
                             <Button asChild variant="outline" size="sm">
-                                <Link href={clearFiltersHref}>Clear filters</Link>
+                                <Link href={clearFiltersHref}>{t('clearFilters')}</Link>
                             </Button>
                         </div>
                     ) : (
                         <div className="py-12 text-center text-sm text-muted-foreground">
-                            No commits found
+                            {t('noCommitsFound')}
                         </div>
                     )
                 ) : (
@@ -158,7 +163,7 @@ export const CommitsPanel = async ({ path, repoName, revisionName, page, author,
                         ))}
                         {isLastPage && (
                             <div className="py-8 text-center text-sm text-muted-foreground">
-                                End of commit history
+                                {t('endOfHistory')}
                             </div>
                         )}
                         <CommitsPagination

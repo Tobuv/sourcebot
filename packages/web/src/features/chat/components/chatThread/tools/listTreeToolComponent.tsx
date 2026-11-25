@@ -6,11 +6,13 @@ import { Separator } from "@/components/ui/separator";
 import { getBrowsePath } from "@/app/(app)/browse/hooks/utils";
 import { FolderIcon } from "lucide-react";
 import Link from "next/link";
+import { useTranslations } from "next-intl";
 
 export const ListTreeToolComponent = ({ metadata }: ToolResult<ListTreeMetadata>) => {
+    const t = useTranslations('chatTools');
     return (
         <div className="flex items-center gap-2 select-none cursor-default text-sm text-muted-foreground">
-            <span className="flex-shrink-0">Listed</span>
+            <span className="flex-shrink-0">{t('listed')}</span>
             <Link
                 href={getBrowsePath({
                     repoName: metadata.repo,
@@ -24,7 +26,7 @@ export const ListTreeToolComponent = ({ metadata }: ToolResult<ListTreeMetadata>
                 <FolderIcon className="h-3 w-3 flex-shrink-0" />
                 {metadata.path || '/'}
             </Link>
-            <span className="flex-shrink-0">in</span>
+            <span className="flex-shrink-0">{t('in')}</span>
             <RepoBadge repo={metadata.repoInfo} />
             <span className="flex-shrink-0 ml-auto text-xs">
                 {metadata.totalReturned} {metadata.totalReturned === 1 ? 'entry' : 'entries'}{metadata.truncated ? ' (truncated)' : ''}

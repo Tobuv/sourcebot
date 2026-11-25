@@ -5,6 +5,7 @@ import { Switch } from "@/components/ui/switch"
 import { setAnonymousAccessStatus } from "@/actions"
 import { isServiceError } from "@/lib/utils"
 import { useToast } from "@/components/hooks/use-toast"
+import { useTranslations } from "next-intl";
 
 interface AnonymousAccessToggleProps {
     hasAnonymousAccessEntitlement: boolean;
@@ -14,6 +15,7 @@ interface AnonymousAccessToggleProps {
 }
 
 export function AnonymousAccessToggle({ hasAnonymousAccessEntitlement, anonymousAccessEnabled, forceEnableAnonymousAccess, onToggleChange }: AnonymousAccessToggleProps) {
+    const t = useTranslations('orgAccess');
     const [enabled, setEnabled] = useState(anonymousAccessEnabled)
     const [isLoading, setIsLoading] = useState(false)
     const { toast } = useToast()
@@ -26,7 +28,7 @@ export function AnonymousAccessToggle({ hasAnonymousAccessEntitlement, anonymous
             if (isServiceError(result)) {
                 toast({
                     title: "Error",
-                    description: result.message || "Failed to update anonymous access setting",
+                    description: result.message || t('anonymousFailed'),
                     variant: "destructive",
                 })
                 return
@@ -38,7 +40,7 @@ export function AnonymousAccessToggle({ hasAnonymousAccessEntitlement, anonymous
             console.error("Error updating anonymous access setting:", error)
             toast({
                 title: "Error",
-                description: "Failed to update anonymous access setting",
+                description: t('anonymousFailed'),
                 variant: "destructive",
             })
         } finally {
@@ -54,11 +56,11 @@ export function AnonymousAccessToggle({ hasAnonymousAccessEntitlement, anonymous
             <div className="flex items-start justify-between gap-4">
                 <div className="flex-1 min-w-0">
                     <h3 className="font-medium text-[var(--foreground)] mb-2">
-                        Enable anonymous access
+                        {t('anonymousTitle')}
                     </h3>
                     <div className="max-w-2xl">
                         <p className="text-sm text-[var(--muted-foreground)] leading-relaxed">
-                            When enabled, users can access your deployment without logging in.
+                            {t('anonymousDescription')}
                         </p>
                         {showPlanMessage && (
                             <div className="mt-3 p-3 rounded-md bg-[var(--muted)] border border-[var(--border)]">
@@ -77,16 +79,18 @@ export function AnonymousAccessToggle({ hasAnonymousAccessEntitlement, anonymous
                                         />
                                     </svg>
                                     <span>
-                                        Your current plan doesn&apos;t allow for anonymous access. Please{" "}
-                                        <a
-                                            href="https://www.sourcebot.dev/contact"
-                                            target="_blank"
-                                            rel="noopener"
-                                            className="font-medium text-primary hover:text-primary/80 underline underline-offset-2 transition-colors"
-                                        >
-                                            reach out
-                                        </a>
-                                        {" "}for assistance.
+                                        {t.rich('anonymousPlan', {
+                                            link: (chunks) => (
+                                                <a
+                                                    href="https://www.sourcebot.dev/contact"
+                                                    target="_blank"
+                                                    rel="noopener"
+                                                    className="font-medium text-primary hover:text-primary/80 underline underline-offset-2 transition-colors"
+                                                >
+                                                    {chunks}
+                                                </a>
+                                            ),
+                                        })}
                                     </span>
                                 </p>
                             </div>
@@ -108,7 +112,7 @@ export function AnonymousAccessToggle({ hasAnonymousAccessEntitlement, anonymous
                                         />
                                     </svg>
                                     <span>
-                                        The <code className="bg-[var(--secondary)] px-1 py-0.5 rounded text-xs font-mono">forceEnableAnonymousAccess</code> is set, so this cannot be changed from the UI.
+                                        {t.rich('forceEnabledNotice', { code: (chunks) => <code className="bg-[var(--secondary)] px-1 py-0.5 rounded text-xs font-mono">{chunks}</code> })}
                                     </span>
                                 </p>
                             </div>

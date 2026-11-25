@@ -13,6 +13,9 @@ import { getBrowsePath } from "../../../hooks/utils";
 import { computeChangeCounts, DiffStat } from "./diffStat";
 import { FileStatus, getFileStatus, StatusBadge } from "./fileStatus";
 import { LightweightDiffViewer } from "./lightweightDiffViewer";
+import { getTranslations } from "next-intl/server";
+import { getLocale } from "next-intl/server";
+import { getDateFnsLocale } from "@/i18n/dateLocale";
 
 const FILE_STATUS_LABELS: Record<FileStatus, string> = {
     added: 'Added',
@@ -38,6 +41,8 @@ export const FocusedCommitDiffPanel = async ({
     commitSha,
     path,
 }: FocusedCommitDiffPanelProps) => {
+    const t = await getTranslations('browse');
+    const dateLocale = getDateFnsLocale(await getLocale());
     const [commitResponse, initialDiffResponse, repoInfoResponse] = await Promise.all([
         getCommit({
             repo: repoName,
@@ -55,7 +60,7 @@ export const FocusedCommitDiffPanel = async ({
     if (isServiceError(commitResponse)) {
         return (
             <div className="p-6 text-sm text-destructive">
-                Error loading commit: {commitResponse.message}
+                {t('errorLoadingCommit', { message: commitResponse.message })}
             </div>
         );
     }
@@ -63,7 +68,7 @@ export const FocusedCommitDiffPanel = async ({
     if (isServiceError(repoInfoResponse)) {
         return (
             <div className="p-6 text-sm text-destructive">
-                Error loading repo info: {repoInfoResponse.message}
+                {t('errorLoadingRepoInfo', { message: repoInfoResponse.message })}
             </div>
         );
     }
@@ -83,7 +88,7 @@ export const FocusedCommitDiffPanel = async ({
     if (isServiceError(diffResponse)) {
         return (
             <div className="p-6 text-sm text-destructive">
-                Error loading diff: {diffResponse.message}
+                {t('errorLoadingDiff', { message: diffResponse.message })}
             </div>
         );
     }
@@ -96,8 +101,8 @@ export const FocusedCommitDiffPanel = async ({
 
     const authors = getCommitAuthors(commitResponse);
     const commitDate = new Date(commitResponse.date);
-    const relativeDate = formatDistanceToNow(commitDate, { addSuffix: true });
-    const absoluteDate = format(commitDate, 'PPpp');
+    const relativeDate = formatDistanceToNow(commitDate, { addSuffix: true, locale: dateLocale });
+    const absoluteDate = format(commitDate, 'PPpp', { locale: dateLocale });
 
     return (
         <div className="flex flex-col h-full">
@@ -147,7 +152,7 @@ export const FocusedCommitDiffPanel = async ({
                                 })}
                                 className="text-sm text-link hover:underline"
                             >
-                                View full commit
+                                {t('viewFullCommit')}
                             </Link>
                         </div>
                         <div className="flex flex-row items-center gap-2">
@@ -167,13 +172,13 @@ export const FocusedCommitDiffPanel = async ({
                                                 path,
                                                 pathType: 'blob',
                                             })}
-                                            aria-label="Exit diff view"
+                                            aria-label={t('exitDiffView')}
                                         >
                                             <X className="h-4 w-4" />
                                         </Link>
                                     </Button>
                                 </TooltipTrigger>
-                                <TooltipContent>Exit diff view</TooltipContent>
+                                <TooltipContent>{t('exitDiffView')}</TooltipContent>
                             </Tooltip>
                         </div>
                     </div>
@@ -187,7 +192,7 @@ export const FocusedCommitDiffPanel = async ({
                 </>
             ) : (
                 <div className="p-4 text-sm text-muted-foreground">
-                    This file was not modified in this commit.
+                    {t('fileNotModified')}
                 </div>
             )}
         </div>

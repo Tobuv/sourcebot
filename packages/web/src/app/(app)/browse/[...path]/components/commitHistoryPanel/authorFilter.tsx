@@ -19,6 +19,7 @@ import {
 import { UserAvatar } from "@/components/userAvatar";
 import { cn } from "@/lib/utils";
 import type { CommitAuthor } from "@/features/git";
+import { useTranslations } from "next-intl";
 
 interface AuthorFilterProps {
     authors: CommitAuthor[];
@@ -26,6 +27,7 @@ interface AuthorFilterProps {
 }
 
 export const AuthorFilter = ({ authors, selectedAuthor }: AuthorFilterProps) => {
+    const t = useTranslations('browse');
     const router = useRouter();
     const pathname = usePathname();
     const searchParams = useSearchParams();
@@ -80,7 +82,7 @@ export const AuthorFilter = ({ authors, selectedAuthor }: AuthorFilterProps) => 
 
     const buttonLabel = selectedAuthor
         ? selectedAuthorDisplay?.name ?? selectedAuthor
-        : 'All users';
+        : t('allUsers');
 
     return (
         <Popover open={isOpen} onOpenChange={setIsOpen}>
@@ -89,7 +91,7 @@ export const AuthorFilter = ({ authors, selectedAuthor }: AuthorFilterProps) => 
                     variant="outline"
                     size="sm"
                     className="h-8 gap-2 flex-shrink-0"
-                    aria-label="Filter by author"
+                    aria-label={t('filterByAuthor')}
                 >
                     {selectedAuthorDisplay ? (
                         <UserAvatar
@@ -106,7 +108,7 @@ export const AuthorFilter = ({ authors, selectedAuthor }: AuthorFilterProps) => 
             <PopoverContent className="w-[320px] p-0" align="start">
                 <Command shouldFilter={false}>
                     <CommandInput
-                        placeholder="Find a user..."
+                        placeholder={t('findUser')}
                         value={search}
                         onValueChange={setSearch}
                     />
@@ -157,7 +159,7 @@ export const AuthorFilter = ({ authors, selectedAuthor }: AuthorFilterProps) => 
                                     onSelect={() => navigateWithAuthor(null)}
                                     className="cursor-pointer justify-center text-primary"
                                 >
-                                    View commits for all users
+                                    {t('viewCommitsForAllUsers')}
                                 </CommandItem>
                             </div>
                         </>

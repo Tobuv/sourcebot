@@ -2,9 +2,11 @@ import { SourcebotLogo } from "@/app/components/sourcebotLogo";
 import { UserAvatar } from "@/components/userAvatar";
 import { auth } from "@/auth";
 import { Card } from "@/components/ui/card";
+import { getTranslations } from "next-intl/server";
 
 
 export const InviteNotFoundCard = async () => {
+    const t = await getTranslations('redeem');
     const session = await auth();
 
     return (
@@ -13,9 +15,9 @@ export const InviteNotFoundCard = async () => {
                 className="h-16 w-auto mx-auto mb-2"
                 size="large"
             />
-            <h2 className="text-2xl font-bold">Invite not found</h2>
+            <h2 className="text-2xl font-bold">{t('notFound')}</h2>
             <p className="mt-5">
-                The invite you are trying to redeem has already been used, expired, or does not exist.
+                {t('notFoundDescription')}
             </p>
             <div className="flex flex-col items-center gap-2 mt-8">
                 <UserAvatar

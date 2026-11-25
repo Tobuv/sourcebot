@@ -20,6 +20,7 @@ import {
 import { cn, isServiceError } from "@/lib/utils";
 import { CheckCircle2, Loader2, XCircle } from "lucide-react";
 import { useState } from "react";
+import { useTranslations } from "next-intl";
 
 export type ModelEditorState =
     | { mode: 'create' }
@@ -89,6 +90,7 @@ const toInput = (values: FormValues, isEdit: boolean): CustomModelInput => ({
  * Note: render with a `key` that changes per opened model so the form state resets.
  */
 export const ModelEditorDialog = ({ state, isOwner, onOpenChange, onSaved }: ModelEditorDialogProps) => {
+    const t = useTranslations('models');
     const { toast } = useToast();
     const [values, setValues] = useState<FormValues>(() => getInitialValues(state, isOwner));
     const [errors, setErrors] = useState<Record<string, string>>({});
@@ -109,7 +111,7 @@ export const ModelEditorDialog = ({ state, isOwner, onOpenChange, onSaved }: Mod
     const validate = (): CustomModelInput | undefined => {
         const input = toInput(values, isEdit);
         if (values.temperature.trim() && Number.isNaN(Number(values.temperature))) {
-            setErrors({ temperature: 'Temperature must be a number.' });
+            setErrors({ temperature: t('temperatureInvalid') });
             return undefined;
         }
         const parsed = customModelInputSchema.safeParse(input);
@@ -157,7 +159,7 @@ export const ModelEditorDialog = ({ state, isOwner, onOpenChange, onSaved }: Mod
             toast({ description: `❌ ${result.message}`, variant: "destructive" });
             return;
         }
-        toast({ description: `✅ Saved model "${result.displayName}"` });
+        toast({ description: t('saved', { name: result.displayName }) });
         onSaved();
     };
 
@@ -167,16 +169,16 @@ export const ModelEditorDialog = ({ state, isOwner, onOpenChange, onSaved }: Mod
         <Dialog open={state !== null} onOpenChange={onOpenChange}>
             <DialogContent className="sm:max-w-xl max-h-[90vh] flex flex-col">
                 <DialogHeader>
-                    <DialogTitle>{state?.mode === 'create' ? 'Add model' : isEdit ? 'Edit model' : 'View model'}</DialogTitle>
+                    <DialogTitle>{state?.mode === 'create' ? t('dialogAdd') : isEdit ? t('dialogEdit') : t('dialogView')}</DialogTitle>
                     <DialogDescription>
-                        Models added here appear in the model selector of Ask NexusCode. API keys are encrypted and never shown again after saving.
+                        {t('dialogDescription')}
                     </DialogDescription>
                 </DialogHeader>
 
                 <div className="flex flex-col gap-4 overflow-y-auto px-1 -mx-1">
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div className="flex flex-col gap-1.5">
-                            <Label>Provider</Label>
+                            <Label>{t('provider')}</Label>
                             <Select
                                 value={values.provider}
                                 disabled={isReadOnly}
@@ -191,7 +193,7 @@ export const ModelEditorDialog = ({ state, isOwner, onOpenChange, onSaved }: Mod
                             </Select>
                         </div>
                         <div className="flex flex-col gap-1.5">
-                            <Label>Available to</Label>
+                            <Label>{t('availableTo')}</Label>
                             <Select
                                 value={values.scope}
                                 disabled={isReadOnly}
@@ -200,9 +202,9 @@ export const ModelEditorDialog = ({ state, isOwner, onOpenChange, onSaved }: Mod
                                 <SelectTrigger><SelectValue /></SelectTrigger>
                                 <SelectContent>
                                     <SelectItem value="WORKSPACE" disabled={!isOwner}>
-                                        All members{!isOwner ? ' · owners only' : ''}
+                                        {t('allMembers')}{!isOwner ? t('ownersOnly') : ''}
                                     </SelectItem>
-                                    <SelectItem value="PERSONAL">Only me</SelectItem>
+                                    <SelectItem value="PERSONAL">{t('onlyMe')}</SelectItem>
                                 </SelectContent>
                             </Select>
                         </div>
@@ -210,7 +212,7 @@ export const ModelEditorDialog = ({ state, isOwner, onOpenChange, onSaved }: Mod
 
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div className="flex flex-col gap-1.5">
-                            <Label htmlFor="model-display-name">Display name</Label>
+                            <Label htmlFor="model-display-name">{t('displayName')}</Label>
                             <Input
                                 id="model-display-name"
                                 value={values.displayName}
@@ -221,7 +223,7 @@ export const ModelEditorDialog = ({ state, isOwner, onOpenChange, onSaved }: Mod
                             {fieldError('displayName')}
                         </div>
                         <div className="flex flex-col gap-1.5">
-                            <Label htmlFor="model-id">Model ID</Label>
+                            <Label htmlFor="model-id">{t('modelId')}</Label>
                             <Input
                                 id="model-id"
                                 value={values.model}
@@ -236,12 +238,12 @@ export const ModelEditorDialog = ({ state, isOwner, onOpenChange, onSaved }: Mod
 
                     <div className="flex flex-col gap-1.5">
                         <Label htmlFor="model-base-url">
-                            Base URL{!providerInfo.baseUrlRequired && <span className="text-muted-foreground font-normal"> (optional)</span>}
+                            {t('baseUrl')}{!providerInfo.baseUrlRequired && <span className="text-muted-foreground font-normal">{t('optional')}</span>}
                         </Label>
                         <Input
                             id="model-base-url"
                             value={values.baseUrl}
-                            placeholder={providerInfo.baseUrlPlaceholder ?? 'Use the provider default'}
+                            placeholder={providerInfo.baseUrlPlaceholder ?? t('providerDefault')}
                             className="font-mono"
                             disabled={isReadOnly}
                             onChange={(event) => update({ baseUrl: event.target.value })}
@@ -251,7 +253,7 @@ export const ModelEditorDialog = ({ state, isOwner, onOpenChange, onSaved }: Mod
 
                     {!isReadOnly && (
                         <div className="flex flex-col gap-1.5">
-                            <Label htmlFor="model-api-key">API key</Label>
+                            <Label htmlFor="model-api-key">{t('apiKey')}</Label>
                             <Input
                                 id="model-api-key"
                                 type="password"
@@ -259,8 +261,8 @@ export const ModelEditorDialog = ({ state, isOwner, onOpenChange, onSaved }: Mod
                                 value={values.apiKey}
                                 disabled={values.removeApiKey}
                                 placeholder={existing?.hasApiKey
-                                    ? `Saved${existing.apiKeyHint ? ` (…${existing.apiKeyHint})` : ''}. Leave blank to keep it.`
-                                    : providerInfo.apiKeyEnvVar ? `Leave blank to use ${providerInfo.apiKeyEnvVar}` : 'Optional'}
+                                    ? t('apiKeySaved', { hint: existing.apiKeyHint ? ` (…${existing.apiKeyHint})` : '' })
+                                    : providerInfo.apiKeyEnvVar ? t('apiKeyEnv', { env: providerInfo.apiKeyEnvVar }) : t('optionalPlain')}
                                 onChange={(event) => update({ apiKey: event.target.value })}
                             />
                             {existing?.hasApiKey && (
@@ -269,7 +271,7 @@ export const ModelEditorDialog = ({ state, isOwner, onOpenChange, onSaved }: Mod
                                         checked={values.removeApiKey}
                                         onCheckedChange={(checked) => update({ removeApiKey: checked === true, apiKey: '' })}
                                     />
-                                    Remove the saved API key
+                                    {t('removeApiKey')}
                                 </label>
                             )}
                             {fieldError('apiKey')}
@@ -278,7 +280,7 @@ export const ModelEditorDialog = ({ state, isOwner, onOpenChange, onSaved }: Mod
 
                     {values.provider === 'anthropic' && (
                         <div className="flex flex-col gap-1.5">
-                            <Label>Send the API key as</Label>
+                            <Label>{t('authHeader')}</Label>
                             <Select
                                 value={values.authType}
                                 disabled={isReadOnly}
@@ -286,8 +288,8 @@ export const ModelEditorDialog = ({ state, isOwner, onOpenChange, onSaved }: Mod
                             >
                                 <SelectTrigger><SelectValue /></SelectTrigger>
                                 <SelectContent>
-                                    <SelectItem value="api-key">x-api-key header (Anthropic API)</SelectItem>
-                                    <SelectItem value="bearer">Authorization: Bearer (compatible gateways)</SelectItem>
+                                    <SelectItem value="api-key">{t('headerApiKey')}</SelectItem>
+                                    <SelectItem value="bearer">{t('headerBearer')}</SelectItem>
                                 </SelectContent>
                             </Select>
                         </div>
@@ -296,7 +298,7 @@ export const ModelEditorDialog = ({ state, isOwner, onOpenChange, onSaved }: Mod
                     {values.provider === 'azure' && (
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                             <div className="flex flex-col gap-1.5">
-                                <Label htmlFor="model-resource-name">Resource name</Label>
+                                <Label htmlFor="model-resource-name">{t('resourceName')}</Label>
                                 <Input
                                     id="model-resource-name"
                                     value={values.resourceName}
@@ -306,7 +308,7 @@ export const ModelEditorDialog = ({ state, isOwner, onOpenChange, onSaved }: Mod
                                 {fieldError('resourceName')}
                             </div>
                             <div className="flex flex-col gap-1.5">
-                                <Label htmlFor="model-api-version">API version <span className="text-muted-foreground font-normal">(optional)</span></Label>
+                                <Label htmlFor="model-api-version">{t('apiVersion')} <span className="text-muted-foreground font-normal">{t('optional')}</span></Label>
                                 <Input
                                     id="model-api-version"
                                     value={values.apiVersion}
@@ -319,7 +321,7 @@ export const ModelEditorDialog = ({ state, isOwner, onOpenChange, onSaved }: Mod
 
                     {values.provider === 'openai-compatible' && (
                         <div className="flex flex-col gap-1.5">
-                            <Label htmlFor="model-reasoning-tag">Reasoning tag <span className="text-muted-foreground font-normal">(optional)</span></Label>
+                            <Label htmlFor="model-reasoning-tag">{t('reasoningTag')} <span className="text-muted-foreground font-normal">{t('optional')}</span></Label>
                             <Input
                                 id="model-reasoning-tag"
                                 value={values.reasoningTag}
@@ -334,8 +336,8 @@ export const ModelEditorDialog = ({ state, isOwner, onOpenChange, onSaved }: Mod
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div className="flex items-start justify-between gap-3 rounded-md border p-3">
                             <div className="flex flex-col gap-0.5">
-                                <Label htmlFor="model-image-input">Image input</Label>
-                                <span className="text-xs text-muted-foreground">The model accepts images.</span>
+                                <Label htmlFor="model-image-input">{t('imageInput')}</Label>
+                                <span className="text-xs text-muted-foreground">{t('imageInputHint')}</span>
                             </div>
                             <Switch
                                 id="model-image-input"
@@ -345,12 +347,12 @@ export const ModelEditorDialog = ({ state, isOwner, onOpenChange, onSaved }: Mod
                             />
                         </div>
                         <div className="flex flex-col gap-1.5">
-                            <Label htmlFor="model-temperature">Temperature <span className="text-muted-foreground font-normal">(optional)</span></Label>
+                            <Label htmlFor="model-temperature">{t('temperature')} <span className="text-muted-foreground font-normal">{t('optional')}</span></Label>
                             <Input
                                 id="model-temperature"
                                 inputMode="decimal"
                                 value={values.temperature}
-                                placeholder="Model default"
+                                placeholder={t('modelDefault')}
                                 disabled={isReadOnly}
                                 onChange={(event) => update({ temperature: event.target.value })}
                             />
@@ -368,7 +370,7 @@ export const ModelEditorDialog = ({ state, isOwner, onOpenChange, onSaved }: Mod
                                 : <XCircle className="w-4 h-4 flex-shrink-0" />}
                             <span className="break-all">
                                 {testResult.success
-                                    ? `Connected in ${(testResult.latencyMs / 1000).toFixed(1)}s. Response: "${testResult.response}"`
+                                    ? t('testSuccess', { seconds: (testResult.latencyMs / 1000).toFixed(1), response: testResult.response })
                                     : testResult.message}
                             </span>
                         </div>
@@ -379,7 +381,7 @@ export const ModelEditorDialog = ({ state, isOwner, onOpenChange, onSaved }: Mod
                     {!isReadOnly && (
                         <Button variant="outline" onClick={onTest} disabled={isTesting} className="sm:mr-auto">
                             {isTesting && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
-                            Test connection
+                            {t('testConnection')}
                         </Button>
                     )}
                     <Button variant="outline" onClick={() => onOpenChange(false)}>
@@ -388,7 +390,7 @@ export const ModelEditorDialog = ({ state, isOwner, onOpenChange, onSaved }: Mod
                     {!isReadOnly && (
                         <Button onClick={onSave} disabled={isSaving}>
                             {isSaving && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
-                            Save
+                            {t('save')}
                         </Button>
                     )}
                 </DialogFooter>

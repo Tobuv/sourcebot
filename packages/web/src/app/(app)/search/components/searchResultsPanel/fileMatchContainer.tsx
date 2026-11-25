@@ -8,6 +8,7 @@ import { FileMatch } from "./fileMatch";
 import { RepositoryInfo, SearchResultFile } from "@/features/search";
 import { Button } from "@/components/ui/button";
 
+import { useTranslations } from "next-intl";
 export const MAX_MATCHES_TO_PREVIEW = 3;
 
 interface FileMatchContainerProps {
@@ -29,6 +30,7 @@ export const FileMatchContainer = ({
     repoInfo,
     yOffset,
 }: FileMatchContainerProps) => {
+    const t = useTranslations('search');
     const matchCount = useMemo(() => {
         return file.chunks.length;
     }, [file]);
@@ -111,7 +113,7 @@ export const FileMatchContainer = ({
                             onOpenFilePreview();
                         }}
                     >
-                        Preview
+                        {t('preview')}
                     </Button>
             </div>
 
@@ -147,7 +149,7 @@ export const FileMatchContainer = ({
                         className="text-blue-500 w-fit cursor-pointer text-sm flex flex-row items-center gap-2 group-focus:ring-2 group-focus:ring-blue-500 rounded-sm"
                     >
                         {showAllMatches ? <DoubleArrowUpIcon className="w-3 h-3" /> : <DoubleArrowDownIcon className="w-3 h-3" />}
-                        {showAllMatches ? `Show fewer matches` : `Show ${matchCount - MAX_MATCHES_TO_PREVIEW} more matches`}
+                        {showAllMatches ? t('showFewerMatches') : t('showMoreMatches', { count: matchCount - MAX_MATCHES_TO_PREVIEW })}
                     </p>
                 </div>
             )}

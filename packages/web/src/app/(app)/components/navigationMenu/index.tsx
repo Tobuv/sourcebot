@@ -15,10 +15,12 @@ import { NavigationItems } from "./navigationItems";
 import { ProgressIndicator } from "./progressIndicator";
 import { redirect } from "next/navigation";
 import { AppearanceDropdownMenu } from "../appearanceDropdownMenu";
+import { getTranslations } from "next-intl/server";
 
 
 export const NavigationMenu = async () => {
     const session = await auth();
+    const t = await getTranslations('common');
     const isAuthenticated = session?.user !== undefined;
 
     const repoStats = await getReposStats();
@@ -134,7 +136,7 @@ export const NavigationMenu = async () => {
                                     variant="outline"
                                     type="submit"
                                 >
-                                    Sign in
+                                    {t('signIn')}
                                 </Button>
                             </form>
                             <AppearanceDropdownMenu />

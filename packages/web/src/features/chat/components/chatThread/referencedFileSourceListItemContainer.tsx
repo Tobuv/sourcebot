@@ -10,6 +10,7 @@ import { memo, useCallback } from "react";
 import { FileReference, FileSource, Reference } from "../../types";
 import { ReferencedFileSourceListItem } from "./referencedFileSourceListItem";
 import isEqual from 'fast-deep-equal/react';
+import { useTranslations } from "next-intl";
 
 export interface ReferencedFileSourceListItemContainerProps {
     fileId: string;
@@ -36,6 +37,7 @@ const ReferencedFileSourceListItemContainerComponent = ({
     onExpandedChanged,
     onEditorRef,
 }: ReferencedFileSourceListItemContainerProps) => {
+    const t = useTranslations('chatThread');
     const fileName = fileSource.path.split('/').pop() ?? fileSource.path;
 
     const { data, isLoading, isError, error } = useQuery({
@@ -76,7 +78,7 @@ const ReferencedFileSourceListItemContainerComponent = ({
                     <span className="text-sm font-medium">{fileName}</span>
                 </div>
                 <div className="p-4 text-sm text-destructive bg-destructive/10 rounded border">
-                    Failed to load file: {isServiceError(data) ? data.message : error?.message ?? 'Unknown error'}
+                    {t('failedToLoadFile', { reason: isServiceError(data) ? data.message : error?.message ?? t('unknownError') })}
                 </div>
             </div>
         );

@@ -20,6 +20,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useCallback, useState } from "react";
 import { captureEvent } from "@/hooks/useCaptureEvent";
+import { useTranslations } from "next-intl";
 
 interface ShareSettingsProps {
     chatId: string;
@@ -44,6 +45,7 @@ export const ShareSettings = ({
     isChatSharingEnabledInCurrentPlan,
     isChatSharingEnabled,
 }: ShareSettingsProps) => {
+    const t = useTranslations('chatShare');
     const [isVisibilityUpdating, setIsVisibilityUpdating] = useState(false);
     const [removingUserIds, setRemovingUserIds] = useState<Set<string>>(new Set());
     const { toast } = useToast();
@@ -58,19 +60,19 @@ export const ShareSettings = ({
                 visibility,
             });
             toast({
-                description: "✅ Link copied to clipboard",
+                description: t('linkCopied'),
             });
         } catch (e) {
             toast({
-                description: `Failed to copy link: ${e instanceof Error ? e.message : "Unknown error"}`,
+                description: t('copyLinkFailed', { reason: e instanceof Error ? e.message : t('unknownError') }),
                 variant: "destructive",
             });
         }
-    }, [chatId, visibility, toast]);
+    }, [chatId, visibility, toast, t]);
 
     return (
         <div className="flex flex-col py-3 px-4">
-            <p className="text-sm font-medium">Share</p>
+            <p className="text-sm font-medium">{t('share')}</p>
             <Separator className="-mx-4 w-auto mt-2 mb-4" />
 
             {/* Fake Search Bar - Click to open invite view */}
@@ -85,7 +87,7 @@ export const ShareSettings = ({
                             onClick={onOpenInviteView}
                             disabled={!isChatSharingEnabledInCurrentPlan}
                         >
-                            Search for a user
+                            {t('searchForUser')}
                         </Button>
                     </span>
 
@@ -95,7 +97,7 @@ export const ShareSettings = ({
                         "[&_*]:pointer-events-none": !isChatSharingEnabledInCurrentPlan,
                     })}>
                         <label className="text-sm text-muted-foreground mb-2 block">
-                            People with access
+                            {t('peopleWithAccess')}
                         </label>
                         <div className="space-y-1 max-h-[200px] overflow-y-auto pr-3">
                             {/* Owner (current user) */}
@@ -110,7 +112,7 @@ export const ShareSettings = ({
                                         <div className="flex flex-col">
                                             <span className="text-sm font-medium">
                                                 {currentUser.name || currentUser.email}
-                                                <span className="text-muted-foreground font-normal"> (you)</span>
+                                                <span className="text-muted-foreground font-normal">{t('you')}</span>
                                             </span>
                                             {currentUser.name && currentUser.email && (
                                                 <span className="text-xs text-muted-foreground">{currentUser.email}</span>
@@ -164,7 +166,7 @@ export const ShareSettings = ({
                                                 )}
                                             </Button>
                                         </TooltipTrigger>
-                                        <TooltipContent side="bottom">Remove user</TooltipContent>
+                                        <TooltipContent side="bottom">{t('removeUser')}</TooltipContent>
                                     </Tooltip>
                                 </div>
                             ))}
@@ -174,7 +176,7 @@ export const ShareSettings = ({
                     {!isChatSharingEnabledInCurrentPlan && (
                         <p className="text-xs text-muted-foreground mt-2.5">
                             <Info className="h-3 w-3 inline-block mr-1.5 align-middle" />
-                            <span className="align-middle">Sharing with specific users is not available on your current <Link href={'https://sourcebot.dev/pricing'} target="_blank" rel="noopener noreferrer" className="underline">plan</Link>.</span>
+                            <span className="align-middle">{t.rich('notAvailableOnPlan', { link: (chunks) => <Link href={'https://sourcebot.dev/pricing'} target="_blank" rel="noopener noreferrer" className="underline">{chunks}</Link> })}</span>
                         </p>
                     )}
 
@@ -183,7 +185,7 @@ export const ShareSettings = ({
             )}
 
             <label className="text-sm text-muted-foreground mb-3">
-                Visibility
+                {t('visibility')}
             </label>
             <Select
                 value={visibility}
@@ -204,20 +206,20 @@ export const ShareSettings = ({
                     <SelectItem value={ChatVisibility.PRIVATE}>
                         <div className="flex items-center gap-2">
                             <Lock className="h-4 w-4" />
-                            Only people with access
+                            {t('onlyPeopleWithAccess')}
                         </div>
                     </SelectItem>
                     <SelectItem value={ChatVisibility.PUBLIC}>
                         <div className="flex items-center gap-2">
                             <Link2Icon className="h-4 w-4" />
-                            Anyone with the link
+                            {t('anyoneWithLink')}
                         </div>
                     </SelectItem>
                 </SelectContent>
             </Select>
             {!isAuthenticated && (
                 <p className="text-xs text-muted-foreground mt-2">
-                    <Link href={`/login?callbackUrl=${encodeURIComponent(pathname)}`} className="underline">Sign in</Link> to change chat visibility.
+                    {t.rich('signInToChangeVisibility', { link: (chunks) => <Link href={`/login?callbackUrl=${encodeURIComponent(pathname)}`} className="underline">{chunks}</Link> })}
                 </p>
             )}
             <Separator className="-mx-4 w-auto my-4" />
@@ -229,7 +231,7 @@ export const ShareSettings = ({
                     className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors"
                 >
                     <Info className="h-4 w-4" />
-                    How does sharing chats work?
+                    {t('howSharingWorks')}
                 </Link>
                 <Button
                     variant="outline"
@@ -237,7 +239,7 @@ export const ShareSettings = ({
                     className="gap-2"
                 >
                     <Link2Icon className="h-4 w-4" />
-                    Copy Link
+                    {t('copyLink')}
                 </Button>
             </div>
         </div>

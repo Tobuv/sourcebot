@@ -11,6 +11,7 @@ import { ChatActionsDropdown } from "./chatActionsDropdown";
 import { DeleteChatDialog } from "./deleteChatDialog";
 import { DuplicateChatDialog } from "./duplicateChatDialog";
 import { RenameChatDialog } from "./renameChatDialog";
+import { useTranslations } from "next-intl";
 
 interface ChatNameProps {
     name: string | null;
@@ -20,6 +21,7 @@ interface ChatNameProps {
 }
 
 export const ChatName = ({ name, id, isOwner = false, isAuthenticated = false }: ChatNameProps) => {
+    const t = useTranslations('chat');
     const [isRenameDialogOpen, setIsRenameDialogOpen] = useState(false);
     const [isDuplicateDialogOpen, setIsDuplicateDialogOpen] = useState(false);
     const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
@@ -33,57 +35,57 @@ export const ChatName = ({ name, id, isOwner = false, isAuthenticated = false }:
 
         if (isServiceError(response)) {
             toast({
-                description: `❌ Failed to rename chat. Reason: ${response.message}`
+                description: t('renameFailed', { reason: response.message })
             });
             return false;
         } else {
             toast({
-                description: `✅ Chat renamed successfully`
+                description: t('renamed')
             });
             router.refresh();
             return true;
         }
-    }, [id, toast, router]);
+    }, [id, toast, router, t]);
 
     const onDeleteChat = useCallback(async (): Promise<boolean> => {
         const response = await deleteChat({ chatId: id });
 
         if (isServiceError(response)) {
             toast({
-                description: `❌ Failed to delete chat. Reason: ${response.message}`
+                description: t('deleteFailed', { reason: response.message })
             });
             return false;
         } else {
             toast({
-                description: `✅ Chat deleted successfully`
+                description: t('deleted')
             });
             router.push(`/chat`);
             return true;
         }
-    }, [id, toast, router]);
+    }, [id, toast, router, t]);
 
     const onDuplicateChat = useCallback(async (newName: string): Promise<string | null> => {
         const response = await duplicateChat({ chatId: id, newName });
 
         if (isServiceError(response)) {
             toast({
-                description: `❌ Failed to duplicate chat. Reason: ${response.message}`
+                description: t('duplicateFailed', { reason: response.message })
             });
             return null;
         } else {
             toast({
-                description: `✅ Chat duplicated successfully`
+                description: t('duplicated')
             });
             router.push(`/chat/${response.id}`);
             return response.id;
         }
-    }, [id, toast, router]);
+    }, [id, toast, router, t]);
 
     return (
         <>
             <div className="flex flex-row gap-1 items-center">
                 <p className="text-sm font-medium">
-                    {name ?? 'Untitled chat'}
+                    {name ?? t('untitled')}
                 </p>
                 {isOwner && (
                     <ChatActionsDropdown
@@ -107,7 +109,7 @@ export const ChatName = ({ name, id, isOwner = false, isAuthenticated = false }:
                 isOpen={isRenameDialogOpen}
                 onOpenChange={setIsRenameDialogOpen}
                 onRename={onRenameChat}
-                currentName={name ?? "Untitled chat"}
+                currentName={name ?? t('untitled')}
             />
             <DeleteChatDialog
                 isOpen={isDeleteDialogOpen}
@@ -118,7 +120,7 @@ export const ChatName = ({ name, id, isOwner = false, isAuthenticated = false }:
                 isOpen={isDuplicateDialogOpen}
                 onOpenChange={setIsDuplicateDialogOpen}
                 onDuplicate={onDuplicateChat}
-                currentName={name ?? "Untitled chat"}
+                currentName={name ?? t('untitled')}
             />
         </>
     )

@@ -18,6 +18,7 @@ import posthog from "posthog-js";
 import { Session } from "next-auth";
 import { AppearanceDropdownMenuGroup } from "./appearanceDropdownMenuGroup";
 import { UserAvatar } from "@/components/userAvatar";
+import { useTranslations } from "next-intl";
 
 interface MeControlDropdownMenuProps {
     menuButtonClassName?: string;
@@ -28,6 +29,8 @@ export const MeControlDropdownMenu = ({
     menuButtonClassName,
     session,
 }: MeControlDropdownMenuProps) => {
+    const t = useTranslations('common');
+
     return (
         <DropdownMenu>
             <DropdownMenuTrigger asChild>
@@ -46,7 +49,7 @@ export const MeControlDropdownMenu = ({
                             className="h-10 w-10 flex-shrink-0"
                         />
                         <div className="flex flex-col flex-1 min-w-0">
-                            <p className="text-sm font-semibold truncate">{session.user.name ?? "User"}</p>
+                            <p className="text-sm font-semibold truncate">{session.user.name ?? t('user')}</p>
                             {session.user.email && (
                                 <p className="text-xs text-muted-foreground truncate">{session.user.email}</p>
                             )}
@@ -58,7 +61,7 @@ export const MeControlDropdownMenu = ({
                 <DropdownMenuItem asChild>
                     <a href={`/settings`}>
                         <Settings className="h-4 w-4 mr-2" />
-                        <span>Settings</span>
+                        <span>{t('settings')}</span>
                     </a>
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
@@ -73,7 +76,7 @@ export const MeControlDropdownMenu = ({
                         }}
                     >
                         <LogOut className="mr-2 h-4 w-4" />
-                        <span>Log out</span>
+                        <span>{t('logOut')}</span>
                     </DropdownMenuItem>
                 </DropdownMenuGroup>
             </DropdownMenuContent>

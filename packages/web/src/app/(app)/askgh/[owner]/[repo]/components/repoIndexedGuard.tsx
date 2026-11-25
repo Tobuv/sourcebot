@@ -8,6 +8,7 @@ import { usePrevious } from "@uidotdev/usehooks";
 import { useEffect } from "react";
 import { useBrowserNotification } from "@/hooks/useBrowserNotification";
 import { RepoInfo } from "../types";
+import { useTranslations } from "next-intl";
 
 const REINDEX_INTERVAL_MS = 2000;
 
@@ -17,6 +18,7 @@ interface Props {
 }
 
 export function RepoIndexedGuard({ initialRepoInfo, children }: Props) {
+    const t = useTranslations('askgh');
     const { requestPermission, showNotification } = useBrowserNotification();
 
     const { data: repoInfo, isError } = useQuery({
@@ -50,15 +52,15 @@ export function RepoIndexedGuard({ initialRepoInfo, children }: Props) {
         if (previousIsIndexed === false && repoInfo.isIndexed === true) {
             const displayName = repoInfo.displayName ?? repoInfo.name;
             showNotification({
-                title: "Repository Ready",
-                body: `${displayName} is ready to chat with.`,
+                title: t('repoReady'),
+                body: t('repoReadyBody', { name: displayName }),
                 icon: repoInfo.imageUrl ?? undefined,
                 onClick: () => {
                     window.focus();
                 },
             });
         }
-    }, [previousIsIndexed, repoInfo.isIndexed, repoInfo.displayName, repoInfo.name, repoInfo.imageUrl, showNotification]);
+    }, [previousIsIndexed, repoInfo.isIndexed, repoInfo.displayName, repoInfo.name, repoInfo.imageUrl, showNotification, t]);
 
     if (isError) {
         // todo
@@ -71,10 +73,10 @@ export function RepoIndexedGuard({ initialRepoInfo, children }: Props) {
             <div className="flex flex-col items-center justify-center min-h-[400px] p-4">
                 <Loader2 className="w-12 h-12 animate-spin text-primary mb-4" />
                 <h2 className="text-2xl font-semibold mb-2">
-                    Indexing in progress...
+                    {t('indexing')}
                 </h2>
                 <p className="text-muted-foreground text-center">
-                    This may take a few minutes. The page will update automatically.
+                    {t('indexingHint')}
                 </p>
             </div>
         );

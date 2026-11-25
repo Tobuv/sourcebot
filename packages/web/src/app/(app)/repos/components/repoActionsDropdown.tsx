@@ -10,12 +10,15 @@ import { indexRepo } from "@/features/workerApi/actions"
 import { useRouter } from "next/navigation"
 import { useToast } from "@/components/hooks/use-toast"
 import type { Repo } from "./reposTable"
+import { useTranslations } from "next-intl";
 
 interface RepoActionsDropdownProps {
     repo: Repo
 }
 
 export const RepoActionsDropdown = ({ repo }: RepoActionsDropdownProps) => {
+    const t = useTranslations('repos');
+    const tCommon = useTranslations('common');
     const [isSyncing, setIsSyncing] = useState(false)
     const router = useRouter()
     const { toast } = useToast()
@@ -34,12 +37,12 @@ export const RepoActionsDropdown = ({ repo }: RepoActionsDropdownProps) => {
         if (!isServiceError(response)) {
             const { jobId } = response
             toast({
-                description: `✅ Repository sync triggered successfully. Job ID: ${jobId}`,
+                description: t('syncTriggered', { jobId }),
             })
             router.refresh()
         } else {
             toast({
-                description: `❌ Failed to sync repository. ${response.message}`,
+                description: t('syncFailed', { reason: response.message }),
             })
         }
 
@@ -50,27 +53,27 @@ export const RepoActionsDropdown = ({ repo }: RepoActionsDropdownProps) => {
         <DropdownMenu>
             <DropdownMenuTrigger asChild>
                 <Button variant="ghost" className="h-8 w-8 p-0">
-                    <span className="sr-only">Open menu</span>
+                    <span className="sr-only">{t('openMenu')}</span>
                     <MoreHorizontal className="h-4 w-4" />
                 </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
-                <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                <DropdownMenuLabel>{t('actions')}</DropdownMenuLabel>
                 <DropdownMenuItem asChild>
-                    <Link href={`/repos/${repo.id}`}>View details</Link>
+                    <Link href={`/repos/${repo.id}`}>{t('viewDetails')}</Link>
                 </DropdownMenuItem>
                 <DropdownMenuItem
                     onClick={handleTriggerSync}
                     disabled={isSyncing}
                 >
-                    Trigger sync
+                    {t('triggerSync')}
                 </DropdownMenuItem>
                 {repo.webUrl && (
                     <>
                         <DropdownMenuSeparator />
                         <DropdownMenuItem asChild>
                             <a href={repo.webUrl} target="_blank" rel="noopener noreferrer" className="flex items-center">
-                                Open in {codeHostInfo.codeHostName}
+                                {tCommon('openInCodeHost', { host: codeHostInfo.codeHostName })}
                                 <ExternalLink className="ml-2 h-3 w-3" />
                             </a>
                         </DropdownMenuItem>

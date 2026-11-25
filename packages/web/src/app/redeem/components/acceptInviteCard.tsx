@@ -13,6 +13,7 @@ import { redeemInvite } from "@/app/invite/actions";
 import { useRouter } from "next/navigation";
 import { useToast } from "@/components/hooks/use-toast";
 import { isServiceError } from "@/lib/utils";
+import { useTranslations } from "next-intl";
 
 interface AcceptInviteCardProps {
     inviteId: string;
@@ -30,6 +31,7 @@ interface AcceptInviteCardProps {
 }
 
 export const AcceptInviteCard = ({ inviteId, orgName, orgImageUrl, host, recipient }: AcceptInviteCardProps) => {
+    const t = useTranslations('redeem');
     const [isLoading, setIsLoading] = useState(false);
     const router = useRouter();
     const { toast } = useToast();
@@ -40,12 +42,12 @@ export const AcceptInviteCard = ({ inviteId, orgName, orgImageUrl, host, recipie
             .then((response) => {
                 if (isServiceError(response)) {
                     toast({
-                        description: `Failed to redeem invite with error: ${response.message}`,
+                        description: t('failed', { reason: response.message }),
                         variant: "destructive",
                     });
                 } else {
                     toast({
-                        description: `✅ You are now a member of the ${orgName} organization.`,
+                        description: t('joined', { org: orgName }),
                     });
                     router.push('/');
                 }
@@ -53,7 +55,7 @@ export const AcceptInviteCard = ({ inviteId, orgName, orgImageUrl, host, recipie
             .finally(() => {
                 setIsLoading(false);
             });
-    }, [inviteId, orgName, router, toast]);
+    }, [inviteId, orgName, router, toast, t]);
 
     return (
         <Card className="p-12 max-w-lg">
@@ -71,7 +73,7 @@ export const AcceptInviteCard = ({ inviteId, orgName, orgImageUrl, host, recipie
                     Hello {recipient.name?.split(' ')[0] ?? recipient.email},
                 </p>
                 <p className="mt-5">
-                    <InvitedByText email={host.email} name={host.name} /> invited you to join the <strong>{orgName}</strong> organization.
+                    {t.rich('invitedYou', { org: orgName, inviter: () => <InvitedByText email={host.email} name={host.name} />, b: (chunks) => <strong>{chunks}</strong> })}
                 </p>
                 <div className="flex fex-row items-center justify-center gap-2 mt-12">
                     <UserAvatar
@@ -90,7 +92,7 @@ export const AcceptInviteCard = ({ inviteId, orgName, orgImageUrl, host, recipie
                     onClick={onRedeemInvite}
                 >
                     {isLoading && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
-                    Accept Invite
+                    {t('accept')}
                 </Button>
             </CardContent>
         </Card>

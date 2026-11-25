@@ -5,6 +5,7 @@ import { getCurrentUserRole, getReposStats } from "@/actions";
 import { isServiceError } from "@/lib/utils";
 import { ServiceErrorException } from "@/lib/serviceError";
 import { OrgRole } from "@sourcebot/db";
+import { getTranslations } from "next-intl/server";
 
 interface LayoutProps {
     children: React.ReactNode;
@@ -13,6 +14,7 @@ interface LayoutProps {
 export default async function Layout(
     props: LayoutProps
 ) {
+    const t = await getTranslations('repos');
     const { children } = props;
 
     const repoStats = await getReposStats();
@@ -28,7 +30,7 @@ export default async function Layout(
             {(repoStats.numberOfRepos === 0 && userRoleInOrg === OrgRole.OWNER) && (
                 <div className="w-full flex flex-row justify-center items-center bg-accent py-0.5">
                     <InfoIcon className="w-4 h-4 mr-1" />
-                    <span><span className="font-medium">No repositories configured.</span> Create a <Link href="/settings/connections" className="text-link hover:underline">connection</Link> to get started.</span>
+                    <span>{t.rich('noneConfigured', { b: (chunks) => <span className="font-medium">{chunks}</span>, link: (chunks) => <Link href="/settings/connections" className="text-link hover:underline">{chunks}</Link> })}</span>
                 </div>
             )}
             <main className="flex-grow flex justify-center p-4 bg-backgroundSecondary relative">

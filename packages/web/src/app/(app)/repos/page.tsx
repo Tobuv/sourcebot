@@ -5,6 +5,7 @@ import { withOptionalAuth } from "@/middleware/withAuth";
 import { ReposTable } from "./components/reposTable";
 import { RepoIndexingJobStatus, Prisma } from "@sourcebot/db";
 import z from "zod";
+import { getTranslations } from "next-intl/server";
 
 const numberSchema = z.coerce.number().int().positive();
 
@@ -22,6 +23,7 @@ interface ReposPageProps {
 }
 
 export default async function ReposPage(props: ReposPageProps) {
+    const t = await getTranslations('repos');
     const params = await props.searchParams;
 
     // Parse pagination parameters with defaults
@@ -54,8 +56,8 @@ export default async function ReposPage(props: ReposPageProps) {
     return (
         <>
             <div className="mb-6">
-                <h1 className="text-3xl font-semibold">Repositories</h1>
-                <p className="text-muted-foreground mt-2">View and manage your code repositories and their indexing status.</p>
+                <h1 className="text-3xl font-semibold">{t('title')}</h1>
+                <p className="text-muted-foreground mt-2">{t('description')}</p>
             </div>
             <ReposTable
                 data={repos.map((repo) => ({

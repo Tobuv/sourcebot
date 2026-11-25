@@ -5,6 +5,7 @@ import { cn } from "@/lib/utils";
 import { FileTextIcon, XIcon } from "lucide-react";
 import { formatBytes, TextAttachment } from "../attachments";
 import { CodeBlock } from "./chatThread/codeBlock";
+import { useTranslations } from "next-intl";
 
 interface AttachmentChipProps {
     attachment: TextAttachment;
@@ -25,6 +26,7 @@ const getLanguageFromName = (name: string) => {
  * When `onRemove` is provided, a remove button is shown.
  */
 export const AttachmentChip = ({ attachment, onRemove, className }: AttachmentChipProps) => {
+    const t = useTranslations('chatBox');
     return (
         <div
             className={cn(
@@ -37,7 +39,7 @@ export const AttachmentChip = ({ attachment, onRemove, className }: AttachmentCh
                     <button
                         type="button"
                         className="flex items-center gap-1.5 min-w-0 hover:underline"
-                        title={`Preview ${attachment.name}`}
+                        title={t('previewAttachment', { name: attachment.name })}
                     >
                         <FileTextIcon className="w-3.5 h-3.5 flex-shrink-0 text-muted-foreground" />
                         <span className="truncate">{attachment.name}</span>
@@ -61,7 +63,7 @@ export const AttachmentChip = ({ attachment, onRemove, className }: AttachmentCh
                     type="button"
                     className="flex items-center justify-center w-4 h-4 flex-shrink-0 rounded text-muted-foreground hover:text-foreground hover:bg-accent"
                     onClick={onRemove}
-                    title={`Remove ${attachment.name}`}
+                    title={t('removeAttachment', { name: attachment.name })}
                 >
                     <XIcon className="w-3 h-3" />
                 </button>

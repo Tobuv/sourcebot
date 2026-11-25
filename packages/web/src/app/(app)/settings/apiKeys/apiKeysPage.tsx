@@ -13,8 +13,11 @@ import { DataTable } from "@/components/ui/data-table";
 import { columns, ApiKeyColumnInfo } from "./columns";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { useTranslations } from "next-intl";
 
 export function ApiKeysPage({ canCreateApiKey }: { canCreateApiKey: boolean }) {
+    const t = useTranslations('apiKeys');
+    const tCommon = useTranslations('common');
     const { toast } = useToast();
     const captureEvent = useCaptureEvent();
 
@@ -33,10 +36,10 @@ export function ApiKeysPage({ canCreateApiKey }: { canCreateApiKey: boolean }) {
         try {
             const keys = await getUserApiKeys();
             if (isServiceError(keys)) {
-                setError("Failed to load API keys");
+                setError(t('loadFailed'));
                 toast({
                     title: "Error",
-                    description: "Failed to load API keys",
+                    description: t('loadFailed'),
                     variant: "destructive",
                 });
                 return;
@@ -44,16 +47,16 @@ export function ApiKeysPage({ canCreateApiKey }: { canCreateApiKey: boolean }) {
             setApiKeys(keys);
         } catch (error) {
             console.error(error);
-            setError("Failed to load API keys");
+            setError(t('loadFailed'));
             toast({
                 title: "Error",
-                description: "Failed to load API keys",
+                description: t('loadFailed'),
                 variant: "destructive",
             });
         } finally {
             setIsLoading(false);
         }
-    }, [toast]);
+    }, [toast, t]);
 
     useEffect(() => {
         loadApiKeys();
@@ -63,7 +66,7 @@ export function ApiKeysPage({ canCreateApiKey }: { canCreateApiKey: boolean }) {
         if (!newKeyName.trim()) {
             toast({
                 title: "Error",
-                description: "API key name cannot be empty",
+                description: t('nameRequired'),
                 variant: "destructive",
             });
             return;
@@ -75,7 +78,7 @@ export function ApiKeysPage({ canCreateApiKey }: { canCreateApiKey: boolean }) {
             if (isServiceError(result)) {
                 toast({
                     title: "Error",
-                    description: `Failed to create API key: ${result.message}`,
+                    description: t('createFailed', { reason: result.message }),
                     variant: "destructive",
                 });
                 captureEvent('wa_api_key_creation_fail', {});
@@ -90,7 +93,7 @@ export function ApiKeysPage({ canCreateApiKey }: { canCreateApiKey: boolean }) {
             console.error(error);
             toast({
                 title: "Error",
-                description: `Failed to create API key: ${error}`,
+                description: t('createFailed', { reason: String(error) }),
                 variant: "destructive",
             });
             captureEvent('wa_api_key_creation_fail', {});
@@ -110,7 +113,7 @@ export function ApiKeysPage({ canCreateApiKey }: { canCreateApiKey: boolean }) {
             .catch(() => {
                 toast({
                     title: "Error",
-                    description: "Failed to copy API key to clipboard",
+                    description: t('copyFailed'),
                     variant: "destructive",
                 });
             });
@@ -167,16 +170,16 @@ export function ApiKeysPage({ canCreateApiKey }: { canCreateApiKey: boolean }) {
     }, [isLoading]);
 
     if (error) {
-        return <div>Error loading API keys</div>;
+        return <div>{t('errorLoading')}</div>;
     }
 
     return (
         <div className="flex flex-col gap-6">
             <div className="flex flex-row items-center justify-between">
                 <div>
-                    <h3 className="text-lg font-medium">API Keys</h3>
+                    <h3 className="text-lg font-medium">{t('title')}</h3>
                     <p className="text-sm text-muted-foreground max-w-lg">
-                        Create and manage API keys for programmatic access to NexusCode. All API keys are scoped to the user who created them.
+                        {t('description')}
                     </p>
                 </div>
 
@@ -184,7 +187,7 @@ export function ApiKeysPage({ canCreateApiKey }: { canCreateApiKey: boolean }) {
                     <Tooltip>
                         {!canCreateApiKey && (
                             <TooltipContent>
-                                API key creation is restricted.
+                                {t('restricted')}
                             </TooltipContent>
                         )}
                         <TooltipTrigger asChild>
@@ -201,12 +204,12 @@ export function ApiKeysPage({ canCreateApiKey }: { canCreateApiKey: boolean }) {
                                             }}
                                         >
                                             <Plus className="h-4 w-4 mr-2" />
-                                            Create API Key
+                                            {t('create')}
                                         </Button>
                                     </DialogTrigger>
                                     <DialogContent className="sm:max-w-md">
                                         <DialogHeader>
-                                            <DialogTitle>{newlyCreatedKey ? 'Your New API Key' : 'Create API Key'}</DialogTitle>
+                                            <DialogTitle>{newlyCreatedKey ? t('newKeyTitle') : t('create')}</DialogTitle>
                                         </DialogHeader>
 
                                         {newlyCreatedKey ? (
@@ -214,7 +217,7 @@ export function ApiKeysPage({ canCreateApiKey }: { canCreateApiKey: boolean }) {
                                                 <div className="flex items-center gap-2 p-3 border border-yellow-200 dark:border-yellow-800 bg-yellow-50 dark:bg-yellow-900/20 rounded-md text-yellow-700 dark:text-yellow-400">
                                                     <AlertTriangle className="h-5 w-5 flex-shrink-0" />
                                                     <p className="text-sm">
-                                                        This is the only time you&apos;ll see this API key. Make sure to copy it now.
+                                                        {t('onlyShownOnce')}
                                                     </p>
                                                 </div>
 
@@ -240,7 +243,7 @@ export function ApiKeysPage({ canCreateApiKey }: { canCreateApiKey: boolean }) {
                                                 <Input
                                                     value={newKeyName}
                                                     onChange={(e) => setNewKeyName(e.target.value)}
-                                                    placeholder="Enter a name for your API key"
+                                                    placeholder={t('namePlaceholder')}
                                                     className="mb-2"
                                                 />
                                             </div>
@@ -249,19 +252,19 @@ export function ApiKeysPage({ canCreateApiKey }: { canCreateApiKey: boolean }) {
                                         <DialogFooter className="sm:justify-between">
                                             {newlyCreatedKey ? (
                                                 <Button onClick={handleCloseDialog}>
-                                                    Done
+                                                    {t('done')}
                                                 </Button>
                                             ) : (
                                                 <>
                                                     <Button variant="outline" onClick={handleCloseDialog}>
-                                                        Cancel
+                                                        {tCommon('cancel')}
                                                     </Button>
                                                     <Button
                                                         onClick={handleCreateApiKey}
                                                         disabled={isCreatingKey || !newKeyName.trim()}
                                                     >
                                                         {isCreatingKey && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
-                                                        Create
+                                                        {t('createButton')}
                                                     </Button>
                                                 </>
                                             )}
@@ -278,7 +281,7 @@ export function ApiKeysPage({ canCreateApiKey }: { canCreateApiKey: boolean }) {
                 columns={tableColumns}
                 data={tableData}
                 searchKey="name"
-                searchPlaceholder="Search API keys..."
+                searchPlaceholder={t('searchPlaceholder')}
             />
         </div>
     );

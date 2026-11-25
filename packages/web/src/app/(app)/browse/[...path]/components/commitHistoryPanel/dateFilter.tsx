@@ -13,6 +13,9 @@ import {
     PopoverContent,
     PopoverTrigger,
 } from "@/components/ui/popover";
+import { useTranslations } from "next-intl";
+import { useDateFnsLocale } from "@/i18n/dateLocale";
+import type { Locale as DateFnsLocale } from "date-fns";
 
 interface DateFilterProps {
     since?: string;
@@ -35,13 +38,19 @@ const formatLocalDate = (d: Date): string => {
     return `${y}-${m}-${day}`;
 };
 
-const formatLabel = (from: Date | undefined, to: Date | undefined): string => {
+const formatLabel = (
+    from: Date | undefined,
+    to: Date | undefined,
+    { allTimeLabel, locale }: { allTimeLabel: string; locale: DateFnsLocale },
+): string => {
     if (!from && !to) {
-        return 'All time';
+        return allTimeLabel;
     }
     const currentYear = new Date().getFullYear();
+    // Chinese uses "11月22日" for dates in the current year; other locales use "MMM d".
+    const shortFormat = locale.code?.startsWith('zh') ? 'M月d日' : 'MMM d';
     const fmt = (d: Date) =>
-        d.getFullYear() === currentYear ? format(d, 'MMM d') : format(d, 'MMM d, yyyy');
+        d.getFullYear() === currentYear ? format(d, shortFormat, { locale }) : format(d, 'PP', { locale });
 
     if (from && to) {
         if (formatLocalDate(from) === formatLocalDate(to)) {
@@ -54,6 +63,8 @@ const formatLabel = (from: Date | undefined, to: Date | undefined): string => {
 
 export const DateFilter = ({ since, until }: DateFilterProps) => {
     const router = useRouter();
+    const t = useTranslations('browse');
+    const dateLocale = useDateFnsLocale();
     const pathname = usePathname();
     const searchParams = useSearchParams();
 
@@ -170,7 +181,7 @@ export const DateFilter = ({ since, until }: DateFilterProps) => {
         setMonth(new Date());
     }, []);
 
-    const label = formatLabel(fromDate, toDate);
+    const label = formatLabel(fromDate, toDate, { allTimeLabel: t('allTime'), locale: dateLocale });
     const hasFilter = Boolean(fromDate || toDate);
 
     return (
@@ -180,7 +191,7 @@ export const DateFilter = ({ since, until }: DateFilterProps) => {
                     variant="outline"
                     size="sm"
                     className="h-8 gap-2 flex-shrink-0"
-                    aria-label="Filter by date"
+                    aria-label={t('filterByDate')}
                 >
                     <CalendarIcon className="h-4 w-4 flex-shrink-0" />
                     <span className="text-sm truncate max-w-[180px]">{label}</span>
@@ -198,6 +209,7 @@ export const DateFilter = ({ since, until }: DateFilterProps) => {
                     timeZone={timeZone}
                     numberOfMonths={1}
                     disabled={{ after: new Date() }}
+                    locale={dateLocale}
                 />
                 <div className="flex flex-row items-center gap-4 px-3 py-2 border-t">
                     <Button
@@ -207,7 +219,7 @@ export const DateFilter = ({ since, until }: DateFilterProps) => {
                         disabled={!hasFilter}
                         className="h-auto p-0 text-foreground font-medium"
                     >
-                        Clear
+                        {t('clear')}
                     </Button>
                     <Button
                         variant="link"
@@ -215,7 +227,7 @@ export const DateFilter = ({ since, until }: DateFilterProps) => {
                         onClick={onToday}
                         className="h-auto p-0"
                     >
-                        Today
+                        {t('today')}
                     </Button>
                 </div>
             </PopoverContent>

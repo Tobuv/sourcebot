@@ -18,6 +18,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { getCodeHostBrowseAtBranchUrl } from "@/lib/utils"
 import Link from "next/link"
 import { CodeHostType } from "@sourcebot/db";
+import { useTranslations } from "next-intl";
 
 type RepoBranchesTableProps = {
     indexRevisions: string[];
@@ -26,6 +27,8 @@ type RepoBranchesTableProps = {
 }
 
 export const RepoBranchesTable = ({ indexRevisions, repoWebUrl, repoCodeHostType }: RepoBranchesTableProps) => {
+    const t = useTranslations('repos');
+    const tConn = useTranslations('connections');
     const [sorting, setSorting] = React.useState<SortingState>([])
     const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([])
 
@@ -34,7 +37,7 @@ export const RepoBranchesTable = ({ indexRevisions, repoWebUrl, repoCodeHostType
             {
                 id: "refName",
                 accessorFn: (row) => row,
-                header: "Revision",
+                header: () => <RevisionLabel />,
                 cell: ({ row }) => {
                     const refName = row.original;
                     const shortRefName = refName.replace(/^refs\/(heads|tags)\//, "");
@@ -54,12 +57,16 @@ export const RepoBranchesTable = ({ indexRevisions, repoWebUrl, repoCodeHostType
                             {shortRefName}
                         </Link>
                     ) : (
-                        <span
-                            className="font-mono text-sm text-muted-foreground"
-                            title="This revision is not indexed"
-                        >
-                            {shortRefName}
-                        </span>
+                        <NotIndexedTitle>
+                            {(title) => (
+                                <span
+                                    className="font-mono text-sm text-muted-foreground"
+                                    title={title}
+                                >
+                                    {shortRefName}
+                                </span>
+                            )}
+                        </NotIndexedTitle>
                     )
                 },
             }
@@ -90,7 +97,7 @@ export const RepoBranchesTable = ({ indexRevisions, repoWebUrl, repoCodeHostType
         <div className="space-y-4">
             <div className="flex items-center gap-2">
                 <Input
-                    placeholder="Filter branches..."
+                    placeholder={t('filterBranches')}
                     value={(table.getColumn("refName")?.getFilterValue() as string) ?? ""}
                     onChange={(event) => table.getColumn("refName")?.setFilterValue(event.target.value)}
                     className="max-w-sm"
@@ -122,7 +129,7 @@ export const RepoBranchesTable = ({ indexRevisions, repoWebUrl, repoCodeHostType
                         ) : (
                             <TableRow>
                                 <TableCell colSpan={columns.length} className="h-24 text-center">
-                                    No branches found.
+                                    {t('noBranches')}
                                 </TableCell>
                             </TableRow>
                         )}
@@ -132,12 +139,22 @@ export const RepoBranchesTable = ({ indexRevisions, repoWebUrl, repoCodeHostType
 
             <div className="flex items-center justify-end space-x-2">
                 <Button variant="outline" size="sm" onClick={() => table.previousPage()} disabled={!table.getCanPreviousPage()}>
-                    Previous
+                    {tConn('previous')}
                 </Button>
                 <Button variant="outline" size="sm" onClick={() => table.nextPage()} disabled={!table.getCanNextPage()}>
-                    Next
+                    {tConn('next')}
                 </Button>
             </div>
         </div>
     )
+}
+
+const RevisionLabel = () => {
+    const t = useTranslations('repos');
+    return <>{t('colRevision')}</>;
+}
+
+const NotIndexedTitle = ({ children }: { children: (title: string) => React.ReactNode }) => {
+    const t = useTranslations('repos');
+    return <>{children(t('revisionNotIndexed'))}</>;
 }

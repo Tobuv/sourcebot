@@ -17,6 +17,8 @@ import {
 } from "@/components/ui/alert-dialog"
 import { useState } from "react"
 import { useToast } from "@/components/hooks/use-toast"
+import { useLocale, useTranslations } from "next-intl";
+import { getIntlLocale } from "@/i18n/dateLocale";
 
 export type ApiKeyColumnInfo = {
     name: string
@@ -26,6 +28,8 @@ export type ApiKeyColumnInfo = {
 
 // Component for the actions cell to properly use React hooks
 function ApiKeyActions({ apiKey }: { apiKey: ApiKeyColumnInfo }) {
+    const t = useTranslations('apiKeys');
+    const tCommon = useTranslations('common');
     const [isPending, setIsPending] = useState(false)
     const { toast } = useToast()
     
@@ -37,8 +41,8 @@ function ApiKeyActions({ apiKey }: { apiKey: ApiKeyColumnInfo }) {
         } catch (error) {
             console.error("Failed to delete API key", error)
             toast({
-                title: "Failed to Delete API Key",
-                description: `There was an error deleting the API key: ${error}`,
+                title: t('deleteFailedTitle'),
+                description: t('deleteFailed', { reason: String(error) }),
                 variant: "destructive",
             })
         } finally {
@@ -56,19 +60,19 @@ function ApiKeyActions({ apiKey }: { apiKey: ApiKeyColumnInfo }) {
                 </AlertDialogTrigger>
                 <AlertDialogContent>
                     <AlertDialogHeader>
-                        <AlertDialogTitle>Delete API Key</AlertDialogTitle>
+                        <AlertDialogTitle>{t('deleteTitle')}</AlertDialogTitle>
                         <AlertDialogDescription>
-                            Are you sure you want to delete the API key <span className="font-semibold text-foreground">{apiKey.name}</span>? This action cannot be undone.
+                            {t.rich('deleteConfirm', { name: apiKey.name, b: (chunks) => <span className="font-semibold text-foreground">{chunks}</span> })}
                         </AlertDialogDescription>
                     </AlertDialogHeader>
                     <AlertDialogFooter>
-                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                        <AlertDialogCancel>{tCommon('cancel')}</AlertDialogCancel>
                         <AlertDialogAction 
                             onClick={handleDelete} 
                             disabled={isPending}
                             className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
                         >
-                            {isPending ? "Deleting..." : "Delete"}
+                            {isPending ? t('deleting') : tCommon('delete')}
                         </AlertDialogAction>
                     </AlertDialogFooter>
                 </AlertDialogContent>
@@ -80,7 +84,7 @@ function ApiKeyActions({ apiKey }: { apiKey: ApiKeyColumnInfo }) {
 export const columns = (): ColumnDef<ApiKeyColumnInfo>[] => [
     {
         accessorKey: "name",
-        header: () => <div className="flex items-center w-[300px]">Name</div>,
+        header: () => <div className="flex items-center w-[300px]"><ColumnLabel id="colName" /></div>,
         cell: ({ row }) => {
             const name = row.original.name
             return (
@@ -100,7 +104,7 @@ export const columns = (): ColumnDef<ApiKeyColumnInfo>[] => [
                     onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
                     className="px-0 font-medium"
                 >
-                    Created
+                    <ColumnLabel id="colCreated" />
                     <ArrowUpDown className="ml-2 h-3.5 w-3.5 text-muted-foreground" />
                 </Button>
             </div>
@@ -112,11 +116,7 @@ export const columns = (): ColumnDef<ApiKeyColumnInfo>[] => [
             const date = new Date(row.original.createdAt)
             return (
                 <div className="py-2 text-muted-foreground">
-                    {date.toLocaleDateString("en-US", {
-                        month: "short",
-                        day: "numeric",
-                        year: "numeric",
-                    })}
+                    <LocalizedDate date={date} />
                 </div>
             )
         },
@@ -130,23 +130,19 @@ export const columns = (): ColumnDef<ApiKeyColumnInfo>[] => [
                     onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
                     className="px-0 font-medium"
                 >
-                    Last Used
+                    <ColumnLabel id="colLastUsed" />
                     <ArrowUpDown className="ml-2 h-3.5 w-3.5 text-muted-foreground" />
                 </Button>
             </div>
         ),
         cell: ({ row }) => {
             if (!row.original.lastUsedAt) {
-                return <div className="py-2 text-muted-foreground">Never</div>
+                return <div className="py-2 text-muted-foreground"><ColumnLabel id="never" /></div>
             }
             const date = new Date(row.original.lastUsedAt)
             return (
                 <div className="py-2 text-muted-foreground">
-                    {date.toLocaleDateString("en-US", {
-                        month: "short",
-                        day: "numeric",
-                        year: "numeric",
-                    })}
+                    <LocalizedDate date={date} />
                 </div>
             )
         },
@@ -156,3 +152,13 @@ export const columns = (): ColumnDef<ApiKeyColumnInfo>[] => [
         cell: ({ row }) => <ApiKeyActions apiKey={row.original} />
     }
 ] 
+/** Column header / empty state text, translated to the current locale. */
+const ColumnLabel = ({ id }: { id: 'colName' | 'colCreated' | 'colLastUsed' | 'never' }) => {
+    const t = useTranslations('apiKeys');
+    return <>{t(id)}</>;
+}
+
+const LocalizedDate = ({ date }: { date: Date }) => {
+    const locale = useLocale();
+    return <>{date.toLocaleDateString(getIntlLocale(locale), { month: "short", day: "numeric", year: "numeric" })}</>;
+}

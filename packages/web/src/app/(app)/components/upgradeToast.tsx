@@ -6,6 +6,7 @@ import { useEffect } from "react";
 import { useLocalStorage } from "usehooks-ts";
 import { getVersion } from "@/app/api/(client)/client";
 import { useQuery } from "@tanstack/react-query";
+import { useTranslations } from "next-intl";
 
 const GITHUB_TAGS_URL = "https://api.github.com/repos/sourcebot-dev/sourcebot/tags";
 const SEMVER_REGEX = /^v(\d+)\.(\d+)\.(\d+)$/;
@@ -18,6 +19,7 @@ type Version = {
 };
 
 export const UpgradeToast = () => {
+    const t = useTranslations('shared');
     const { toast } = useToast();
     const [ upgradeToastLastShownDate, setUpgradeToastLastShownDate ] = useLocalStorage<string>(
         "upgradeToastLastShownDate",
@@ -63,8 +65,8 @@ export const UpgradeToast = () => {
                 }
 
                 toast({
-                    title: "New version available 📣 ",
-                    description: `Upgrade from ${getVersionString(currentVersion)} to ${getVersionString(latestVersion)}`,
+                    title: t('newVersionTitle'),
+                    description: t('newVersionDescription', { current: getVersionString(currentVersion), latest: getVersionString(latestVersion) }),
                     duration: 10 * 1000,
                     action: (
                         <div className="flex flex-col gap-1">
@@ -74,7 +76,7 @@ export const UpgradeToast = () => {
                                     window.open("https://github.com/sourcebot-dev/sourcebot/releases/latest", "_blank");
                                 }}
                             >
-                                Upgrade
+                                {t('upgrade')}
                             </ToastAction>
                         </div>
                     )
@@ -82,7 +84,7 @@ export const UpgradeToast = () => {
 
                 setUpgradeToastLastShownDate(new Date().toUTCString());
             });
-    }, [setUpgradeToastLastShownDate, toast, upgradeToastLastShownDate, versionString]);
+    }, [setUpgradeToastLastShownDate, toast, upgradeToastLastShownDate, versionString, t]);
 
     return null;
 }

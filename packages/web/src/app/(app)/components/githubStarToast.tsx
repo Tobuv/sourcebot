@@ -5,6 +5,7 @@ import { ToastAction } from "@/components/ui/toast";
 import { useEffect } from "react";
 import { GitHubLogoIcon } from "@radix-ui/react-icons";
 import { captureEvent } from "@/hooks/useCaptureEvent";
+import { useTranslations } from "next-intl";
 
 const POPUP_SHOWN_COOKIE = "github_popup_shown";
 const POPUP_START_TIME_COOKIE = "github_popup_start_time";
@@ -35,6 +36,7 @@ function setCookie(name: string, value: string, days: number = 365) {
 }
 
 export const GitHubStarToast = () => {
+    const t = useTranslations('shared');
     const { toast } = useToast();
 
     useEffect(() => {
@@ -54,8 +56,8 @@ export const GitHubStarToast = () => {
         const elapsed = currentTime - parseInt(startTime, 10);
         if (elapsed >= (POPUP_DELAY_S * 1000)) {
             toast({
-                title: "Star us on GitHub ❤️",
-                description: "If you've found NexusCode useful, please consider starring us on GitHub. Your support means a lot!",
+                title: t('githubStarTitle'),
+                description: t('githubStarDescription'),
                 duration: 15 * 1000,
                 action: (
                     <div className="flex flex-col gap-1">
@@ -78,7 +80,7 @@ export const GitHubStarToast = () => {
             captureEvent('wa_github_star_toast_displayed', {});
             setCookie(POPUP_SHOWN_COOKIE, "true");
         }
-    }, [toast]);
+    }, [toast, t]);
 
     return null;
 } 

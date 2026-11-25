@@ -9,6 +9,7 @@ import { useEffect, useMemo, useRef } from "react";
 import { findPreciseRelatedSymbols } from "../client";
 import { PreciseFileMatches, PreciseMatch, SymbolPosition } from "../types";
 import { PreciseCodeNavHandlers } from "./preciseCodeNavExtension";
+import { useTranslations } from "next-intl";
 
 export const getPreciseMatchBrowsePath = (file: PreciseFileMatches, match: PreciseMatch) => getBrowsePath({
     repoName: file.repoName,
@@ -28,6 +29,7 @@ export const usePreciseCodeNavHandlers = () => {
     const router = useRouter();
     const { toast } = useToast();
     const { updateBrowseState } = useBrowseState();
+    const t = useTranslations('preciseNav');
 
     const handlers = useMemo<PreciseCodeNavHandlers>(() => {
         const openExplorePanel = (position: SymbolPosition, displayName: string, tab: 'references' | 'definitions') => {
@@ -41,19 +43,26 @@ export const usePreciseCodeNavHandlers = () => {
         }
 
         return {
+            labels: {
+                local: t('local'),
+                precise: t('precise'),
+                preciseTitle: t('preciseTitle'),
+                goToDefinition: t('goToDefinition'),
+                findReferences: t('findReferences'),
+            },
             onFindReferences: (position, displayName) => {
                 openExplorePanel(position, displayName, 'references');
             },
             onGoToDefinition: async (position, displayName) => {
                 const response = await findPreciseRelatedSymbols({ ...position, kind: 'definitions' });
                 if (isServiceError(response) || !response) {
-                    toast({ description: `Failed to resolve the definition of "${displayName}".` });
+                    toast({ description: t('resolveFailed', { name: displayName }) });
                     return;
                 }
 
                 const matches = response.files.flatMap((file) => file.matches.map((match) => ({ file, match })));
                 if (matches.length === 0) {
-                    toast({ description: `No definition found for "${displayName}". It may be defined in a dependency that isn't indexed.` });
+                    toast({ description: t('noDefinitionFor', { name: displayName }) });
                     return;
                 }
 
@@ -66,7 +75,7 @@ export const usePreciseCodeNavHandlers = () => {
                 openExplorePanel(position, displayName, 'definitions');
             },
         };
-    }, [router, toast, updateBrowseState]);
+    }, [router, toast, updateBrowseState, t]);
 
     const handlersRef = useRef(handlers);
     useEffect(() => {

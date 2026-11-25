@@ -6,6 +6,7 @@ import { SourcebotLogo } from "@/app/components/sourcebotLogo";
 import { AuthMethodSelector } from "@/app/components/authMethodSelector";
 import useCaptureEvent from "@/hooks/useCaptureEvent";
 import Link from "next/link";
+import { useTranslations } from "next-intl";
 import type { IdentityProviderMetadata } from "@/lib/identityProviders";
 
 interface LoginFormProps {
@@ -19,6 +20,7 @@ interface LoginFormProps {
 
 export const LoginForm = ({ callbackUrl, error, providers, context, isAnonymousAccessEnabled = false, hideSecurityNotice = false }: LoginFormProps) => {
     const captureEvent = useCaptureEvent();
+    const t = useTranslations('login');
 
     const safeCallbackUrl = useMemo(() => {
         if (!callbackUrl) return "/";
@@ -35,13 +37,13 @@ export const LoginForm = ({ callbackUrl, error, providers, context, isAnonymousA
         }
         switch (error) {
             case "CredentialsSignin":
-                return "Invalid email or password. Please try again.";
+                return t('errorCredentials');
             case "OAuthAccountNotLinked":
-                return "This email is already associated with a different sign-in method.";
+                return t('errorAccountNotLinked');
             default:
-                return "An error occurred during authentication. Please try again.";
+                return t('errorGeneric');
         }
-    }, [error]);
+    }, [error, t]);
 
     // Helper function to get the correct analytics event name
     const getLoginEventName = (providerId: string) => {
@@ -77,7 +79,7 @@ export const LoginForm = ({ callbackUrl, error, providers, context, isAnonymousA
                     className="h-12 sm:h-16 mb-3"
                 />
                 <h2 className="text-lg font-medium text-center">
-                    {context === "login" ? "Sign in to your account" : "Create a new account"}
+                    {context === "login" ? t('signInTitle') : t('signUpTitle')}
                 </h2>
             </div>
             <Card className="flex flex-col items-center border p-6 sm:p-12 rounded-lg gap-4 sm:gap-6 w-full sm:w-[500px] max-w-[500px] bg-background">
@@ -96,18 +98,18 @@ export const LoginForm = ({ callbackUrl, error, providers, context, isAnonymousA
                 />
                 <p className="text-sm text-muted-foreground mt-8">
                     {context === "login" ?
-                        <>
-                            Don&apos;t have an account? <Link className="underline" href={callbackUrl ? `/signup?callbackUrl=${encodeURIComponent(callbackUrl)}` : "/signup"}>Sign up</Link>
-                        </>
+                        t.rich('noAccount', {
+                            link: (chunks) => <Link className="underline" href={callbackUrl ? `/signup?callbackUrl=${encodeURIComponent(callbackUrl)}` : "/signup"}>{chunks}</Link>,
+                        })
                     :
-                        <>
-                            Already have an account? <Link className="underline" href={callbackUrl ? `/login?callbackUrl=${encodeURIComponent(callbackUrl)}` : "/login"}>Sign in</Link>
-                        </>
+                        t.rich('haveAccount', {
+                            link: (chunks) => <Link className="underline" href={callbackUrl ? `/login?callbackUrl=${encodeURIComponent(callbackUrl)}` : "/login"}>{chunks}</Link>,
+                        })
                     }
                 </p>
                 {isAnonymousAccessEnabled && (
                     <p className="text-sm text-muted-foreground">
-                        <Link className="underline" href={safeCallbackUrl}>Continue as guest</Link>
+                        <Link className="underline" href={safeCallbackUrl}>{t('continueAsGuest')}</Link>
                     </p>
                 )}
             </Card>

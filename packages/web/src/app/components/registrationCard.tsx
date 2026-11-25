@@ -6,8 +6,10 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Button } from "@/components/ui/button"
 import { ArrowRight, Database, Search } from "lucide-react"
 import useCaptureEvent from "@/hooks/useCaptureEvent"
+import { useTranslations } from "next-intl";
 
 export default function RegistrationCard() {
+  const t = useTranslations('cards');
   const [isHovered, setIsHovered] = useState(false)
   const captureEvent = useCaptureEvent()
 
@@ -18,25 +20,25 @@ export default function RegistrationCard() {
       onMouseLeave={() => setIsHovered(false)}
     >
       <CardHeader className="pb-2">
-        <CardTitle className="text-xl font-bold mt-2">Try NexusCode Cloud</CardTitle>
-        <CardDescription>Index and search your own code repositories</CardDescription>
+        <CardTitle className="text-xl font-bold mt-2">{t('tryCloud')}</CardTitle>
+        <CardDescription>{t('tryCloudDescription')}</CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
         <div className="space-y-3">
           <div className="flex items-start">
             <Search className="h-5 w-5 mr-3 text-primary" />
-            <p className="text-sm">Search your private and public repositories</p>
+            <p className="text-sm">{t('searchRepos')}</p>
           </div>
           <div className="flex items-start">
             <Database className="h-5 w-5 mr-3 text-primary" />
-            <p className="text-sm">Index your own codebase in minutes</p>
+            <p className="text-sm">{t('indexInMinutes')}</p>
           </div>
         </div>
       </CardContent>
       <CardFooter className="flex flex-col space-y-3 pt-0">
         <Link href="https://app.sourcebot.dev" className="w-full" rel="noopener noreferrer" onClick={() => captureEvent("wa_demo_try_card_pressed", {})}>
           <Button className={`w-full transition-all duration-300 ${isHovered ? "translate-y-[-2px]" : ""}`}>
-            Try With Your Code
+            {t('tryWithYourCode')}
             <ArrowRight className="ml-2 h-4 w-4" />
           </Button>
         </Link>

@@ -20,6 +20,10 @@ import type { FileBlameResponse } from "@/features/git";
 import { preciseCodeNavExtension } from "@/features/preciseCodeNav/components/preciseCodeNavExtension";
 import { usePreciseCodeNavHandlers } from "@/features/preciseCodeNav/components/usePreciseCodeNavHandlers";
 import { usePreciseCodeNavStatus } from "@/features/preciseCodeNav/components/usePreciseCodeNavStatus";
+import { useTranslations } from "next-intl";
+import { useDateFnsLocale } from "@/i18n/dateLocale";
+import { formatDistanceToNowStrict } from "date-fns";
+import type { BlameGutterLabels } from "./blameGutterExtension";
 
 interface PureCodePreviewPanelProps {
     path: string;
@@ -44,6 +48,12 @@ export const PureCodePreviewPanel = ({
     const keymapExtension = useKeymapExtension(editorRef?.view);
     const hasCodeNavEntitlement = useHasEntitlement("code-nav");
     const router = useRouter();
+    const t = useTranslations('browse');
+    const dateLocale = useDateFnsLocale();
+    const blameLabels = useMemo((): BlameGutterLabels => ({
+        formatRelativeDate: (date) => formatDistanceToNowStrict(date, { addSuffix: true, locale: dateLocale }),
+        reblameTitle: (shortHash) => t('blamePriorTo', { hash: shortHash }),
+    }), [dateLocale, t]);
 
     // Precise (SCIP based) navigation takes precedence when an index exists for this
     // revision. Otherwise, fall back to search based navigation (if licensed).
@@ -143,7 +153,8 @@ export const PureCodePreviewPanel = ({
             blame ? blameGutterExtension(
                 blame,
                 handleBlameCommitClick,
-                handleBlameReblameClick
+                handleBlameReblameClick,
+                blameLabels,
             ) : [],
         ];
     }, [
@@ -155,6 +166,7 @@ export const PureCodePreviewPanel = ({
         blame,
         handleBlameCommitClick,
         handleBlameReblameClick,
+        blameLabels,
     ]);
 
     // Scroll the highlighted range into view.

@@ -11,6 +11,7 @@ import { cn, getCodeHostIcon } from "@/lib/utils";
 import useCaptureEvent from "@/hooks/useCaptureEvent";
 import { SearchScopeInfoCard } from "@/features/chat/components/chatBox/searchScopeInfoCard";
 import { CodeHostType } from "@sourcebot/db";
+import { useTranslations } from "next-intl";
 
 interface DemoCards {
     demoExamples: DemoExamples;
@@ -19,6 +20,7 @@ interface DemoCards {
 export const DemoCards = ({
     demoExamples,
 }: DemoCards) => {
+    const t = useTranslations('chat');
     const captureEvent = useCaptureEvent();
     const [selectedFilterSearchScope, setSelectedFilterSearchScope] = useState<number | null>(null);
 
@@ -71,7 +73,7 @@ export const DemoCards = ({
                 <div className="text-center mb-6">
                     <div className="flex items-center justify-center gap-3 mb-4">
                         <Search className="h-7 w-7 text-muted-foreground" />
-                        <h3 className="text-2xl font-bold">Community Ask Results</h3>
+                        <h3 className="text-2xl font-bold">{t('communityResults')}</h3>
                     </div>
                 </div>
 
@@ -85,7 +87,7 @@ export const DemoCards = ({
                                 <div className="absolute top-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-border"></div>
                             </div>
                         </div>
-                        <span className="text-sm font-medium text-muted-foreground">Search Scope:</span>
+                        <span className="text-sm font-medium text-muted-foreground">{t('searchScopeLabel')}</span>
                     </div>
                     <Badge
                         variant={selectedFilterSearchScope === null ? "default" : "secondary"}
@@ -95,7 +97,7 @@ export const DemoCards = ({
                             setSelectedFilterSearchScope(null);
                         }}
                     >
-                        All
+                        {t('all')}
                     </Badge>
                     {demoExamples.searchScopes.map((searchScope) => (
                         <Badge

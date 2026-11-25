@@ -16,15 +16,18 @@ import { isServiceError } from "@/lib/utils";
 import { useToast } from "@/components/hooks/use-toast";
 import { useRouter } from "next/navigation";
 import useCaptureEvent from "@/hooks/useCaptureEvent";
-export const inviteMemberFormSchema = z.object({
+import { useTranslations } from "next-intl";
+export const createInviteMemberFormSchema = (duplicateEmailsMessage: string) => z.object({
     emails: z.array(z.object({
         email: z.string().email()
     }))
     .refine((emails) => {
         const emailSet = new Set(emails.map(e => e.email.toLowerCase()));
         return emailSet.size === emails.length;
-    }, "Duplicate email addresses are not allowed")
+    }, duplicateEmailsMessage)
 });
+
+export const inviteMemberFormSchema = createInviteMemberFormSchema("Duplicate email addresses are not allowed");
 
 interface InviteMemberCardProps {
     currentUserRole: OrgRole;
@@ -32,6 +35,8 @@ interface InviteMemberCardProps {
 }
 
 export const InviteMemberCard = ({ currentUserRole, seatsAvailable = true }: InviteMemberCardProps) => {
+    const t = useTranslations('members');
+    const tCommon = useTranslations('common');
     const [isInviteDialogOpen, setIsInviteDialogOpen] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
     const { toast } = useToast();
@@ -39,7 +44,7 @@ export const InviteMemberCard = ({ currentUserRole, seatsAvailable = true }: Inv
     const captureEvent = useCaptureEvent();
 
     const form = useForm<z.infer<typeof inviteMemberFormSchema>>({
-        resolver: zodResolver(inviteMemberFormSchema),
+        resolver: zodResolver(createInviteMemberFormSchema(t('duplicateEmails'))),
         defaultValues: {
             emails: [{ email: "" }]
         },
@@ -56,7 +61,7 @@ export const InviteMemberCard = ({ currentUserRole, seatsAvailable = true }: Inv
             .then((res) => {
                 if (isServiceError(res)) {
                     toast({
-                        description: `❌ Failed to invite members. Reason: ${res.message}`
+                        description: t('inviteFailed', { reason: res.message })
                     });
                     captureEvent('wa_invite_member_card_invite_fail', {
                         errorCode: res.errorCode,
@@ -66,7 +71,7 @@ export const InviteMemberCard = ({ currentUserRole, seatsAvailable = true }: Inv
                     form.reset();
                     router.push(`?tab=invites`);
                     toast({
-                        description: `✅ Successfully invited ${data.emails.length} members`
+                        description: t('invited', { count: data.emails.length })
                     });
                     captureEvent('wa_invite_member_card_invite_success', {
                         num_emails: data.emails.length,
@@ -76,7 +81,7 @@ export const InviteMemberCard = ({ currentUserRole, seatsAvailable = true }: Inv
             .finally(() => {
                 setIsLoading(false);
             });
-    }, [form, toast, router, captureEvent]);
+    }, [form, toast, router, captureEvent, t]);
 
     const isDisabled = !seatsAvailable || currentUserRole !== OrgRole.OWNER || isLoading;
 
@@ -84,8 +89,8 @@ export const InviteMemberCard = ({ currentUserRole, seatsAvailable = true }: Inv
         <>
             <Card className={!seatsAvailable ? "opacity-70" : ""}>
                 <CardHeader>
-                    <CardTitle>Invite Member</CardTitle>
-                    <CardDescription>Invite new members to your organization.</CardDescription>
+                    <CardTitle>{t('inviteTitle')}</CardTitle>
+                    <CardDescription>{t('inviteDescription')}</CardDescription>
                 </CardHeader>
                 {!seatsAvailable && (
                     <div className="px-6 mb-4">
@@ -93,10 +98,10 @@ export const InviteMemberCard = ({ currentUserRole, seatsAvailable = true }: Inv
                             <AlertCircle className="h-4 w-4 text-amber-400 mt-0.5 flex-shrink-0" />
                             <div className="flex-1">
                                 <p className="text-sm font-medium leading-tight text-white">
-                                    Maximum seats reached
+                                    {t('maxSeats')}
                                 </p>
                                 <p className="text-xs mt-1 text-gray-300">
-                                    You&apos;ve reached the maximum number of seats for your license. Upgrade your plan to invite additional members.
+                                    {t('maxSeatsDescription')}
                                 </p>
                             </div>
                         </div>
@@ -105,7 +110,7 @@ export const InviteMemberCard = ({ currentUserRole, seatsAvailable = true }: Inv
                 <Form {...form}>
                     <form onSubmit={form.handleSubmit(() => setIsInviteDialogOpen(true))}>
                         <CardContent className="space-y-4">
-                            <FormLabel>Email Address</FormLabel>
+                            <FormLabel>{t('emailAddress')}</FormLabel>
                             {form.watch('emails').map((_, index) => (
                                 <FormField
                                     key={index}
@@ -137,7 +142,7 @@ export const InviteMemberCard = ({ currentUserRole, seatsAvailable = true }: Inv
                                 disabled={isDisabled}
                             >
                                 <PlusCircleIcon className="w-4 h-4 mr-0.5" />
-                                Add more
+                                {t('addMore')}
                             </Button>
                         </CardContent>
                         <CardFooter className="flex justify-end">
@@ -147,7 +152,7 @@ export const InviteMemberCard = ({ currentUserRole, seatsAvailable = true }: Inv
                                 disabled={isDisabled}
                             >
                                 {isLoading && <Loader2 className="w-4 h-4 mr-0.5 animate-spin" />}
-                                Invite
+                                {t('invite')}
                             </Button>
                         </CardFooter>
                     </form>
@@ -159,9 +164,9 @@ export const InviteMemberCard = ({ currentUserRole, seatsAvailable = true }: Inv
             >
                 <AlertDialogContent>
                     <AlertDialogHeader>
-                        <AlertDialogTitle>Invite Team Members</AlertDialogTitle>
+                        <AlertDialogTitle>{t('inviteConfirmTitle')}</AlertDialogTitle>
                         <AlertDialogDescription>
-                            {`Your team is growing! By confirming, you will be inviting ${form.getValues().emails.length} new members to your organization.`}
+                            {t('inviteConfirm', { count: form.getValues().emails.length })}
                         </AlertDialogDescription>
                     </AlertDialogHeader>
                     <div className="border rounded-lg overflow-hidden">
@@ -179,11 +184,11 @@ export const InviteMemberCard = ({ currentUserRole, seatsAvailable = true }: Inv
                     <AlertDialogFooter>
                         <AlertDialogCancel onClick={() => captureEvent('wa_invite_member_card_invite_cancel', {
                             num_emails: form.getValues().emails.length,
-                        })}>Cancel</AlertDialogCancel>
+                        })}>{tCommon('cancel')}</AlertDialogCancel>
                         <AlertDialogAction
                             onClick={() => onSubmit(form.getValues())}
                         >
-                            Invite
+                            {t('invite')}
                         </AlertDialogAction>
                     </AlertDialogFooter>
                 </AlertDialogContent>

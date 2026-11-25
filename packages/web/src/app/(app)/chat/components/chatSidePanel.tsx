@@ -24,6 +24,7 @@ import { RenameChatDialog } from "./renameChatDialog";
 import { DeleteChatDialog } from "./deleteChatDialog";
 import { DuplicateChatDialog } from "./duplicateChatDialog";
 import Link from "next/link";
+import { useTranslations } from "next-intl";
 
 interface ChatSidePanelProps {
     order: number;
@@ -42,6 +43,7 @@ export const ChatSidePanel = ({
     isAuthenticated,
     isCollapsedInitially,
 }: ChatSidePanelProps) => {
+    const t = useTranslations('chat');
     const [isCollapsed, setIsCollapsed] = useState(isCollapsedInitially);
     const sidePanelRef = useRef<ImperativePanelHandle>(null);
     const router = useRouter();
@@ -63,7 +65,7 @@ export const ChatSidePanel = ({
     }, {
         enableOnFormTags: true,
         enableOnContentEditable: true,
-        description: "Toggle side panel",
+        description: t('toggleSidePanel'),
     });
 
     const onRenameChat = useCallback(async (name: string, chatId: string): Promise<boolean> => {
@@ -78,18 +80,18 @@ export const ChatSidePanel = ({
 
         if (isServiceError(response)) {
             toast({
-                description: `❌ Failed to rename chat. Reason: ${response.message}`
+                description: t('renameFailed', { reason: response.message })
             });
             return false;
         } else {
             toast({
-                description: `✅ Chat renamed successfully`
+                description: t('renamed')
             });
             captureEvent('wa_chat_renamed', { chatId });
             router.refresh();
             return true;
         }
-    }, [router, toast]);
+    }, [router, toast, t]);
 
     const onDeleteChat = useCallback(async (chatIdToDelete: string): Promise<boolean> => {
         if (!chatIdToDelete) {
@@ -100,12 +102,12 @@ export const ChatSidePanel = ({
 
         if (isServiceError(response)) {
             toast({
-                description: `❌ Failed to delete chat. Reason: ${response.message}`
+                description: t('deleteFailed', { reason: response.message })
             });
             return false;
         } else {
             toast({
-                description: `✅ Chat deleted successfully`
+                description: t('deleted')
             });
             captureEvent('wa_chat_deleted', { chatId: chatIdToDelete });
 
@@ -116,7 +118,7 @@ export const ChatSidePanel = ({
 
             return true;
         }
-    }, [chatId, router, toast]);
+    }, [chatId, router, toast, t]);
 
     const onDuplicateChat = useCallback(async (newName: string, chatIdToDuplicate: string): Promise<string | null> => {
         if (!chatIdToDuplicate) {
@@ -127,18 +129,18 @@ export const ChatSidePanel = ({
 
         if (isServiceError(response)) {
             toast({
-                description: `❌ Failed to duplicate chat. Reason: ${response.message}`
+                description: t('duplicateFailed', { reason: response.message })
             });
             return null;
         } else {
             toast({
-                description: `✅ Chat duplicated successfully`
+                description: t('duplicated')
             });
             captureEvent('wa_chat_duplicated', { chatId: chatIdToDuplicate });
             router.push(`/chat/${response.id}`);
             return response.id;
         }
-    }, [router, toast]);
+    }, [router, toast, t]);
 
     return (
         <>
@@ -164,26 +166,30 @@ export const ChatSidePanel = ({
                             }}
                         >
                             <CirclePlusIcon className="w-4 h-4 mr-1" />
-                            New Chat
+                            {t('newChat')}
                         </Button>
                     </div>
                     <ScrollArea className="flex flex-col h-full px-2.5">
-                        <p className="text-sm font-medium mb-4">Recent Chats</p>
+                        <p className="text-sm font-medium mb-4">{t('recentChats')}</p>
                         <div className="flex flex-col gap-1">
                             {!isAuthenticated ? (
                                 <div className="flex flex-col">
                                     <p className="text-sm text-muted-foreground mb-4">
-                                        <Link
-                                            href={`/login?callbackUrl=${encodeURIComponent(`/chat`)}`}
-                                            className="text-sm text-link hover:underline cursor-pointer"
-                                        >
-                                            Sign in
-                                        </Link> to access your chat history.
+                                        {t.rich('signInForHistory', {
+                                            link: (chunks) => (
+                                                <Link
+                                                    href={`/login?callbackUrl=${encodeURIComponent(`/chat`)}`}
+                                                    className="text-sm text-link hover:underline cursor-pointer"
+                                                >
+                                                    {chunks}
+                                                </Link>
+                                            ),
+                                        })}
                                     </p>
                                 </div>
                             ) : chatHistory.length === 0 ? (
                                 <div className="mx-auto w-full h-52 border border-dashed border-muted-foreground rounded-md flex items-center justify-center p-6">
-                                    <p className="text-sm text-muted-foreground text-center">Recent chats will appear here.</p>
+                                    <p className="text-sm text-muted-foreground text-center">{t('recentChatsEmpty')}</p>
                                 </div>
                             ) : chatHistory.map((chat) => (
                                 <div
@@ -195,7 +201,7 @@ export const ChatSidePanel = ({
                                         router.push(`/chat/${chat.id}`);
                                     }}
                                 >
-                                    <span className="text-sm truncate">{chat.name ?? 'Untitled chat'}</span>
+                                    <span className="text-sm truncate">{chat.name ?? t('untitled')}</span>
                                     <ChatActionsDropdown
                                         onRenameClick={() => {
                                             setChatIdToRename(chat.id);
@@ -248,7 +254,7 @@ export const ChatSidePanel = ({
                         <TooltipContent side="bottom" className="flex flex-row items-center gap-2">
                             <KeyboardShortcutHint shortcut="mod+b" />
                             <Separator orientation="vertical" className="h-4" />
-                            <span>Open side panel</span>
+                            <span>{t('openSidePanel')}</span>
                         </TooltipContent>
                     </Tooltip>
                 </div>
@@ -262,7 +268,7 @@ export const ChatSidePanel = ({
                     }
                     return false;
                 }}
-                currentName={chatHistory?.find((chat) => chat.id === chatIdToRename)?.name ?? "Untitled chat"}
+                currentName={chatHistory?.find((chat) => chat.id === chatIdToRename)?.name ?? t('untitled')}
             />
             <DeleteChatDialog
                 isOpen={isDeleteDialogOpen}
@@ -283,7 +289,7 @@ export const ChatSidePanel = ({
                     }
                     return null;
                 }}
-                currentName={chatHistory?.find((chat) => chat.id === chatIdToDuplicate)?.name ?? "Untitled chat"}
+                currentName={chatHistory?.find((chat) => chat.id === chatIdToDuplicate)?.name ?? t('untitled')}
             />
         </>
     )

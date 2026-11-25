@@ -9,6 +9,7 @@ import { Link2Icon } from "@radix-ui/react-icons";
 import { EditorView, SelectionRange } from "@uiw/react-codemirror";
 import { useCallback, useEffect, useRef } from "react";
 import { HIGHLIGHT_RANGE_QUERY_PARAM } from "../browse/hooks/utils";
+import { useTranslations } from "next-intl";
 
 interface ContextMenuProps {
     view: EditorView;
@@ -25,6 +26,7 @@ export const EditorContextMenu = ({
     path,
     revisionName,
 }: ContextMenuProps) => {
+    const t = useTranslations('shared');
     const ref = useRef<HTMLDivElement>(null);
     const { toast } = useToast();
     const captureEvent = useCaptureEvent();
@@ -110,7 +112,7 @@ export const EditorContextMenu = ({
 
         navigator.clipboard.writeText(url);
         toast({
-            description: "✅ Copied link to selection",
+            description: t('copiedLinkToSelection'),
         });
 
         captureEvent('wa_share_link_created', {});
@@ -124,7 +126,7 @@ export const EditorContextMenu = ({
                 }     
             }
         )
-    }, [selection.from, selection.to, repoName, revisionName, path, toast, captureEvent, view]);
+    }, [selection.from, selection.to, repoName, revisionName, path, toast, captureEvent, view, t]);
 
     return (
         <div
@@ -137,7 +139,7 @@ export const EditorContextMenu = ({
                 onClick={onCopyLinkToSelection}
             >
                 <Link2Icon className="h-4 w-4 mr-1" />
-                Share selection
+                {t('shareSelection')}
             </Button>
         </div>
     )

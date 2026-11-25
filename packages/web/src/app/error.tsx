@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/button"
 import { serviceErrorSchema } from '@/lib/serviceError';
 import { SourcebotLogo } from './components/sourcebotLogo';
 import { SOURCEBOT_SUPPORT_EMAIL } from "@/lib/constants";
+import { useTranslations } from "next-intl";
 
 export default function Error({ error, reset }: { error: Error & { digest?: string }, reset: () => void }) {
     useEffect(() => {
@@ -61,6 +62,7 @@ interface ErrorCardProps {
 }
 
 function ErrorCard({ message, errorCode, statusCode, onReloadButtonClicked }: ErrorCardProps) {
+    const t = useTranslations('errorPage');
     const [copied, setCopied] = useState<string | null>(null)
 
     const copyToClipboard = (text: string, field: string) => {
@@ -74,16 +76,16 @@ function ErrorCard({ message, errorCode, statusCode, onReloadButtonClicked }: Er
             <CardHeader className="space-y-1 flex">
                 <CardTitle className="text-2xl font-bold flex items-center gap-2 text-destructive">
                     <TriangleAlert className="h-5 w-5 mt-0.5" />
-                    Unexpected Error
+                    {t('title')}
                 </CardTitle>
                 <CardDescription className="text-sm">
-                    An unexpected error occurred. Please reload the page and try again. If the issue persists, <Link href={`mailto:${SOURCEBOT_SUPPORT_EMAIL}?subject=NexusCode%20Error%20Report${errorCode ? `%20|%20Code:%20${errorCode}` : ''}`} className='underline'>please contact us</Link>.
+                    {t.rich('description', { link: (chunks) => <Link href={`mailto:${SOURCEBOT_SUPPORT_EMAIL}?subject=NexusCode%20Error%20Report${errorCode ? `%20|%20Code:%20${errorCode}` : ''}`} className='underline'>{chunks}</Link> })}
                 </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
                 <div className="space-y-3">
                     <ErrorField
-                        label="Error Message"
+                        label={t('errorMessage')}
                         value={message}
                         onCopy={() => copyToClipboard(message, "message")}
                         copied={copied === "message"}
@@ -91,7 +93,7 @@ function ErrorCard({ message, errorCode, statusCode, onReloadButtonClicked }: Er
 
                     {errorCode && (
                         <ErrorField
-                            label="Error Code"
+                            label={t('errorCode')}
                             value={errorCode}
                             onCopy={() => copyToClipboard(errorCode.toString(), "errorCode")}
                             copied={copied === "errorCode"}
@@ -100,7 +102,7 @@ function ErrorCard({ message, errorCode, statusCode, onReloadButtonClicked }: Er
 
                     {statusCode && (
                         <ErrorField
-                            label="Status Code"
+                            label={t('statusCode')}
                             value={statusCode}
                             onCopy={() => copyToClipboard(statusCode.toString(), "statusCode")}
                             copied={copied === "statusCode"}
@@ -112,7 +114,7 @@ function ErrorCard({ message, errorCode, statusCode, onReloadButtonClicked }: Er
                     variant='outline'
                     className='w-full'
                 >
-                    Reload Page
+                    {t('reload')}
                 </Button>
             </CardContent>
         </Card>

@@ -11,6 +11,7 @@ import { useRouter } from "next/navigation";
 import { AppearanceDropdownMenu } from "./appearanceDropdownMenu";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
+import { useTranslations } from "next-intl";
 
 interface TopBarProps {
     children?: React.ReactNode;
@@ -28,6 +29,7 @@ export const TopBar = ({
     session,
 }: TopBarProps) => {
     const router = useRouter();
+    const t = useTranslations('common');
 
     return (
         <div className='sticky top-0 left-0 right-0 z-10'>
@@ -71,7 +73,7 @@ export const TopBar = ({
                                     </Button>
                                 </TooltipTrigger>
                                 <TooltipContent>
-                                    Sign in
+                                    {t('signIn')}
                                 </TooltipContent>
                             </Tooltip>
                             <AppearanceDropdownMenu className="w-8 h-8" />

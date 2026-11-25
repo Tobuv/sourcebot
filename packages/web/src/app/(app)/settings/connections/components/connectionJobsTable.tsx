@@ -29,6 +29,7 @@ import { DisplayDate } from "@/app/(app)/components/DisplayDate"
 import { LoadingButton } from "@/components/ui/loading-button"
 import { syncConnection } from "@/features/workerApi/actions"
 import { isServiceError } from "@/lib/utils"
+import { useTranslations } from "next-intl";
 
 
 export type ConnectionSyncJob = {
@@ -53,14 +54,8 @@ const statusBadgeVariants = cva("", {
 })
 
 const getStatusBadge = (status: ConnectionSyncJob["status"]) => {
-    const labels = {
-        PENDING: "Pending",
-        IN_PROGRESS: "In Progress",
-        COMPLETED: "Completed",
-        FAILED: "Failed",
-    }
 
-    return <Badge className={statusBadgeVariants({ status })}>{labels[status]}</Badge>
+    return <Badge className={statusBadgeVariants({ status })}><StatusLabel status={status} /></Badge>
 }
 
 const getDuration = (start: Date, end: Date | null) => {
@@ -74,7 +69,7 @@ const getDuration = (start: Date, end: Date | null) => {
 export const columns: ColumnDef<ConnectionSyncJob>[] = [
     {
         accessorKey: "status",
-        header: "Status",
+        header: () => <Label id="colStatus" />,
         cell: ({ row }) => {
             const job = row.original
             return (
@@ -132,7 +127,7 @@ export const columns: ColumnDef<ConnectionSyncJob>[] = [
         header: ({ column }) => {
             return (
                 <Button variant="ghost" onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}>
-                    Started
+                    <Label id="colStarted" />
                     <ArrowUpDown className="ml-2 h-4 w-4" />
                 </Button>
             )
@@ -144,7 +139,7 @@ export const columns: ColumnDef<ConnectionSyncJob>[] = [
         header: ({ column }) => {
             return (
                 <Button variant="ghost" onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}>
-                    Completed
+                    <Label id="colCompleted" />
                     <ArrowUpDown className="ml-2 h-4 w-4" />
                 </Button>
             )
@@ -160,7 +155,7 @@ export const columns: ColumnDef<ConnectionSyncJob>[] = [
     },
     {
         id: "duration",
-        header: "Duration",
+        header: () => <Label id="colDuration" />,
         cell: ({ row }) => {
             const job = row.original
             return getDuration(job.createdAt, job.completedAt)
@@ -168,7 +163,7 @@ export const columns: ColumnDef<ConnectionSyncJob>[] = [
     },
     {
         accessorKey: "id",
-        header: "Job ID",
+        header: () => <Label id="colJobId" />,
         cell: ({ row }) => {
             const id = row.getValue("id") as string
             return (
@@ -185,6 +180,8 @@ export const columns: ColumnDef<ConnectionSyncJob>[] = [
 ]
 
 export const ConnectionJobsTable = ({ data, connectionId }: { data: ConnectionSyncJob[], connectionId: number }) => {
+    const t = useTranslations('connections');
+    const tCommon = useTranslations('common');
     const [sorting, setSorting] = React.useState<SortingState>([{ id: "createdAt", desc: true }])
     const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([])
     const [columnVisibility, setColumnVisibility] = React.useState<VisibilityState>({})
@@ -199,17 +196,17 @@ export const ConnectionJobsTable = ({ data, connectionId }: { data: ConnectionSy
         if (!isServiceError(response)) {
             const { jobId } = response;
             toast({
-                description: `✅ Connection synced successfully. Job ID: ${jobId}`,
+                description: t('synced', { jobId }),
             })
             router.refresh();
         } else {
             toast({
-                description: `❌ Failed to sync connection. ${response.message}`,
+                description: t('syncFailed', { reason: response.message }),
             });
         }
 
         setIsSyncSubmitting(false);
-    }, [connectionId, router, toast]);
+    }, [connectionId, router, toast, t]);
 
     const table = useReactTable({
         data,
@@ -250,14 +247,14 @@ export const ConnectionJobsTable = ({ data, connectionId }: { data: ConnectionSy
                     onValueChange={(value) => table.getColumn("status")?.setFilterValue(value === "all" ? "" : value)}
                 >
                     <SelectTrigger className="w-[180px]">
-                        <SelectValue placeholder="Filter by status" />
+                        <SelectValue placeholder={t('filterByStatus')} />
                     </SelectTrigger>
                     <SelectContent>
-                        <SelectItem value="all">Filter by status</SelectItem>
-                        <SelectItem value="COMPLETED">Completed ({numCompleted})</SelectItem>
-                        <SelectItem value="IN_PROGRESS">In progress ({numInProgress})</SelectItem>
-                        <SelectItem value="PENDING">Pending ({numPending})</SelectItem>
-                        <SelectItem value="FAILED">Failed ({numFailed})</SelectItem>
+                        <SelectItem value="all">{t('filterByStatus')}</SelectItem>
+                        <SelectItem value="COMPLETED">{t('filterCompleted', { count: numCompleted })}</SelectItem>
+                        <SelectItem value="IN_PROGRESS">{t('filterInProgress', { count: numInProgress })}</SelectItem>
+                        <SelectItem value="PENDING">{t('filterPending', { count: numPending })}</SelectItem>
+                        <SelectItem value="FAILED">{t('filterFailed', { count: numFailed })}</SelectItem>
                     </SelectContent>
                 </Select>
 
@@ -267,12 +264,12 @@ export const ConnectionJobsTable = ({ data, connectionId }: { data: ConnectionSy
                         onClick={() => {
                             router.refresh();
                             toast({
-                                description: "Page refreshed",
+                                description: tCommon('pageRefreshed'),
                             });
                         }}
                     >
                         <RefreshCwIcon className="w-3 h-3" />
-                        Refresh
+                        {t('refresh')}
                     </Button>
 
                     <LoadingButton
@@ -281,7 +278,7 @@ export const ConnectionJobsTable = ({ data, connectionId }: { data: ConnectionSy
                         variant="outline"
                     >
                         <PlusCircleIcon className="w-3 h-3" />
-                        Trigger sync
+                        {t('triggerSync')}
                     </LoadingButton>
                 </div>
             </div>
@@ -313,7 +310,7 @@ export const ConnectionJobsTable = ({ data, connectionId }: { data: ConnectionSy
                         ) : (
                             <TableRow>
                                 <TableCell colSpan={columns.length} className="h-24 text-center">
-                                    No sync jobs found.
+                                    {t('noJobs')}
                                 </TableCell>
                             </TableRow>
                         )}
@@ -323,7 +320,7 @@ export const ConnectionJobsTable = ({ data, connectionId }: { data: ConnectionSy
 
             <div className="flex items-center justify-end space-x-2 py-4">
                 <div className="flex-1 text-sm text-muted-foreground">
-                    {table.getFilteredRowModel().rows.length} job(s) total
+                    {tCommon('jobsTotal', { count: table.getFilteredRowModel().rows.length })}
                 </div>
                 <div className="space-x-2">
                     <Button
@@ -332,13 +329,26 @@ export const ConnectionJobsTable = ({ data, connectionId }: { data: ConnectionSy
                         onClick={() => table.previousPage()}
                         disabled={!table.getCanPreviousPage()}
                     >
-                        Previous
+                        {t('previous')}
                     </Button>
                     <Button variant="outline" size="sm" onClick={() => table.nextPage()} disabled={!table.getCanNextPage()}>
-                        Next
+                        {t('next')}
                     </Button>
                 </div>
             </div>
         </div>
     )
+}
+
+type ConnectionLabelKey = 'colName' | 'colStatus' | 'colLatestStatus' | 'colLastSynced' | 'colStarted' | 'colCompleted' | 'colDuration' | 'colJobId' | 'firstSync';
+
+/** Text rendered from column definitions, translated to the current locale. */
+const Label = ({ id }: { id: ConnectionLabelKey }) => {
+    const t = useTranslations('connections');
+    return <>{t(id)}</>;
+}
+
+const StatusLabel = ({ status }: { status: 'PENDING' | 'IN_PROGRESS' | 'COMPLETED' | 'FAILED' }) => {
+    const t = useTranslations('connections');
+    return <>{t(`status.${status}`)}</>;
 }

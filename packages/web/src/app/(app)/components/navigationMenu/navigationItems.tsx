@@ -6,6 +6,7 @@ import { cn, getShortenedNumberDisplayString } from "@/lib/utils";
 import { SearchIcon, MessageCircleIcon, BookMarkedIcon, SettingsIcon, BotIcon } from "lucide-react";
 import { usePathname } from "next/navigation";
 import { NotificationDot } from "../notificationDot";
+import { useTranslations } from "next-intl";
 
 interface NavigationItemsProps {
     numberOfRepos: number;
@@ -23,6 +24,7 @@ export const NavigationItems = ({
     isAgentsVisible,
 }: NavigationItemsProps) => {
     const pathname = usePathname();
+    const t = useTranslations('nav');
 
     const isActive = (href: string) => {
         if (href === '/') {
@@ -39,7 +41,7 @@ export const NavigationItems = ({
                     className={cn(navigationMenuTriggerStyle(), "gap-2")}
                 >
                     <SearchIcon className="w-4 h-4 mr-1" />
-                    Search
+                    {t('search')}
                 </NavigationMenuLink>
                 {((isActive('/') || isActive('/search')) && <ActiveIndicator />)}
             </NavigationMenuItem>
@@ -49,7 +51,7 @@ export const NavigationItems = ({
                     className={navigationMenuTriggerStyle()}
                 >
                     <MessageCircleIcon className="w-4 h-4 mr-1" />
-                    Ask
+                    {t('ask')}
                 </NavigationMenuLink>
                 {isActive('/chat') && <ActiveIndicator />}
             </NavigationMenuItem>
@@ -59,7 +61,7 @@ export const NavigationItems = ({
                     className={navigationMenuTriggerStyle()}
                 >
                     <BookMarkedIcon className="w-4 h-4 mr-1" />
-                    <span className="mr-2">Repositories</span>
+                    <span className="mr-2">{t('repositories')}</span>
                     <Badge variant="secondary" className="px-1.5 relative">
                         {getShortenedNumberDisplayString(numberOfRepos)}
                         {isReposButtonNotificationDotVisible && <NotificationDot className="absolute -right-0.5 -top-0.5" />}
@@ -74,7 +76,7 @@ export const NavigationItems = ({
                         className={navigationMenuTriggerStyle()}
                     >
                         <BotIcon className="w-4 h-4 mr-1" />
-                        Agents
+                        {t('agents')}
                     </NavigationMenuLink>
                     {isActive('/agents') && <ActiveIndicator />}
                 </NavigationMenuItem>
@@ -86,7 +88,7 @@ export const NavigationItems = ({
                         className={navigationMenuTriggerStyle()}
                     >
                         <SettingsIcon className="w-4 h-4 mr-1" />
-                        Settings
+                        {t('settings')}
                         {isSettingsButtonNotificationDotVisible && <NotificationDot className="absolute -right-0.5 -top-0.5" />}
                     </NavigationMenuLink>
                     {isActive('/settings') && <ActiveIndicator />}

@@ -5,10 +5,12 @@ import { withAuth } from "@/middleware/withAuth";
 import Link from "next/link";
 import { ConnectionsTable } from "./components/connectionsTable";
 import { ConnectionSyncJobStatus } from "@prisma/client";
+import { getTranslations } from "next-intl/server";
 
 const DOCS_URL = "https://docs.sourcebot.dev/docs/connections/overview";
 
 export default async function ConnectionsPage() {
+    const t = await getTranslations('settings');
     const _connections = await getConnectionsWithLatestJob();
     if (isServiceError(_connections)) {
         throw new ServiceErrorException(_connections);
@@ -34,8 +36,8 @@ export default async function ConnectionsPage() {
     return (
         <div className="flex flex-col gap-6">
             <div>
-                <h3 className="text-lg font-medium">Code Host Connections</h3>
-                <p className="text-sm text-muted-foreground">Manage your connections to external code hosts. <Link href={DOCS_URL} target="_blank" className="text-link hover:underline">Learn more</Link></p>
+                <h3 className="text-lg font-medium">{t('connections.title')}</h3>
+                <p className="text-sm text-muted-foreground">{t.rich('connections.description', { link: (chunks) => <Link href={DOCS_URL} target="_blank" className="text-link hover:underline">{chunks}</Link> })}</p>
             </div>
             <ConnectionsTable data={connections.map((connection) => ({
                 id: connection.id,

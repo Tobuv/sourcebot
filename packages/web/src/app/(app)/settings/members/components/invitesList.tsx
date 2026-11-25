@@ -14,6 +14,7 @@ import { useCallback, useMemo, useState } from "react";
 import { cancelInvite } from "@/actions";
 import { useRouter } from "next/navigation";
 import useCaptureEvent from "@/hooks/useCaptureEvent";
+import { useTranslations } from "next-intl";
 interface Invite {
     id: string;
     email: string;
@@ -26,6 +27,7 @@ interface InviteListProps {
 }
 
 export const InvitesList = ({ invites, currentUserRole }: InviteListProps) => {
+    const t = useTranslations('members');
     const [searchQuery, setSearchQuery] = useState("")
     const [dateSort, setDateSort] = useState<"newest" | "oldest">("newest")
     const [isCancelInviteDialogOpen, setIsCancelInviteDialogOpen] = useState(false)
@@ -54,20 +56,20 @@ export const InvitesList = ({ invites, currentUserRole }: InviteListProps) => {
             .then((response) => {
                 if (isServiceError(response)) {
                     toast({
-                        description: `❌ Failed to cancel invite. Reason: ${response.message}`
+                        description: t('cancelInviteFailed', { reason: response.message })
                     })
                     captureEvent('wa_invites_list_cancel_invite_fail', {
                         errorCode: response.errorCode,
                     })
                 } else {
                     toast({
-                        description: `✅ Invite cancelled successfully.`
+                        description: t('inviteCancelled')
                     })
                     captureEvent('wa_invites_list_cancel_invite_success', {})
                     router.refresh();
                 }
             });
-    }, [toast, router, captureEvent]);
+    }, [toast, router, captureEvent, t]);
 
     return (
         <div className="w-full mx-auto space-y-6">
@@ -75,7 +77,7 @@ export const InvitesList = ({ invites, currentUserRole }: InviteListProps) => {
                 <div className="relative flex-1">
                     <Search className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
                     <Input
-                        placeholder="Filter by name or email..."
+                        placeholder={t('filterPlaceholder')}
                         className="pl-9"
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
@@ -87,8 +89,8 @@ export const InvitesList = ({ invites, currentUserRole }: InviteListProps) => {
                         <SelectValue placeholder="Date" />
                     </SelectTrigger>
                     <SelectContent>
-                        <SelectItem value="newest">Newest</SelectItem>
-                        <SelectItem value="oldest">Oldest</SelectItem>
+                        <SelectItem value="newest">{t('newest')}</SelectItem>
+                        <SelectItem value="oldest">{t('oldest')}</SelectItem>
                     </SelectContent>
                 </Select>
             </div>
@@ -97,9 +99,9 @@ export const InvitesList = ({ invites, currentUserRole }: InviteListProps) => {
                 <div className="max-h-[600px] overflow-y-auto divide-y">
                     {invites.length === 0 || (filteredInvites.length === 0 && searchQuery.length > 0) ? (
                         <div className="flex flex-col items-center justify-center h-96 p-4">
-                            <p className="font-medium text-sm">No Pending Invitations Found</p>
+                            <p className="font-medium text-sm">{t('noInvites')}</p>
                             <p className="text-sm text-muted-foreground mt-2">
-                                {filteredInvites.length === 0 && searchQuery.length > 0 ? "No pending invitations found matching your filters." : "Use the form above to invite new members."}
+                                {filteredInvites.length === 0 && searchQuery.length > 0 ? t('noInvitesFiltered') : t('noInvitesHint')}
                             </p>
                         </div>
                     ) : (
@@ -116,26 +118,26 @@ export const InvitesList = ({ invites, currentUserRole }: InviteListProps) => {
                                         variant="ghost"
                                         size="sm"
                                         className="gap-2"
-                                        title="Copy invite link"
+                                        title={t('copyInviteLink')}
                                         onClick={() => {
                                             const url = createPathWithQueryParams(`${window.location.origin}/redeem?invite_id=${invite.id}`);
                                             navigator.clipboard.writeText(url)
                                                 .then(() => {
                                                     toast({
-                                                        description: `✅ Copied invite link for ${invite.email} to clipboard`
+                                                        description: t('inviteLinkCopied', { email: invite.email })
                                                     })
                                                     captureEvent('wa_invites_list_copy_invite_link_success', {})
                                                 })
                                                 .catch(() => {
                                                     toast({
-                                                        description: "❌ Failed to copy invite link"
+                                                        description: t('inviteLinkCopyFailed')
                                                     })
                                                     captureEvent('wa_invites_list_copy_invite_link_fail', {})
                                                 })
                                         }}
                                     >
                                         <Copy className="h-4 w-4" />
-                                        Copy invite link
+                                        {t('copyInviteLink')}
                                     </Button>
                                     <DropdownMenu modal={false}>
                                         <DropdownMenuTrigger asChild>
@@ -150,19 +152,19 @@ export const InvitesList = ({ invites, currentUserRole }: InviteListProps) => {
                                                     navigator.clipboard.writeText(invite.email)
                                                         .then(() => {
                                                             toast({
-                                                                description: `✅ Email copied to clipboard.`
+                                                                description: t('emailCopied')
                                                             })
                                                             captureEvent('wa_invites_list_copy_email_success', {})
                                                         })
                                                         .catch(() => {
                                                             toast({
-                                                                description: `❌ Failed to copy email.`
+                                                                description: t('emailCopyFailed')
                                                             })
                                                             captureEvent('wa_invites_list_copy_email_fail', {})
                                                         })
                                                 }}
                                             >
-                                                Copy email
+                                                {t('copyEmail')}
                                             </DropdownMenuItem>
                                             {currentUserRole === OrgRole.OWNER && (
                                                 <DropdownMenuItem
@@ -172,7 +174,7 @@ export const InvitesList = ({ invites, currentUserRole }: InviteListProps) => {
                                                         setInviteToCancel(invite);
                                                     }}
                                                 >
-                                                    Cancel invite
+                                                    {t('cancelInvite')}
                                                 </DropdownMenuItem>
                                             )}
                                         </DropdownMenuContent>
@@ -189,14 +191,14 @@ export const InvitesList = ({ invites, currentUserRole }: InviteListProps) => {
             >
                 <AlertDialogContent>
                     <AlertDialogHeader>
-                        <AlertDialogTitle>Cancel Invite</AlertDialogTitle>
+                        <AlertDialogTitle>{t('cancelInviteTitle')}</AlertDialogTitle>
                         <AlertDialogDescription>
-                            Are you sure you want to cancel this invite for <strong>{inviteToCancel?.email}</strong>?
+                            {t.rich('cancelInviteConfirm', { email: inviteToCancel?.email ?? '', b: (chunks) => <strong>{chunks}</strong> })}
                         </AlertDialogDescription>
                     </AlertDialogHeader>
                     <AlertDialogFooter>
                         <AlertDialogCancel>
-                            Back
+                            {t('back')}
                         </AlertDialogCancel>
                         <AlertDialogAction
                             className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
@@ -204,7 +206,7 @@ export const InvitesList = ({ invites, currentUserRole }: InviteListProps) => {
                                 onCancelInvite(inviteToCancel?.id ?? "");
                             }}
                         >
-                            Cancel
+                            {t('cancelInvite')}
                         </AlertDialogAction>
                     </AlertDialogFooter>
                 </AlertDialogContent>

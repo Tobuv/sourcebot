@@ -10,18 +10,23 @@ import { ServiceErrorException } from "@/lib/serviceError";
 import { OrgRole } from "@prisma/client";
 import { env, hasEntitlement } from "@sourcebot/shared";
 import { withAuth } from "@/middleware/withAuth";
+import { getTranslations } from "next-intl/server";
 
 interface LayoutProps {
     children: React.ReactNode;
 }
 
-export const metadata: Metadata = {
-    title: "Settings",
+export const generateMetadata = async (): Promise<Metadata> => {
+    const t = await getTranslations('settings');
+    return {
+        title: t('title'),
+    };
 }
 
 export default async function SettingsLayout(
     props: LayoutProps
 ) {
+    const t = await getTranslations('settings');
     const {
         children
     } = props;
@@ -43,7 +48,7 @@ export default async function SettingsLayout(
                 <div className="w-full max-w-6xl rounded-lg p-6">
                     <div className="container mx-auto">
                         <div className="mb-16">
-                            <h1 className="text-3xl font-semibold">Settings</h1>
+                            <h1 className="text-3xl font-semibold">{t('title')}</h1>
                         </div>
                         <div className="flex flex-row gap-10">
                             <aside className="lg:w-48">
@@ -60,6 +65,7 @@ export default async function SettingsLayout(
 
 export const getSidebarNavItems = async () =>
     withAuth(async ({ role }) => {
+        const t = await getTranslations('settings');
         let numJoinRequests: number | undefined;
         if (role === OrgRole.OWNER) {
             const requests = await getOrgAccountRequests();
@@ -77,56 +83,56 @@ export const getSidebarNavItems = async () =>
         return [
             ...(role === OrgRole.OWNER ? [
                 {
-                    title: "Access",
+                    title: t('nav.access'),
                     href: `/settings/access`,
                 }
             ] : []),
             ...(role === OrgRole.OWNER ? [{
-                title: "Members",
+                title: t('nav.members'),
                 isNotificationDotVisible: numJoinRequests !== undefined && numJoinRequests > 0,
                 href: `/settings/members`,
             }] : []),
             ...(role === OrgRole.OWNER ? [
                 {
-                    title: "Connections",
+                    title: t('nav.connections'),
                     href: `/settings/connections`,
                     hrefRegex: `/settings/connections(/[^/]+)?$`,
                     isNotificationDotVisible: connectionStats.numberOfConnectionsWithFirstTimeSyncJobsInProgress > 0,
                 }
             ] : []),
             {
-                title: "Account",
+                title: t('nav.account'),
                 href: `/settings/account`,
             },
             {
-                title: "Models",
+                title: t('nav.models'),
                 href: `/settings/models`,
             },
             {
-                title: "Skills",
+                title: t('nav.skills'),
                 href: `/settings/skills`,
             },
             ...(env.DISABLE_API_KEY_USAGE_FOR_NON_OWNER_USERS === 'false' || role === OrgRole.OWNER ? [
                 {
-                    title: "API Keys",
+                    title: t('nav.apiKeys'),
                     href: `/settings/apiKeys`,
                 }
             ] : []),
             ...(role === OrgRole.OWNER ? [
                 {
-                    title: "Analytics",
+                    title: t('nav.analytics'),
                     href: `/settings/analytics`,
                 },
             ] : []),
             ...(hasEntitlement("sso") ? [
                 {
-                    title: "Linked Accounts",
+                    title: t('nav.linkedAccounts'),
                     href: `/settings/linked-accounts`,
                 }
             ] : []),
             ...(role === OrgRole.OWNER ? [
                 {
-                    title: "License",
+                    title: t('nav.license'),
                     href: `/settings/license`,
                 }
             ] : []),

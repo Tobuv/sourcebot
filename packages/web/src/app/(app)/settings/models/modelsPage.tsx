@@ -24,10 +24,13 @@ import { EyeIcon, FileJsonIcon, PencilIcon, Plus, Trash2Icon } from "lucide-reac
 import { useRouter } from "next/navigation";
 import { useCallback, useState } from "react";
 import { ModelEditorDialog, ModelEditorState } from "./modelEditorDialog";
+import { useTranslations } from "next-intl";
 
 const QUERY_KEY = ["customLanguageModels"];
 
 export const ModelsPage = ({ isOwner }: { isOwner: boolean }) => {
+    const t = useTranslations('models');
+    const tCommon = useTranslations('common');
     const { toast } = useToast();
     const router = useRouter();
     const queryClient = useQueryClient();
@@ -59,11 +62,11 @@ export const ModelsPage = ({ isOwner }: { isOwner: boolean }) => {
         if (isServiceError(result)) {
             toast({ description: `❌ ${result.message}`, variant: "destructive" });
         } else {
-            toast({ description: `✅ Deleted model "${modelToDelete.displayName}"` });
+            toast({ description: t('deleted', { name: modelToDelete.displayName }) });
             onChanged();
         }
         setModelToDelete(null);
-    }, [modelToDelete, toast, onChanged]);
+    }, [modelToDelete, toast, onChanged, t]);
 
     const workspaceModels = data?.customModels.filter((model) => model.scope === 'WORKSPACE') ?? [];
     const personalModels = data?.customModels.filter((model) => model.scope === 'PERSONAL') ?? [];
@@ -72,14 +75,14 @@ export const ModelsPage = ({ isOwner }: { isOwner: boolean }) => {
         <div className="flex flex-col gap-6">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div>
-                    <h3 className="text-lg font-medium">Models</h3>
+                    <h3 className="text-lg font-medium">{t('title')}</h3>
                     <p className="text-sm text-muted-foreground max-w-lg">
-                        Configure the language models available in Ask NexusCode. Workspace models are shared with all members; personal models are only available to you.
+                        {t('description')}
                     </p>
                 </div>
                 <Button onClick={() => openEditor({ mode: 'create' })} className="flex-shrink-0">
                     <Plus className="h-4 w-4 mr-2" />
-                    Add model
+                    {t('add')}
                 </Button>
             </div>
 
@@ -89,21 +92,21 @@ export const ModelsPage = ({ isOwner }: { isOwner: boolean }) => {
                     <Skeleton className="h-14 w-full" />
                 </div>
             ) : isError || !data ? (
-                <p className="text-sm text-destructive">Failed to load models.</p>
+                <p className="text-sm text-destructive">{t('loadFailed')}</p>
             ) : (
                 <>
                     <ModelSection
-                        title="Workspace models"
-                        description={isOwner ? "Available to every member of the workspace." : "Available to every member of the workspace. Only owners can add or edit them."}
-                        emptyText="No workspace models yet."
+                        title={t('workspaceTitle')}
+                        description={isOwner ? t('workspaceDescriptionOwner') : t('workspaceDescription')}
+                        emptyText={t('workspaceEmpty')}
                         models={workspaceModels}
                         onOpen={(model) => openEditor({ mode: model.canEdit ? 'edit' : 'view', model })}
                         onDelete={setModelToDelete}
                     />
                     <ModelSection
-                        title="My models"
-                        description="Only available to you, using your own API keys."
-                        emptyText="You haven't added any personal models."
+                        title={t('personalTitle')}
+                        description={t('personalDescription')}
+                        emptyText={t('personalEmpty')}
                         models={personalModels}
                         onOpen={(model) => openEditor({ mode: model.canEdit ? 'edit' : 'view', model })}
                         onDelete={setModelToDelete}
@@ -111,9 +114,9 @@ export const ModelsPage = ({ isOwner }: { isOwner: boolean }) => {
                     {data.configFileModels.length > 0 && (
                         <div className="flex flex-col gap-2">
                             <div>
-                                <h4 className="text-sm font-medium">From the config file</h4>
+                                <h4 className="text-sm font-medium">{t('configTitle')}</h4>
                                 <p className="text-xs text-muted-foreground">
-                                    Defined in <code>config.json</code> and available to everyone. Edit the config file to change them.
+                                    {t.rich('configDescription', { code: (chunks) => <code>{chunks}</code> })}
                                 </p>
                             </div>
                             <div className="flex flex-col divide-y rounded-md border">
@@ -124,8 +127,8 @@ export const ModelsPage = ({ isOwner }: { isOwner: boolean }) => {
                                             <span className="text-sm font-medium truncate">{model.displayName ?? model.model}</span>
                                             <span className="text-xs text-muted-foreground font-mono truncate">{model.provider} · {model.model}</span>
                                         </div>
-                                        {model.imageInput && <Badge variant="secondary" className="text-[10px] px-1.5 py-0">Images</Badge>}
-                                        <FileJsonIcon className="w-4 h-4 text-muted-foreground flex-shrink-0" aria-label="From config file" />
+                                        {model.imageInput && <Badge variant="secondary" className="text-[10px] px-1.5 py-0">{t('images')}</Badge>}
+                                        <FileJsonIcon className="w-4 h-4 text-muted-foreground flex-shrink-0" aria-label={t('fromConfig')} />
                                     </div>
                                 ))}
                             </div>
@@ -152,16 +155,16 @@ export const ModelsPage = ({ isOwner }: { isOwner: boolean }) => {
             <AlertDialog open={modelToDelete !== null} onOpenChange={(open) => !open && setModelToDelete(null)}>
                 <AlertDialogContent>
                     <AlertDialogHeader>
-                        <AlertDialogTitle>Delete model &quot;{modelToDelete?.displayName}&quot;?</AlertDialogTitle>
+                        <AlertDialogTitle>{t('deleteTitle', { name: modelToDelete?.displayName ?? '' })}</AlertDialogTitle>
                         <AlertDialogDescription>
                             {modelToDelete?.scope === 'WORKSPACE'
-                                ? 'The model will no longer be available to any member of the workspace. Its saved API key is deleted too.'
-                                : 'Its saved API key is deleted too.'}
+                                ? t('deleteWorkspace')
+                                : t('deletePersonal')}
                         </AlertDialogDescription>
                     </AlertDialogHeader>
                     <AlertDialogFooter>
-                        <AlertDialogCancel>Cancel</AlertDialogCancel>
-                        <AlertDialogAction onClick={onConfirmDelete}>Delete</AlertDialogAction>
+                        <AlertDialogCancel>{tCommon('cancel')}</AlertDialogCancel>
+                        <AlertDialogAction onClick={onConfirmDelete}>{tCommon('delete')}</AlertDialogAction>
                     </AlertDialogFooter>
                 </AlertDialogContent>
             </AlertDialog>
@@ -178,7 +181,9 @@ interface ModelSectionProps {
     onDelete: (model: CustomModelInfo) => void;
 }
 
-const ModelSection = ({ title, description, emptyText, models, onOpen, onDelete }: ModelSectionProps) => (
+const ModelSection = ({ title, description, emptyText, models, onOpen, onDelete }: ModelSectionProps) => {
+    const t = useTranslations('models');
+    return (
     <div className="flex flex-col gap-2">
         <div>
             <h4 className="text-sm font-medium">{title}</h4>
@@ -205,8 +210,8 @@ const ModelSection = ({ title, description, emptyText, models, onOpen, onDelete 
                             </span>
                         </div>
                         <div className="hidden sm:flex items-center gap-1 flex-shrink-0">
-                            {model.imageInput && <Badge variant="secondary" className="text-[10px] px-1.5 py-0">Images</Badge>}
-                            {!model.hasApiKey && <Badge variant="outline" className="text-[10px] px-1.5 py-0">No API key</Badge>}
+                            {model.imageInput && <Badge variant="secondary" className="text-[10px] px-1.5 py-0">{t('images')}</Badge>}
+                            {!model.hasApiKey && <Badge variant="outline" className="text-[10px] px-1.5 py-0">{t('noApiKey')}</Badge>}
                         </div>
                         <div className="flex items-center gap-0.5 flex-shrink-0">
                             <Button variant="ghost" size="icon" className="h-7 w-7" title={model.canEdit ? 'Edit' : 'View'} onClick={() => onOpen(model)}>
@@ -223,4 +228,5 @@ const ModelSection = ({ title, description, emptyText, models, onOpen, onDelete 
             </div>
         )}
     </div>
-);
+    );
+};

@@ -4,8 +4,10 @@ import Link from "next/link"
 import { Shield, Lock, CheckCircle, ExternalLink, Mail } from "lucide-react"
 import useCaptureEvent from "@/hooks/useCaptureEvent"
 import { SOURCEBOT_SUPPORT_EMAIL } from "@/lib/constants"
+import { useTranslations } from "next-intl";
 
 export default function SecurityCard() {
+    const t = useTranslations('cards');
     const captureEvent = useCaptureEvent();
 
     return (
@@ -14,24 +16,23 @@ export default function SecurityCard() {
                 <div className="flex justify-center mb-4">
                     <Shield className="h-10 w-10 text-[#9D5CFF]" />
                 </div>
-                <h3 className="text-xl font-semibold mb-3">Multi-Layered Security</h3>
+                <h3 className="text-xl font-semibold mb-3">{t('securityTitle')}</h3>
                 <p className="text-[#A1A1AA] mb-6">
-                    We take the security and privacy of your data seriously. All code and secret tokens you provide are protected
-                    using multiple layers of security.
+                    {t('securityDescription')}
                 </p>
 
                 <div className="space-y-4 mb-5">
                     <div className="flex items-start">
                         <CheckCircle className="h-5 w-5 text-[#9D5CFF] mr-3 mt-0.5 flex-shrink-0" />
                         <span className="text-sm text-foregroundSecondary text-left">
-                            All data is stored on Google Cloud Platform in the United States (us-west-1)
+                            {t('securityStorage')}
                         </span>
                     </div>
 
                     <div className="flex items-start">
                         <CheckCircle className="h-5 w-5 text-[#9D5CFF] mr-3 mt-0.5 flex-shrink-0" />
                         <span className="text-sm text-foregroundSecondary text-left">
-                            All data is encrypted in transit using TLS 1.2+, and at rest using AES-256
+                            {t('securityEncryption')}
                         </span>
                     </div>
 
@@ -39,7 +40,7 @@ export default function SecurityCard() {
                         <CheckCircle className="h-5 w-5 text-[#9D5CFF] mr-3 mt-0.5 flex-shrink-0" />
                         <div className="text-sm text-foregroundSecondary text-left">
                             <div className="flex items-center">
-                                <span>NexusCode is fair-source and trusted by thousands of developers</span>
+                                <span>{t('securityFairSource')}</span>
                                 <Link
                                     href="https://github.com/sourcebot-dev/sourcebot"
                                     target="_blank"
@@ -61,13 +62,13 @@ export default function SecurityCard() {
                 </div>
 
                 <div className="flex flex-row justify-center text-sm text-[#A1A1AA] mb-5">
-                    Have questions?
+                    {t('haveQuestions')}
                     <Link
                         href={`mailto:${SOURCEBOT_SUPPORT_EMAIL}`}
                         className="inline-flex items-center ml-2 text-[#9D5CFF] hover:text-[#B47EFF] transition-colors"
                     >
                         <Mail className="h-3.5 w-3.5 mr-1" />
-                        <span>Get in touch</span>
+                        <span>{t('getInTouch')}</span>
                     </Link>
                 </div>
 
@@ -78,7 +79,7 @@ export default function SecurityCard() {
                     onClick={() => captureEvent('wa_security_page_click', {})}
                 >
                     <Lock className="h-4 w-4 mr-2" />
-                    <span>Learn about our security measures</span>
+                    <span>{t('learnSecurity')}</span>
                 </Link>
             </div>
         </div>

@@ -1,5 +1,6 @@
 import type { FileDiff } from "@/features/git";
 import { ChevronDown, ChevronRight } from "lucide-react";
+import { useTranslations } from "next-intl";
 
 export type FileStatus = 'added' | 'modified' | 'deleted' | 'renamed';
 
@@ -37,6 +38,7 @@ interface StatusBadgeProps {
 }
 
 export const StatusBadge = ({ status, onToggle, isCollapsed }: StatusBadgeProps) => {
+    const t = useTranslations('browse');
     const baseClassName = `inline-flex items-center justify-center w-5 h-5 rounded text-xs font-mono font-bold ${STATUS_BADGE_COLORS[status]}`;
 
     if (!onToggle) {
@@ -53,7 +55,7 @@ export const StatusBadge = ({ status, onToggle, isCollapsed }: StatusBadgeProps)
         <button
             type="button"
             onClick={onToggle}
-            aria-label={isCollapsed ? "Expand diff" : "Collapse diff"}
+            aria-label={isCollapsed ? t('expandDiff') : t('collapseDiff')}
             aria-expanded={!isCollapsed}
             className={`${baseClassName} group cursor-pointer`}
         >

@@ -14,6 +14,7 @@ import { useLocalStorage } from "usehooks-ts";
 import { Skeleton } from "@/components/ui/skeleton";
 import { FileTreeItem } from "@/features/git";
 import { getFiles } from "@/app/api/(client)/client";
+import { useTranslations } from "next-intl";
 
 const MAX_RESULTS = 100;
 
@@ -27,6 +28,7 @@ type SearchResult = {
 
 
 export const FileSearchCommandDialog = () => {
+    const t = useTranslations('browse');    const tCommon = useTranslations('common');
     const { repoName, revisionName } = useBrowseParams();
     const { state: { isFileSearchOpen }, updateBrowseState } = useBrowseState();
 
@@ -45,7 +47,7 @@ export const FileSearchCommandDialog = () => {
     }, {
         enableOnFormTags: true,
         enableOnContentEditable: true,
-        description: "Open File Search",
+        description: t('openFileSearch'),
     });
 
     // Whenever we open the dialog, clear the search query
@@ -141,13 +143,13 @@ export const FileSearchCommandDialog = () => {
             <DialogContent
                 className="overflow-hidden p-0 shadow-lg max-w-[90vw] sm:max-w-2xl top-[20%] translate-y-0"
             >
-                <DialogTitle className="sr-only">Search for files</DialogTitle>
-                <DialogDescription className="sr-only">{`Search for files in the repository ${repoName}.`}</DialogDescription>
+                <DialogTitle className="sr-only">{t('searchForFiles')}</DialogTitle>
+                <DialogDescription className="sr-only">{t('searchForFilesIn', { repo: repoName })}</DialogDescription>
                 <Command
                     shouldFilter={false}
                 >
                     <CommandInput
-                        placeholder={`Search for files in ${repoName}...`}
+                        placeholder={t('searchForFilesPlaceholder', { repo: repoName })}
                         onValueChange={setSearchQuery}
                         disabled={isLoading}
                         ref={inputRef}
@@ -156,14 +158,14 @@ export const FileSearchCommandDialog = () => {
                         isLoading ? (
                             <ResultsSkeleton />
                         ) : isError ? (
-                            <p>Error loading files.</p>
+                            <p>{t('errorLoadingFiles')}</p>
                         ) : (
                             <CommandList ref={commandListRef}>
                                 {searchQuery.length === 0 ? (
                                     <CommandGroup
-                                        heading="Recently opened"
+                                        heading={t('recentlyOpened')}
                                     >
-                                        <CommandEmpty className="text-muted-foreground text-center text-sm py-6">No recently opened files.</CommandEmpty>
+                                        <CommandEmpty className="text-muted-foreground text-center text-sm py-6">{t('noRecentFiles')}</CommandEmpty>
                                         {recentlyOpened.map((file) => {
                                             return (
                                                 <SearchResultComponent
@@ -176,7 +178,7 @@ export const FileSearchCommandDialog = () => {
                                     </CommandGroup>
                                 ) : (
                                     <>
-                                        <CommandEmpty className="text-muted-foreground text-center text-sm py-6">No results found.</CommandEmpty>
+                                        <CommandEmpty className="text-muted-foreground text-center text-sm py-6">{tCommon('noResultsFound')}</CommandEmpty>
                                         {filteredFiles.map(({ file, match }) => {
                                             return (
                                                 <SearchResultComponent
@@ -189,7 +191,7 @@ export const FileSearchCommandDialog = () => {
                                         })}
                                         {maxResultsHit && (
                                             <div className="text-muted-foreground text-center text-sm py-4">
-                                                Maximum results hit. Please refine your search.
+                                                {t('maxResultsHit')}
                                             </div>
                                         )}
                                     </>

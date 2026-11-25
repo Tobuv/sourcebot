@@ -2,25 +2,27 @@ import Link from "next/link";
 import { NavigationMenu } from "../components/navigationMenu";
 import { FaCogs } from "react-icons/fa";
 import { env } from "@sourcebot/shared";
+import { getTranslations } from "next-intl/server";
 
 const agents = [
   {
     id: "github-review-agent",
-    name: "GitHub Review Agent",
-    description: "An AI code review agent that reviews your GitHub PRs. Uses the code indexed on NexusCode to provide codebase-wide context.",
+    nameKey: 'githubName' as const,
+    descriptionKey: 'githubDescription' as const,
     requiredEnvVars: ["GITHUB_REVIEW_AGENT_APP_ID", "GITHUB_REVIEW_AGENT_APP_WEBHOOK_SECRET", "GITHUB_REVIEW_AGENT_APP_PRIVATE_KEY_PATH"],
     configureUrl: "https://docs.sourcebot.dev/docs/features/agents/review-agent"
   },
   {
     id: "gitlab-review-agent",
-    name: "GitLab Review Agent",
-    description: "An AI code review agent that reviews your GitLab MRs. Uses the code indexed on NexusCode to provide codebase-wide context.",
+    nameKey: 'gitlabName' as const,
+    descriptionKey: 'gitlabDescription' as const,
     requiredEnvVars: ["GITLAB_REVIEW_AGENT_WEBHOOK_SECRET", "GITLAB_REVIEW_AGENT_TOKEN"],
     configureUrl: "https://docs.sourcebot.dev/docs/features/agents/review-agent"
   },
 ];
 
 export default async function AgentsPage() {
+  const t = await getTranslations('agents');
   return (
     <div className="flex flex-col items-center overflow-hidden min-h-screen">
       <NavigationMenu />
@@ -34,17 +36,17 @@ export default async function AgentsPage() {
               {/* Name and description */}
               <div className="flex flex-col items-center w-full">
                 <h2 className="font-bold text-2xl mb-4 mt-2 text-center text-foreground drop-shadow-sm">
-                  {agent.name}
+                  {t(agent.nameKey)}
                 </h2>
                 <p className="text-base text-muted-foreground text-center mb-4 min-h-[56px]">
-                  {agent.description}
+                  {t(agent.descriptionKey)}
                 </p>
               </div>
               {/* Actions */}
               <div className="flex flex-col items-center w-full mt-2">
                 {agent.requiredEnvVars.every(envVar => envVar in env && env[envVar as keyof typeof env] !== undefined) ? (
                   <div className="text-green-500 font-semibold">
-                    Agent is configured and accepting requests on /api/webhook 
+                    {t('configured')} 
                   </div>
                 ) : (
                   <Link
@@ -53,7 +55,7 @@ export default async function AgentsPage() {
                     rel="noopener noreferrer"
                     className="flex items-center justify-center gap-2 px-5 py-2.5 rounded-md bg-primary text-primary-foreground font-mono font-semibold text-base border border-primary shadow-sm hover:bg-primary/80 focus:outline-none focus:ring-2 focus:ring-primary/60 transition w-1/2"
                   >
-                    <FaCogs className="text-lg" /> Configure
+                    <FaCogs className="text-lg" /> {t('configure')}
                   </Link>
                 )}
               </div>

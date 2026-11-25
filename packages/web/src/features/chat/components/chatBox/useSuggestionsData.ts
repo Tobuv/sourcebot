@@ -5,6 +5,7 @@ import { FileSuggestion, RefineSuggestion, SkillSuggestion, Suggestion, Suggesti
 import { unwrapServiceError } from "@/lib/utils";
 import { listSkills, search } from "@/app/api/(client)/client";
 import { useMemo } from "react";
+import { useTranslations } from "next-intl";
 
 interface Props {
     suggestionMode: SuggestionMode;
@@ -12,20 +13,21 @@ interface Props {
     selectedRepos: string[];
 }
 
-const refineSuggestions: RefineSuggestion[] = [
-    {
-        type: 'refine',
-        targetSuggestionMode: 'file',
-        name: 'Files',
-        description: 'Include a file in the agent\'s context window.',
-    }
-]
 
 export const useSuggestionsData = ({
     suggestionMode,
     suggestionQuery,
     selectedRepos,
 }: Props): { isLoading: boolean, suggestions: Suggestion[] } => {
+    const t = useTranslations('chatBox');
+    const refineSuggestions = useMemo((): RefineSuggestion[] => [
+    {
+    type: 'refine',
+    targetSuggestionMode: 'file',
+    name: t('refineFiles'),
+    description: t('refineFilesDescription'),
+    },
+    ], [t]);
     const { data: fileSuggestions, isLoading: _isLoadingFileSuggestions } = useQuery({
         queryKey: ["fileSuggestions-agentic", suggestionQuery, selectedRepos],
         queryFn: () => {

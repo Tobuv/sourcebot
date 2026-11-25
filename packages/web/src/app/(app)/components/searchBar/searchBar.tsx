@@ -43,6 +43,7 @@ import { Tooltip, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip
 import { Toggle } from "@/components/ui/toggle";
 import tailwind from "@/tailwind";
 import React from "react";
+import { useTranslations } from "next-intl";
 import Link from "next/link";
 import { CaseSensitiveIcon, RegexIcon, Wand2Icon } from "lucide-react";
 import { SearchAssistBox } from "./searchAssistBox";
@@ -110,6 +111,7 @@ export const SearchBar = ({
 }: SearchBarProps) => {
     const router = useRouter();
     const captureEvent = useCaptureEvent();
+    const tBar = useTranslations('searchBar');
     const suggestionBoxRef = useRef<HTMLDivElement>(null);
     const editorRef = useRef<ReactCodeMirrorRef>(null);
     const [cursorPosition, setCursorPosition] = useState(0);
@@ -270,7 +272,7 @@ export const SearchBar = ({
                         setActivePanel('suggestions');
                         focusEditor();
                     }}
-                    tooltip="Search history"
+                    tooltip={tBar('searchHistory')}
                     icon={CounterClockwiseClockIcon}
                 />
                 <SearchBarButton
@@ -287,16 +289,19 @@ export const SearchBar = ({
                         });
                         focusEditor();
                     }}
-                    tooltip="AI search assist"
+                    tooltip={tBar('aiSearchAssist')}
                     icon={Wand2Icon}
                     preventBlurOnClick
                     disabled={!isSearchAssistSupported}
                     disabledTooltip={
                         <span>
-                            AI search assist requires a language model to be configured.{" "}
-                            <Link href={LANGUAGE_MODEL_DOCS_URL} target="_blank" className="underline">
-                                Learn more
-                            </Link>.
+                            {tBar.rich('aiSearchAssistRequiresModel', {
+                                link: (chunks) => (
+                                    <Link href={LANGUAGE_MODEL_DOCS_URL} target="_blank" className="underline">
+                                        {chunks}
+                                    </Link>
+                                ),
+                            })}
                         </span>
                     }
                 />
@@ -308,7 +313,7 @@ export const SearchBar = ({
             <CodeMirror
                 ref={editorRef}
                 className="w-full"
-                placeholder={isHistorySearchEnabled ? "Filter history..." : "Search (/) through repos..."}
+                placeholder={isHistorySearchEnabled ? tBar('filterHistory') : tBar('placeholder')}
                 value={query}
                 onChange={(value) => {
                     setQuery(value);
@@ -326,14 +331,14 @@ export const SearchBar = ({
                 <SearchBarButton
                     isToggled={isCaseSensitivityEnabled}
                     onClick={() => setIsCaseSensitivityEnabled(!isCaseSensitivityEnabled)}
-                    tooltip={`${isCaseSensitivityEnabled ? "Disable" : "Enable"} case sensitivity`}
+                    tooltip={isCaseSensitivityEnabled ? tBar('disableCaseSensitivity') : tBar('enableCaseSensitivity')}
                     icon={CaseSensitiveIcon}
 
                 />
                 <SearchBarButton
                     isToggled={isRegexEnabled}
                     onClick={() => setIsRegexEnabled(!isRegexEnabled)}
-                    tooltip={`${isRegexEnabled ? "Disable" : "Enable"} regular expressions`}
+                    tooltip={isRegexEnabled ? tBar('disableRegex') : tBar('enableRegex')}
                     icon={RegexIcon}
 
                 />

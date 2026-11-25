@@ -19,6 +19,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip
 import { useRouter } from "next/navigation";
 import useCaptureEvent from "@/hooks/useCaptureEvent";
 import Link from "next/link";
+import { useTranslations } from "next-intl";
 
 type Member = {
     id: string
@@ -40,6 +41,8 @@ export interface MembersListProps {
 const ROLES_AND_PERMISSIONS_DOCS_LINK = "https://docs.sourcebot.dev/docs/configuration/auth/roles-and-permissions#managing-owners"
 
 export const MembersList = ({ members, currentUserId, currentUserRole, orgName, hasOrgManagement }: MembersListProps) => {
+    const t = useTranslations('members');
+    const tCommon = useTranslations('common');
     const [searchQuery, setSearchQuery] = useState("")
     const [roleFilter, setRoleFilter] = useState<"all" | OrgRole>("all")
     const [dateSort, setDateSort] = useState<"newest" | "oldest">("newest")
@@ -80,94 +83,94 @@ export const MembersList = ({ members, currentUserId, currentUserRole, orgName, 
             .then((response) => {
                 if (isServiceError(response)) {
                     toast({
-                        description: `❌ Failed to remove member. Reason: ${response.message}`
+                        description: t('removeFailed', { reason: response.message })
                     })
                     captureEvent('wa_members_list_remove_member_fail', {
                         errorCode: response.errorCode,
                     })
                 } else {
                     toast({
-                        description: `✅ Member removed successfully.`
+                        description: t('removed')
                     })
                     captureEvent('wa_members_list_remove_member_success', {})
                     router.refresh();
                 }
             });
-    }, [toast, router, captureEvent]);
+    }, [toast, router, captureEvent, t]);
 
     const onResetPassword = useCallback((member: Member) => {
         resetMemberPassword(member.id)
             .then((response) => {
                 if (isServiceError(response)) {
                     toast({
-                        description: `❌ Failed to reset password. Reason: ${response.message}`
+                        description: t('resetFailed', { reason: response.message })
                     })
                 } else {
                     setIsTemporaryPasswordCopied(false);
                     setPasswordResetResult({ member, temporaryPassword: response.temporaryPassword });
                 }
             });
-    }, [toast]);
+    }, [toast, t]);
 
     const onPromoteToOwner = useCallback((memberId: string) => {
         promoteToOwner(memberId)
             .then((response) => {
                 if (isServiceError(response)) {
                     toast({
-                        description: `❌ Failed to promote member. Reason: ${response.message}`
+                        description: t('promoteFailed', { reason: response.message })
                     })
                     captureEvent('wa_members_list_promote_to_owner_fail', {
                         errorCode: response.errorCode,
                     })
                 } else {
                     toast({
-                        description: `✅ Member promoted to owner.`
+                        description: t('promoted')
                     })
                     captureEvent('wa_members_list_promote_to_owner_success', {})
                     router.refresh();
                 }
             });
-    }, [toast, router, captureEvent]);
+    }, [toast, router, captureEvent, t]);
 
     const onDemoteToMember = useCallback((memberId: string) => {
         demoteToMember(memberId)
             .then((response) => {
                 if (isServiceError(response)) {
                     toast({
-                        description: `❌ Failed to demote owner. Reason: ${response.message}`
+                        description: t('demoteFailed', { reason: response.message })
                     })
                     captureEvent('wa_members_list_demote_to_member_fail', {
                         errorCode: response.errorCode,
                     })
                 } else {
                     toast({
-                        description: `✅ Owner demoted to member.`
+                        description: t('demoted')
                     })
                     captureEvent('wa_members_list_demote_to_member_success', {})
                     router.refresh();
                 }
             });
-    }, [toast, router, captureEvent]);
+    }, [toast, router, captureEvent, t]);
 
     const onLeaveOrg = useCallback(() => {
         leaveOrg()
             .then((response) => {
                 if (isServiceError(response)) {
                     toast({
-                        description: `❌ Failed to leave organization. Reason: ${response.message}`
+                        description: t('leaveFailed', { reason: response.message })
                     })
                     captureEvent('wa_members_list_leave_org_fail', {
                         errorCode: response.errorCode,
                     })
                 } else {
                     toast({
-                        description: `✅ You have left the organization.`
+                        description: t('left')
                     })
                     captureEvent('wa_members_list_leave_org_success', {})
                     router.push("/");
                 }
             });
-    }, [toast, router, captureEvent]);
+    }, [toast, router, captureEvent, t]);
 
     return (
         <div>
@@ -176,7 +179,7 @@ export const MembersList = ({ members, currentUserId, currentUserRole, orgName, 
                     <div className="relative flex-1">
                         <Search className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
                         <Input
-                            placeholder="Filter by name or email..."
+                            placeholder={t('filterPlaceholder')}
                             className="pl-9"
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
@@ -185,12 +188,12 @@ export const MembersList = ({ members, currentUserId, currentUserRole, orgName, 
 
                     <Select value={roleFilter} onValueChange={(value) => setRoleFilter(value as "all" | OrgRole)}>
                         <SelectTrigger className="w-[180px]">
-                            <SelectValue placeholder="All Team Roles" />
+                            <SelectValue placeholder={t('allRoles')} />
                         </SelectTrigger>
                         <SelectContent>
-                            <SelectItem value="all">All Team Roles</SelectItem>
-                            <SelectItem value={OrgRole.OWNER}>Owner</SelectItem>
-                            <SelectItem value={OrgRole.MEMBER}>Member</SelectItem>
+                            <SelectItem value="all">{t('allRoles')}</SelectItem>
+                            <SelectItem value={OrgRole.OWNER}>{t('roles.OWNER')}</SelectItem>
+                            <SelectItem value={OrgRole.MEMBER}>{t('roles.MEMBER')}</SelectItem>
                         </SelectContent>
                     </Select>
 
@@ -199,8 +202,8 @@ export const MembersList = ({ members, currentUserId, currentUserRole, orgName, 
                             <SelectValue placeholder="Date" />
                         </SelectTrigger>
                         <SelectContent>
-                            <SelectItem value="newest">Newest</SelectItem>
-                            <SelectItem value="oldest">Oldest</SelectItem>
+                            <SelectItem value="newest">{t('newest')}</SelectItem>
+                            <SelectItem value="oldest">{t('oldest')}</SelectItem>
                         </SelectContent>
                     </Select>
                 </div>
@@ -209,9 +212,9 @@ export const MembersList = ({ members, currentUserId, currentUserRole, orgName, 
                     <div className="max-h-[600px] overflow-y-auto divide-y">
                         {filteredMembers.length === 0 ? (
                             <div className="flex flex-col items-center justify-center h-96 p-4">
-                                <p className="font-medium text-sm">No Members Found</p>
+                                <p className="font-medium text-sm">{t('noMembers')}</p>
                                 <p className="text-sm text-muted-foreground mt-2">
-                                    No members found matching your filters.
+                                    {t('noMembersDescription')}
                                 </p>
                             </div>
                         ) : (
@@ -228,7 +231,7 @@ export const MembersList = ({ members, currentUserId, currentUserRole, orgName, 
                                         </div>
                                     </div>
                                     <div className="flex items-center gap-4">
-                                        <span className="text-sm text-muted-foreground capitalize">{member.role.toLowerCase()}</span>
+                                        <span className="text-sm text-muted-foreground">{t(`roles.${member.role}`)}</span>
                                         <DropdownMenu modal={false}>
                                             <DropdownMenuTrigger asChild>
                                                 <Button variant="ghost" className="h-8 w-8 p-0">
@@ -242,17 +245,17 @@ export const MembersList = ({ members, currentUserId, currentUserRole, orgName, 
                                                         navigator.clipboard.writeText(member.email)
                                                             .then(() => {
                                                                 toast({
-                                                                    description: `✅ Email copied to clipboard.`
+                                                                    description: t('emailCopied')
                                                                 })
                                                             })
                                                             .catch(() => {
                                                                 toast({
-                                                                    description: `❌ Failed to copy email.`
+                                                                    description: t('emailCopyFailed')
                                                                 })
                                                             })
                                                     }}
                                                 >
-                                                    Copy email
+                                                    {t('copyEmail')}
                                                 </DropdownMenuItem>
                                                 {member.id !== currentUserId && currentUserRole === OrgRole.OWNER && member.role !== OrgRole.OWNER && (
                                                     <Tooltip delayDuration={100}>
@@ -266,7 +269,7 @@ export const MembersList = ({ members, currentUserId, currentUserRole, orgName, 
                                                                         setIsPromoteDialogOpen(true);
                                                                     }}
                                                                 >
-                                                                    Promote to owner
+                                                                    {t('promoteToOwner')}
                                                                 </DropdownMenuItem>
                                                             </span>
                                                         </TooltipTrigger>
@@ -275,7 +278,7 @@ export const MembersList = ({ members, currentUserId, currentUserRole, orgName, 
                                                                 side="left"
                                                                 sideOffset={12}
                                                             >
-                                                                Upgrade your plan to promote members to owner. <Link href={ROLES_AND_PERMISSIONS_DOCS_LINK} className="text-link hover:underline">Learn more</Link>
+                                                                {t.rich('upgradeToPromote', { link: (chunks) => <Link href={ROLES_AND_PERMISSIONS_DOCS_LINK} className="text-link hover:underline">{chunks}</Link> })}
                                                             </TooltipContent>
                                                         )}
                                                     </Tooltip>
@@ -292,15 +295,15 @@ export const MembersList = ({ members, currentUserId, currentUserRole, orgName, 
                                                                         setIsDemoteDialogOpen(true);
                                                                     }}
                                                                 >
-                                                                    Demote to member
+                                                                    {t('demoteToMember')}
                                                                 </DropdownMenuItem>
                                                             </span>
                                                         </TooltipTrigger>
                                                         {(ownerCount <= 1 || !hasOrgManagement) && (
                                                             <TooltipContent side="left" sideOffset={12}>
                                                                 {!hasOrgManagement
-                                                                    ? <>Upgrade your plan to demote owners. <Link href={ROLES_AND_PERMISSIONS_DOCS_LINK} className="text-link hover:underline">Learn more</Link></>
-                                                                    : "Cannot demote the last owner. Promote another member to owner first."
+                                                                    ? t.rich('upgradeToDemote', { link: (chunks) => <Link href={ROLES_AND_PERMISSIONS_DOCS_LINK} className="text-link hover:underline">{chunks}</Link> })
+                                                                    : t('cannotDemoteLastOwner')
                                                                 }
                                                             </TooltipContent>
                                                         )}
@@ -313,7 +316,7 @@ export const MembersList = ({ members, currentUserId, currentUserRole, orgName, 
                                                             setMemberToResetPassword(member);
                                                         }}
                                                     >
-                                                        Reset password
+                                                        {t('resetPassword')}
                                                     </DropdownMenuItem>
                                                 )}
                                                 {member.id !== currentUserId && currentUserRole === OrgRole.OWNER && (
@@ -324,7 +327,7 @@ export const MembersList = ({ members, currentUserId, currentUserRole, orgName, 
                                                             setIsRemoveDialogOpen(true);
                                                         }}
                                                     >
-                                                        Remove
+                                                        {t('remove')}
                                                     </DropdownMenuItem>
                                                 )}
                                                 {member.id === currentUserId && (
@@ -338,13 +341,13 @@ export const MembersList = ({ members, currentUserId, currentUserRole, orgName, 
                                                                         setIsLeaveOrgDialogOpen(true);
                                                                     }}
                                                                 >
-                                                                    Leave organization
+                                                                    {t('leaveOrganization')}
                                                                 </DropdownMenuItem>
                                                             </span>
                                                         </TooltipTrigger>
                                                         {currentUserRole === OrgRole.OWNER && ownerCount <= 1 && (
                                                             <TooltipContent side="left" sideOffset={12}>
-                                                                You are the last owner. Promote another member to owner before leaving.
+                                                                {t('lastOwnerCannotLeave')}
                                                             </TooltipContent>
                                                         )}
                                                     </Tooltip>
@@ -363,20 +366,20 @@ export const MembersList = ({ members, currentUserId, currentUserRole, orgName, 
                 >
                     <AlertDialogContent>
                         <AlertDialogHeader>
-                            <AlertDialogTitle>Remove Member</AlertDialogTitle>
+                            <AlertDialogTitle>{t('removeTitle')}</AlertDialogTitle>
                             <AlertDialogDescription>
-                                {`Are you sure you want to remove ${memberToRemove?.name ?? memberToRemove?.email}?`}
+                                {t('removeConfirm', { name: memberToRemove?.name ?? memberToRemove?.email ?? '' })}
                             </AlertDialogDescription>
                         </AlertDialogHeader>
                         <AlertDialogFooter>
-                            <AlertDialogCancel>Cancel</AlertDialogCancel>
+                            <AlertDialogCancel>{tCommon('cancel')}</AlertDialogCancel>
                             <AlertDialogAction
                                 className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
                                 onClick={() => {
                                     onRemoveMember(memberToRemove?.id ?? "");
                                 }}
                             >
-                                Remove
+                                {t('remove')}
                             </AlertDialogAction>
                         </AlertDialogFooter>
                     </AlertDialogContent>
@@ -387,19 +390,19 @@ export const MembersList = ({ members, currentUserId, currentUserRole, orgName, 
                 >
                     <AlertDialogContent>
                         <AlertDialogHeader>
-                            <AlertDialogTitle>Promote to Owner</AlertDialogTitle>
+                            <AlertDialogTitle>{t('promoteTitle')}</AlertDialogTitle>
                             <AlertDialogDescription>
-                                {`Are you sure you want to promote ${memberToPromote?.name ?? memberToPromote?.email} to owner? They will have full administrative access.`}
+                                {t('promoteConfirm', { name: memberToPromote?.name ?? memberToPromote?.email ?? '' })}
                             </AlertDialogDescription>
                         </AlertDialogHeader>
                         <AlertDialogFooter>
-                            <AlertDialogCancel>Cancel</AlertDialogCancel>
+                            <AlertDialogCancel>{tCommon('cancel')}</AlertDialogCancel>
                             <AlertDialogAction
                                 onClick={() => {
                                     onPromoteToOwner(memberToPromote?.id ?? "");
                                 }}
                             >
-                                Promote
+                                {t('promote')}
                             </AlertDialogAction>
                         </AlertDialogFooter>
                     </AlertDialogContent>
@@ -410,23 +413,23 @@ export const MembersList = ({ members, currentUserId, currentUserRole, orgName, 
                 >
                     <AlertDialogContent>
                         <AlertDialogHeader>
-                            <AlertDialogTitle>Demote to Member</AlertDialogTitle>
+                            <AlertDialogTitle>{t('demoteTitle')}</AlertDialogTitle>
                             <AlertDialogDescription>
                                 {memberToDemote?.id === currentUserId
-                                    ? `Are you sure you want to step down as owner? You will lose administrative access.`
-                                    : `Are you sure you want to demote ${memberToDemote?.name ?? memberToDemote?.email} from owner to member? They will lose administrative access.`
+                                    ? t('demoteSelfConfirm')
+                                    : t('demoteConfirm', { name: memberToDemote?.name ?? memberToDemote?.email ?? '' })
                                 }
                             </AlertDialogDescription>
                         </AlertDialogHeader>
                         <AlertDialogFooter>
-                            <AlertDialogCancel>Cancel</AlertDialogCancel>
+                            <AlertDialogCancel>{tCommon('cancel')}</AlertDialogCancel>
                             <AlertDialogAction
                                 className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
                                 onClick={() => {
                                     onDemoteToMember(memberToDemote?.id ?? "");
                                 }}
                             >
-                                Demote
+                                {t('demote')}
                             </AlertDialogAction>
                         </AlertDialogFooter>
                     </AlertDialogContent>
@@ -437,13 +440,13 @@ export const MembersList = ({ members, currentUserId, currentUserRole, orgName, 
                 >
                     <AlertDialogContent>
                         <AlertDialogHeader>
-                            <AlertDialogTitle>Reset Password</AlertDialogTitle>
+                            <AlertDialogTitle>{t('resetTitle')}</AlertDialogTitle>
                             <AlertDialogDescription>
-                                {`Reset the password of ${memberToResetPassword?.name ?? memberToResetPassword?.email}? A temporary password is generated and they are signed out on all devices.`}
+                                {t('resetConfirm', { name: memberToResetPassword?.name ?? memberToResetPassword?.email ?? '' })}
                             </AlertDialogDescription>
                         </AlertDialogHeader>
                         <AlertDialogFooter>
-                            <AlertDialogCancel>Cancel</AlertDialogCancel>
+                            <AlertDialogCancel>{tCommon('cancel')}</AlertDialogCancel>
                             <AlertDialogAction
                                 onClick={() => {
                                     if (memberToResetPassword) {
@@ -452,7 +455,7 @@ export const MembersList = ({ members, currentUserId, currentUserRole, orgName, 
                                     setMemberToResetPassword(null);
                                 }}
                             >
-                                Reset password
+                                {t('resetPassword')}
                             </AlertDialogAction>
                         </AlertDialogFooter>
                     </AlertDialogContent>
@@ -463,9 +466,9 @@ export const MembersList = ({ members, currentUserId, currentUserRole, orgName, 
                 >
                     <AlertDialogContent>
                         <AlertDialogHeader>
-                            <AlertDialogTitle>Temporary Password</AlertDialogTitle>
+                            <AlertDialogTitle>{t('tempPasswordTitle')}</AlertDialogTitle>
                             <AlertDialogDescription>
-                                {`Share this temporary password with ${passwordResetResult?.member.name ?? passwordResetResult?.member.email} through a secure channel. It is only shown once. Ask them to change it in Settings → Account after signing in.`}
+                                {t('tempPasswordDescription', { name: passwordResetResult?.member.name ?? passwordResetResult?.member.email ?? '' })}
                             </AlertDialogDescription>
                         </AlertDialogHeader>
                         <div className="flex items-center gap-2">
@@ -486,7 +489,7 @@ export const MembersList = ({ members, currentUserId, currentUserRole, orgName, 
                             </Button>
                         </div>
                         <AlertDialogFooter>
-                            <AlertDialogAction>Done</AlertDialogAction>
+                            <AlertDialogAction>{t('done')}</AlertDialogAction>
                         </AlertDialogFooter>
                     </AlertDialogContent>
                 </AlertDialog>
@@ -496,18 +499,18 @@ export const MembersList = ({ members, currentUserId, currentUserRole, orgName, 
                 >
                     <AlertDialogContent>
                         <AlertDialogHeader>
-                            <AlertDialogTitle>Leave Organization</AlertDialogTitle>
+                            <AlertDialogTitle>{t('leaveTitle')}</AlertDialogTitle>
                             <AlertDialogDescription>
-                                {`Are you sure you want to leave the organization?`}
+                                {t('leaveConfirm')}
                             </AlertDialogDescription>
                         </AlertDialogHeader>
                         <AlertDialogFooter>
-                            <AlertDialogCancel>Cancel</AlertDialogCancel>
+                            <AlertDialogCancel>{tCommon('cancel')}</AlertDialogCancel>
                             <AlertDialogAction
                                 className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
                                 onClick={onLeaveOrg}
                             >
-                                Leave
+                                {t('leave')}
                             </AlertDialogAction>
                         </AlertDialogFooter>
                     </AlertDialogContent>

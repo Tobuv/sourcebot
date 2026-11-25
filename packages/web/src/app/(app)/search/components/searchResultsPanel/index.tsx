@@ -7,6 +7,7 @@ import { forwardRef, useCallback, useEffect, useImperativeHandle, useRef } from 
 import { useMap } from "usehooks-ts";
 import { FileMatchContainer, MAX_MATCHES_TO_PREVIEW } from "./fileMatchContainer";
 
+import { useTranslations } from "next-intl";
 interface SearchResultsPanelProps {
     fileMatches: SearchResultFile[];
     onOpenFilePreview: (fileMatch: SearchResultFile, matchIndex?: number) => void;
@@ -47,6 +48,7 @@ export const SearchResultsPanel = forwardRef<SearchResultsPanelHandle, SearchRes
     repoInfo,
 }, ref) => {
     const parentRef = useRef<HTMLDivElement>(null);
+    const t = useTranslations('search');
 
     // Restore the scroll offset, measurements cache, and other state from the history
     // state. This enables us to restore the scroll offset when the user navigates back
@@ -179,7 +181,7 @@ export const SearchResultsPanel = forwardRef<SearchResultsPanelHandle, SearchRes
                         className="cursor-pointer text-blue-500 hover:underline"
                         onClick={onLoadMoreButtonClicked}
                     >
-                        Load more results
+                        {t('loadMoreResults')}
                     </span>
                 </div>
             )}

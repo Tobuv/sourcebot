@@ -9,6 +9,7 @@ import {
 } from "@/components/ui/dialog";
 import { AuthMethodSelector } from "@/app/components/authMethodSelector";
 import type { IdentityProviderMetadata } from "@/lib/identityProviders";
+import { useTranslations } from "next-intl";
 
 interface LoginModalProps {
     isOpen: boolean;
@@ -23,13 +24,14 @@ export const LoginModal = ({
     providers,
     callbackUrl,
 }: LoginModalProps) => {
+    const t = useTranslations('orgAccess');
     return (
         <Dialog open={isOpen} onOpenChange={onOpenChange}>
             <DialogContent className="sm:max-w-md">
                 <DialogHeader>
-                    <DialogTitle className="mb-3">Sign up to continue</DialogTitle>
+                    <DialogTitle className="mb-3">{t('signUpToContinue')}</DialogTitle>
                     <DialogDescription>
-                        Sign into your account to continue.
+                        {t('signInToContinue')}
                     </DialogDescription>
                 </DialogHeader>
                 <div className="mt-4">

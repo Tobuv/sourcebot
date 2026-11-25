@@ -8,13 +8,15 @@ import { CopyIconButton } from "@/app/(app)/components/copyIconButton";
 import { useToast } from "@/components/hooks/use-toast";
 import type { Commit } from "@/features/git";
 import { getBrowsePath } from "@/app/(app)/browse/hooks/utils";
-import { formatAuthorsText, getCommitAuthors } from "@/app/(app)/browse/components/commitAuthors";
+import { authorsTextFormatFromTranslator, formatAuthorsText, getCommitAuthors } from "@/app/(app)/browse/components/commitAuthors";
 import {
     AuthorsAvatarGroup,
     CommitActionLink,
     CommitBody,
     CommitBodyToggle,
 } from "@/app/(app)/browse/components/commitParts";
+import { useDateFnsLocale } from "@/i18n/dateLocale";
+import { useTranslations } from "next-intl";
 
 interface CommitRowProps {
     commit: Commit;
@@ -23,12 +25,14 @@ interface CommitRowProps {
 }
 
 export const CommitRow = ({ commit, repoName, revisionName }: CommitRowProps) => {
+    const t = useTranslations('browse');
+    const dateLocale = useDateFnsLocale();
     const [isBodyExpanded, setIsBodyExpanded] = useState(false);
     const { toast } = useToast();
     const router = useRouter();
 
     const shortSha = commit.hash.slice(0, 7);
-    const relativeDate = formatDistanceToNow(new Date(commit.date), { addSuffix: true });
+    const relativeDate = formatDistanceToNow(new Date(commit.date), { addSuffix: true, locale: dateLocale });
     const hasBody = commit.body.trim().length > 0;
 
     const authors = useMemo(
@@ -53,10 +57,10 @@ export const CommitRow = ({ commit, repoName, revisionName }: CommitRowProps) =>
 
     const onCopySha = useCallback(() => {
         navigator.clipboard.writeText(commit.hash).then(() => {
-            toast({ description: "✅ Copied commit SHA to clipboard" });
+            toast({ description: t('copiedCommitSha') });
         })
         return true;
-    }, [commit.hash, toast]);
+    }, [commit.hash, toast, t]);
 
     const navigateToCommit = useCallback(() => {
         router.push(commitDiffHref);
@@ -106,7 +110,7 @@ export const CommitRow = ({ commit, repoName, revisionName }: CommitRowProps) =>
                     <div className="flex flex-row items-center gap-2 min-w-0 overflow-hidden">
                         <AuthorsAvatarGroup authors={authors} />
                         <span className="text-sm text-muted-foreground truncate">
-                            {formatAuthorsText(authors)} authored {relativeDate}
+                            {t('authoredAgo', { authors: formatAuthorsText(authors, authorsTextFormatFromTranslator(t)), date: relativeDate })}
                         </span>
                     </div>
                 </div>
@@ -117,7 +121,7 @@ export const CommitRow = ({ commit, repoName, revisionName }: CommitRowProps) =>
                     <CopyIconButton onCopy={onCopySha} />
                     <CommitActionLink
                         href={viewRepoAtCommitHref}
-                        label="View repository at this commit"
+                        label={t('viewRepoAtCommit')}
                         icon={<Code className="h-3 w-3" />}
                     />
                 </div>

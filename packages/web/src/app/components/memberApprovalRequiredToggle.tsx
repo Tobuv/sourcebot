@@ -5,6 +5,7 @@ import { Switch } from "@/components/ui/switch"
 import { setMemberApprovalRequired } from "@/actions"
 import { isServiceError } from "@/lib/utils"
 import { useToast } from "@/components/hooks/use-toast"
+import { useTranslations } from "next-intl";
 
 interface MemberApprovalRequiredToggleProps {
     memberApprovalRequired: boolean
@@ -13,6 +14,7 @@ interface MemberApprovalRequiredToggleProps {
 }
 
 export function MemberApprovalRequiredToggle({ memberApprovalRequired, onToggleChange, isControlledByEnvVar }: MemberApprovalRequiredToggleProps) {
+    const t = useTranslations('orgAccess');
     const [enabled, setEnabled] = useState(memberApprovalRequired)
     const [isLoading, setIsLoading] = useState(false)
     const { toast } = useToast()
@@ -25,7 +27,7 @@ export function MemberApprovalRequiredToggle({ memberApprovalRequired, onToggleC
             if (isServiceError(result)) {
                 toast({
                     title: "Error",
-                    description: "Failed to update member approval setting",
+                    description: t('approvalFailed'),
                     variant: "destructive",
                 })
                 return
@@ -37,7 +39,7 @@ export function MemberApprovalRequiredToggle({ memberApprovalRequired, onToggleC
             console.error("Error updating member approval setting:", error)
             toast({
                 title: "Error",
-                description: "Failed to update member approval setting",
+                description: t('approvalFailed'),
                 variant: "destructive",
             })
         } finally {
@@ -52,11 +54,11 @@ export function MemberApprovalRequiredToggle({ memberApprovalRequired, onToggleC
             <div className="flex items-start justify-between gap-4">
                 <div className="flex-1 min-w-0">
                     <h3 className="font-medium text-foreground mb-2">
-                        Require approval for new members
+                        {t('approvalTitle')}
                     </h3>
                     <div className="max-w-2xl">
                         <p className="text-sm text-muted-foreground leading-relaxed">
-                            When enabled, new users will need approval from an organization owner before they can access your deployment.
+                            {t('approvalDescription')}
                         </p>
                         {isControlledByEnvVar && (
                             <div className="mt-3 p-3 rounded-md bg-muted border border-border">
@@ -75,7 +77,7 @@ export function MemberApprovalRequiredToggle({ memberApprovalRequired, onToggleC
                                         />
                                     </svg>
                                     <span>
-                                        This setting is controlled by the <code className="bg-secondary px-1 py-0.5 rounded text-xs font-mono">REQUIRE_APPROVAL_NEW_MEMBERS</code> environment variable.
+                                        {t.rich('controlledByEnvNotice', { code: (chunks) => <code className="bg-secondary px-1 py-0.5 rounded text-xs font-mono">{chunks}</code> })}
                                     </span>
                                 </p>
                             </div>

@@ -68,13 +68,31 @@ export const dedupeCommitAuthorsByEmail = (authors: CommitAuthor[]): CommitAutho
 export const escapeGitBreLiteral = (s: string): string =>
     s.replace(/[.[\]^$*\\]/g, '\\$&');
 
-export const formatAuthorsText = (authors: Author[]): string => {
+/** Translated templates for joining author names (see `browse.authorsTwo` / `browse.authorsMany`). */
+export type AuthorsTextFormat = {
+    two: (first: string, second: string) => string;
+    many: (first: string, second: string, others: number) => string;
+};
+
+const defaultAuthorsTextFormat: AuthorsTextFormat = {
+    two: (first, second) => `${first} and ${second}`,
+    many: (first, second, others) => `${first}, ${second}, and ${others} other${others > 1 ? "s" : ""}`,
+};
+
+export const formatAuthorsText = (authors: Author[], format: AuthorsTextFormat = defaultAuthorsTextFormat): string => {
     if (authors.length === 1) {
         return authors[0].name;
     }
     if (authors.length === 2) {
-        return `${authors[0].name} and ${authors[1].name}`;
+        return format.two(authors[0].name, authors[1].name);
     }
-    const others = authors.length - 2;
-    return `${authors[0].name}, ${authors[1].name}, and ${others} other${others > 1 ? "s" : ""}`;
+    return format.many(authors[0].name, authors[1].name, authors.length - 2);
 };
+
+/** Builds an `AuthorsTextFormat` from a translator scoped to the `browse` namespace. */
+export const authorsTextFormatFromTranslator = (
+    t: (key: 'authorsTwo' | 'authorsMany', values: { first: string; second: string; others?: number }) => string,
+): AuthorsTextFormat => ({
+    two: (first, second) => t('authorsTwo', { first, second }),
+    many: (first, second, others) => t('authorsMany', { first, second, others }),
+});

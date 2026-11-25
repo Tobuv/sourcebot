@@ -7,6 +7,7 @@ import { CommitsPanel } from "./components/commitHistoryPanel/commitsPanel";
 import { Loader2 } from "lucide-react";
 import { TreePreviewPanel } from "./components/treePreviewPanel/treePreviewPanel";
 import { Metadata } from "next";
+import { getTranslations } from "next-intl/server";
 
 /**
  * Parses the URL path to generate a descriptive title.
@@ -18,7 +19,9 @@ import { Metadata } from "next";
  * @param path The array of path segments from Next.js params.
  * @returns A formatted title string.
  */
-const parsePathForTitle = (path: string[]): string => {
+type BrowseTitleTranslator = Awaited<ReturnType<typeof getTranslations<'browse'>>>;
+
+const parsePathForTitle = (path: string[], t: BrowseTitleTranslator): string => {
     const pathParam = path.join('/');
 
     const browseProps = getBrowseParamsFromPathParam(pathParam);
@@ -45,13 +48,13 @@ const parsePathForTitle = (path: string[]): string => {
         }
         case 'commits': {
             if (filePath === '' || filePath === '/') {
-                return `History - ${repoAndRevision}`;
+                return t('titleHistory', { repo: repoAndRevision });
             }
-            return `History: ${filePath} - ${repoAndRevision}`;
+            return t('titleFileHistory', { path: filePath, repo: repoAndRevision });
         }
         case 'commit': {
             const shortSha = browseProps.commitSha.substring(0, 7);
-            return `Commit ${shortSha} - ${repoAndRevision}`;
+            return t('titleCommit', { sha: shortSha, repo: repoAndRevision });
         }
     }
 }
@@ -63,11 +66,12 @@ type Props = {
 };
 
 export async function generateMetadata({ params: paramsPromise }: Props): Promise<Metadata> {
-    let title = 'Browse'; // Default Fallback
+    const t = await getTranslations('browse');
+    let title = t('title'); // Default Fallback
 
     try {
         const params = await paramsPromise;
-        title = parsePathForTitle(params.path);
+        title = parsePathForTitle(params.path, t);
 
     } catch (error) {
         console.error("Failed to generate metadata title from path:", error);
@@ -94,6 +98,7 @@ interface BrowsePageProps {
 }
 
 export default async function BrowsePage(props: BrowsePageProps) {
+    const tCommon = await getTranslations('common');
     const [params, searchParams] = await Promise.all([props.params, props.searchParams]);
 
     const {
@@ -117,7 +122,7 @@ export default async function BrowsePage(props: BrowsePageProps) {
             <Suspense fallback={
                 <div className="flex flex-col w-full min-h-full items-center justify-center">
                     <Loader2 className="w-4 h-4 animate-spin" />
-                    Loading...
+                    {tCommon('loading')}
                 </div>
             }>
                 {browseProps.pathType === 'blob' ? (

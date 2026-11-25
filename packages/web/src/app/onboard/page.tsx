@@ -18,6 +18,7 @@ import { BetweenHorizontalStart, Brain, GitBranchIcon, LockIcon } from "lucide-r
 import { hasEntitlement } from "@sourcebot/shared";
 import { env } from "@sourcebot/shared";
 import { GcpIapAuth } from "@/app/(app)/components/gcpIapAuth";
+import { getTranslations } from "next-intl/server";
 
 interface OnboardingProps {
     searchParams?: Promise<{ step?: string }>;
@@ -39,13 +40,14 @@ interface ResourceCard {
 }
 
 export default async function Onboarding(props: OnboardingProps) {
+    const t = await getTranslations('onboard');
     const searchParams = await props.searchParams;
     const providers = getIdentityProviderMetadata();
     const org = await __unsafePrisma.org.findUnique({ where: { id: SINGLE_TENANT_ORG_ID } });
     const session = await auth();
 
     if (!org) {
-        return <div>Error loading organization</div>;
+        return <div>{t('errorLoadingOrg')}</div>;
     }
 
     if (org && org.isOnboarded) {
@@ -83,29 +85,29 @@ export default async function Onboarding(props: OnboardingProps) {
     const resourceCards: ResourceCard[] = [
         {
             id: "code-host-connections",
-            title: "Code Host Connections",
-            description: "Learn how to index repos across NexusCode's supported platforms",
+            title: t('cardConnections'),
+            description: t('cardConnectionsDescription'),
             href: "https://docs.sourcebot.dev/docs/connections/overview",
             icon: <GitBranchIcon className="w-4 h-4" />,
         },
         {
             id: "language-models",
-            title: "Language Models",
-            description: "Learn how to configure your language model providers to start using Ask NexusCode",
+            title: t('cardModels'),
+            description: t('cardModelsDescription'),
             href: "https://docs.sourcebot.dev/docs/configuration/language-model-providers",
             icon: <Brain className="w-4 h-4" />,
         },
         {
             id: "authentication-system",
-            title: "Authentication System",
-            description: "Learn how to setup additional auth providers, invite members, and more",
+            title: t('cardAuth'),
+            description: t('cardAuthDescription'),
             href: "https://docs.sourcebot.dev/docs/configuration/auth",
             icon: <LockIcon className="w-4 h-4" />,
         },
         {
             id: "mcp-server",
-            title: "MCP Server",
-            description: "Learn how to setup NexusCode's MCP server to provide code context to your AI agents",
+            title: t('cardMcp'),
+            description: t('cardMcpDescription'),
             href: "https://docs.sourcebot.dev/docs/features/mcp-server",
             icon: <BetweenHorizontalStart className="w-4 h-4" />,
         }
@@ -114,30 +116,22 @@ export default async function Onboarding(props: OnboardingProps) {
     const steps: OnboardingStep[] = [
         {
             id: "welcome",
-            title: "Welcome to NexusCode",
-            subtitle: "This onboarding flow will guide you through creating your owner account and configuring your organization.",
+            title: t('welcomeTitle'),
+            subtitle: t('welcomeSubtitle'),
             component: (
                 <div className="space-y-6">
                     <Button asChild className="w-full">
-                        <Link href="/onboard?step=1">Get Started →</Link>
+                        <Link href="/onboard?step=1">{t('getStarted')}</Link>
                     </Button>
                 </div>
             ),
         },
         {
             id: "owner-signup",
-            title: "Create Owner Account",
+            title: t('ownerTitle'),
             subtitle: (
                 <>
-                    Use your preferred authentication method to create your owner account. To set up additional authentication providers, check out our{" "}
-                    <a
-                        href="https://docs.sourcebot.dev/docs/configuration/auth/overview"
-                        target="_blank"
-                        rel="noopener"
-                        className="underline text-primary hover:text-primary/80 transition-colors"
-                    >
-                        documentation
-                    </a>.
+                    {t.rich('ownerSubtitle', { link: (chunks) => <a href="https://docs.sourcebot.dev/docs/configuration/auth/overview" target="_blank" rel="noopener" className="underline text-primary hover:text-primary/80 transition-colors">{chunks}</a> })}
                 </>
             ),
             component: (
@@ -153,35 +147,27 @@ export default async function Onboarding(props: OnboardingProps) {
         },
         {
             id: "configure-org",
-            title: "Configure Access Settings",
+            title: t('accessTitle'),
             subtitle: (
                 <>
-                    Set up your organization&apos;s access settings.{" "}
-                    <a
-                        href="https://docs.sourcebot.dev/docs/configuration/auth/access-settings"
-                        target="_blank"
-                        rel="noopener"
-                        className="underline text-primary hover:text-primary/80 transition-colors"
-                    >
-                        Learn more
-                    </a>
+                    {t.rich('accessSubtitle', { link: (chunks) => <a href="https://docs.sourcebot.dev/docs/configuration/auth/access-settings" target="_blank" rel="noopener" className="underline text-primary hover:text-primary/80 transition-colors">{chunks}</a> })}
                 </>
             ),
             component: (
                 <div className="space-y-6">
                     <OrganizationAccessSettings />
                     <Button asChild className="w-full">
-                        <Link href="/onboard?step=3">Continue →</Link>
+                        <Link href="/onboard?step=3">{t('continue')}</Link>
                     </Button>
                 </div>
             ),
         },
         {
             id: "complete",
-            title: "You're All Set!",
+            title: t('doneTitle'),
             subtitle: (
                 <>
-                    Your NexusCode deployment is ready. Check out these resources to learn how to get the most out of NexusCode.
+                    {t('doneSubtitle')}
                     <div className="text-center space-y-4 mt-6">
                         <div className="w-16 h-16 mx-auto bg-primary rounded-full flex items-center justify-center">
                             <svg className="w-8 h-8 text-primary-foreground" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -358,7 +344,8 @@ export default async function Onboarding(props: OnboardingProps) {
     )
 }
 
-function NonOwnerOnboardingMessage() {
+async function NonOwnerOnboardingMessage() {
+    const t = await getTranslations('onboard');
     return (
         <div className="min-h-screen bg-background flex items-center justify-center p-6">
             <LogoutEscapeHatch className="absolute top-0 right-0 p-6" />
@@ -375,10 +362,10 @@ function NonOwnerOnboardingMessage() {
 
                             <div className="space-y-3">
                                 <h1 className="text-2xl font-semibold text-foreground">
-                                    Onboarding In Progress
+                                    {t('inProgressTitle')}
                                 </h1>
                                 <p className="text-muted-foreground text-base leading-relaxed">
-                                    Your NexusCode deployment is being configured by the organization owner.
+                                    {t('inProgressDescription')}
                                 </p>
                             </div>
 
@@ -391,10 +378,10 @@ function NonOwnerOnboardingMessage() {
                                     </div>
                                     <div className="text-left">
                                         <p className="text-sm font-medium text-foreground mb-1">
-                                            Owner Access Required
+                                            {t('ownerRequired')}
                                         </p>
                                         <p className="text-sm text-muted-foreground leading-relaxed">
-                                            Only the organization owner can complete the initial setup and configuration. Once onboarding is complete, you&apos;ll be able to access NexusCode.
+                                            {t('ownerRequiredDescription')}
                                         </p>
                                     </div>
                                 </div>
@@ -402,16 +389,7 @@ function NonOwnerOnboardingMessage() {
 
                             <div className="space-y-3">
                                 <div className="text-xs text-muted-foreground leading-relaxed">
-                                    Need help? Contact your organization owner or check out our{" "}
-                                    <a
-                                        href="https://docs.sourcebot.dev/docs/overview"
-                                        className="text-primary hover:text-primary/80 underline transition-colors"
-                                        target="_blank"
-                                        rel="noopener"
-                                    >
-                                        documentation
-                                    </a>
-                                    .
+                                    {t.rich('needHelp', { link: (chunks) => <a href="https://docs.sourcebot.dev/docs/overview" target="_blank" rel="noopener" className="text-primary hover:text-primary/80 underline transition-colors">{chunks}</a> })}
                                 </div>
                             </div>
                         </div>

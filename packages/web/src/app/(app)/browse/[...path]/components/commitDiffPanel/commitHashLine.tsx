@@ -5,6 +5,7 @@ import { useToast } from "@/components/hooks/use-toast";
 import Link from "next/link";
 import { Fragment, useCallback } from "react";
 import { getBrowsePath } from "../../../hooks/utils";
+import { useTranslations } from "next-intl";
 
 interface CommitHashLineProps {
     repoName: string;
@@ -13,14 +14,15 @@ interface CommitHashLineProps {
 }
 
 export const CommitHashLine = ({ repoName, commitHash, parents }: CommitHashLineProps) => {
+    const t = useTranslations('browse');
     const { toast } = useToast();
 
     const onCopyHash = useCallback(() => {
         navigator.clipboard.writeText(commitHash).then(() => {
-            toast({ description: "✅ Copied commit SHA to clipboard" });
+            toast({ description: t('copiedCommitSha') });
         });
         return true;
-    }, [commitHash, toast]);
+    }, [commitHash, toast, t]);
 
     return (
         <div className="text-xs font-mono text-muted-foreground flex flex-row items-center gap-1">

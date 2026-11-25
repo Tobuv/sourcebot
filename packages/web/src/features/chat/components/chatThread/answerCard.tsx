@@ -19,6 +19,7 @@ import { LangfuseWeb } from "langfuse";
 import { env } from "@sourcebot/shared/client";
 import isEqual from "fast-deep-equal/react";
 import { FileSource } from "../../types";
+import { useTranslations } from "next-intl";
 
 interface AnswerCardProps {
     answerText: string;
@@ -40,6 +41,7 @@ const AnswerCardComponent = forwardRef<HTMLDivElement, AnswerCardProps>(({
     traceId,
     sources,
 }, forwardedRef) => {
+    const t = useTranslations('chatThread');
     const markdownRendererRef = useRef<HTMLDivElement>(null);
     // eslint-disable-next-line react-hooks/refs -- ref.current is passed to a custom hook, not used directly in render output
     const { tocItems, activeId } = useExtractTOCItems({ target: markdownRendererRef.current });
@@ -59,11 +61,11 @@ const AnswerCardComponent = forwardRef<HTMLDivElement, AnswerCardProps>(({
         const markdownText = convertLLMOutputToPortableMarkdown(answerText, baseUrl, sources);
         navigator.clipboard.writeText(markdownText);
         toast({
-            description: "✅ Copied to clipboard",
+            description: t('copied'),
         });
         captureEvent('wa_chat_copy_answer_pressed', { chatId });
         return true;
-    }, [answerText, sources, chatId, captureEvent, toast]);
+    }, [answerText, sources, chatId, captureEvent, toast, t]);
 
     const onFeedback = useCallback(async (feedbackType: 'like' | 'dislike') => {
         setIsSubmittingFeedback(true);
@@ -76,12 +78,12 @@ const AnswerCardComponent = forwardRef<HTMLDivElement, AnswerCardProps>(({
 
         if (isServiceError(response)) {
             toast({
-                description: `❌ Failed to submit feedback: ${response.message}`,
+                description: t('feedbackFailed', { reason: response.message }),
                 variant: "destructive"
             });
         } else {
             toast({
-                description: `✅ Feedback submitted`,
+                description: t('feedbackSubmitted'),
             });
             setFeedback(feedbackType);
             captureEvent('wa_chat_feedback_submitted', {
@@ -98,7 +100,7 @@ const AnswerCardComponent = forwardRef<HTMLDivElement, AnswerCardProps>(({
         }
 
         setIsSubmittingFeedback(false);
-    }, [chatId, messageId, toast, captureEvent, traceId]);
+    }, [chatId, messageId, toast, captureEvent, traceId, t]);
 
     return (
         <div className="flex flex-row w-full relative scroll-mt-16">
@@ -112,7 +114,7 @@ const AnswerCardComponent = forwardRef<HTMLDivElement, AnswerCardProps>(({
             <div className="flex flex-col w-full bg-[#fcfcfc] dark:bg-[#0e1320] px-4 py-2 rounded-lg shadow-sm">
                 <div className="flex flex-col z-10 bg-inherit py-2 sticky top-0">
                     <div className="flex items-center justify-between mb-2">
-                        <p className="font-semibold text-muted-foreground">Answer</p>
+                        <p className="font-semibold text-muted-foreground">{t('answer')}</p>
                         <div className="flex items-center gap-2">
                             <Tooltip>
                                 <TooltipTrigger asChild>
@@ -124,7 +126,7 @@ const AnswerCardComponent = forwardRef<HTMLDivElement, AnswerCardProps>(({
                                 <TooltipContent
                                     side="bottom"
                                 >
-                                    Copy answer
+                                    {t('copyAnswer')}
                                 </TooltipContent>
                             </Tooltip>
                             {tocItems.length > 0 && (
@@ -144,7 +146,7 @@ const AnswerCardComponent = forwardRef<HTMLDivElement, AnswerCardProps>(({
                                     <TooltipContent
                                         side="bottom"
                                     >
-                                        Toggle table of contents
+                                        {t('toggleToc')}
                                     </TooltipContent>
                                 </Tooltip>
                             )}

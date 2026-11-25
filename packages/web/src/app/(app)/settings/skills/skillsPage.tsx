@@ -22,6 +22,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { DownloadIcon, EyeIcon, PencilIcon, Plus, SparklesIcon, Trash2Icon, UploadIcon } from "lucide-react";
 import { useCallback, useRef, useState } from "react";
 import { SkillEditorDialog, SkillEditorState } from "./skillEditorDialog";
+import { useTranslations } from "next-intl";
 
 const SKILLS_QUERY_KEY = ["chatSkills"];
 
@@ -36,6 +37,8 @@ const downloadSkill = (skill: SkillInfo) => {
 }
 
 export const SkillsPage = ({ isOwner }: { isOwner: boolean }) => {
+    const t = useTranslations('skills');
+    const tCommon = useTranslations('common');
     const { toast } = useToast();
     const queryClient = useQueryClient();
     const importInputRef = useRef<HTMLInputElement>(null);
@@ -63,7 +66,7 @@ export const SkillsPage = ({ isOwner }: { isOwner: boolean }) => {
         const fallbackName = file.name.replace(/(\.skill)?\.md$/i, '');
         const parsed = parseSkillMarkdown(await file.text(), fallbackName.toLowerCase() === 'skill' ? undefined : fallbackName);
         if ('error' in parsed) {
-            toast({ description: `❌ Could not import "${file.name}": ${parsed.error}`, variant: "destructive" });
+            toast({ description: t('importFailed', { file: file.name, reason: parsed.error }), variant: "destructive" });
             return;
         }
 
@@ -71,7 +74,7 @@ export const SkillsPage = ({ isOwner }: { isOwner: boolean }) => {
             mode: 'create',
             initialValues: { ...parsed, scope: 'PERSONAL', autoInvoke: true },
         });
-    }, [openEditor, toast]);
+    }, [openEditor, toast, t]);
 
     const onConfirmDelete = useCallback(async () => {
         if (!skillToDelete) {
@@ -82,11 +85,11 @@ export const SkillsPage = ({ isOwner }: { isOwner: boolean }) => {
         if (isServiceError(result)) {
             toast({ description: `❌ ${result.message}`, variant: "destructive" });
         } else {
-            toast({ description: `✅ Deleted skill /${skillToDelete.name}` });
+            toast({ description: t('deleted', { name: skillToDelete.name }) });
             queryClient.invalidateQueries({ queryKey: SKILLS_QUERY_KEY });
         }
         setSkillToDelete(null);
-    }, [skillToDelete, toast, queryClient]);
+    }, [skillToDelete, toast, queryClient, t]);
 
     const personalSkills = skills?.filter((skill) => skill.scope === 'PERSONAL') ?? [];
     const workspaceSkills = skills?.filter((skill) => skill.scope === 'WORKSPACE') ?? [];
@@ -95,9 +98,9 @@ export const SkillsPage = ({ isOwner }: { isOwner: boolean }) => {
         <div className="flex flex-col gap-6">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div>
-                    <h3 className="text-lg font-medium">Skills</h3>
+                    <h3 className="text-lg font-medium">{t('title')}</h3>
                     <p className="text-sm text-muted-foreground max-w-lg">
-                        Reusable instructions for Ask NexusCode. Type <code>/name</code> in the chat box to use a skill, or enable auto-invoke to let the agent load it when relevant.
+                        {t.rich('description', { code: (chunks) => <code>{chunks}</code> })}
                     </p>
                 </div>
                 <div className="flex gap-2 flex-shrink-0">
@@ -114,11 +117,11 @@ export const SkillsPage = ({ isOwner }: { isOwner: boolean }) => {
                     />
                     <Button variant="outline" onClick={() => importInputRef.current?.click()}>
                         <UploadIcon className="h-4 w-4 mr-2" />
-                        Import SKILL.md
+                        {t('import')}
                     </Button>
                     <Button onClick={() => openEditor({ mode: 'create' })}>
                         <Plus className="h-4 w-4 mr-2" />
-                        New skill
+                        {t('new')}
                     </Button>
                 </div>
             </div>
@@ -129,21 +132,21 @@ export const SkillsPage = ({ isOwner }: { isOwner: boolean }) => {
                     <Skeleton className="h-16 w-full" />
                 </div>
             ) : isError ? (
-                <p className="text-sm text-destructive">Failed to load skills.</p>
+                <p className="text-sm text-destructive">{t('loadFailed')}</p>
             ) : (
                 <>
                     <SkillSection
-                        title="My skills"
-                        description="Only visible to you."
-                        emptyText="You don't have any personal skills yet."
+                        title={t('personalTitle')}
+                        description={t('personalDescription')}
+                        emptyText={t('personalEmpty')}
                         skills={personalSkills}
                         onView={(skill) => openEditor({ mode: skill.canEdit ? 'edit' : 'view', skill })}
                         onDelete={setSkillToDelete}
                     />
                     <SkillSection
-                        title="Workspace skills"
-                        description={isOwner ? "Shared with every member of the workspace." : "Shared with every member of the workspace. Only owners can create or edit them."}
-                        emptyText="There are no workspace skills yet."
+                        title={t('workspaceTitle')}
+                        description={isOwner ? t('workspaceDescriptionOwner') : t('workspaceDescription')}
+                        emptyText={t('workspaceEmpty')}
                         skills={workspaceSkills}
                         onView={(skill) => openEditor({ mode: skill.canEdit ? 'edit' : 'view', skill })}
                         onDelete={setSkillToDelete}
@@ -169,16 +172,16 @@ export const SkillsPage = ({ isOwner }: { isOwner: boolean }) => {
             <AlertDialog open={skillToDelete !== null} onOpenChange={(open) => !open && setSkillToDelete(null)}>
                 <AlertDialogContent>
                     <AlertDialogHeader>
-                        <AlertDialogTitle>Delete skill /{skillToDelete?.name}?</AlertDialogTitle>
+                        <AlertDialogTitle>{t('deleteTitle', { name: skillToDelete?.name ?? '' })}</AlertDialogTitle>
                         <AlertDialogDescription>
                             {skillToDelete?.scope === 'WORKSPACE'
-                                ? 'This removes the skill for every member of the workspace. This cannot be undone.'
-                                : 'This cannot be undone.'}
+                                ? t('deleteWorkspace')
+                                : t('deletePersonal')}
                         </AlertDialogDescription>
                     </AlertDialogHeader>
                     <AlertDialogFooter>
-                        <AlertDialogCancel>Cancel</AlertDialogCancel>
-                        <AlertDialogAction onClick={onConfirmDelete}>Delete</AlertDialogAction>
+                        <AlertDialogCancel>{tCommon('cancel')}</AlertDialogCancel>
+                        <AlertDialogAction onClick={onConfirmDelete}>{tCommon('delete')}</AlertDialogAction>
                     </AlertDialogFooter>
                 </AlertDialogContent>
             </AlertDialog>
@@ -196,6 +199,7 @@ interface SkillSectionProps {
 }
 
 const SkillSection = ({ title, description, emptyText, skills, onView, onDelete }: SkillSectionProps) => {
+    const t = useTranslations('skills');
     return (
         <div className="flex flex-col gap-2">
             <div>
@@ -221,11 +225,11 @@ const SkillSection = ({ title, description, emptyText, skills, onView, onDelete 
                                         /{skill.name}
                                     </button>
                                     <Badge variant="secondary" className="text-[10px] px-1.5 py-0">
-                                        {skill.autoInvoke ? 'Auto + manual' : 'Manual only'}
+                                        {skill.autoInvoke ? t('autoAndManual') : t('manualOnly')}
                                     </Badge>
                                     {skill.isShadowed && (
                                         <Badge variant="outline" className="text-[10px] px-1.5 py-0">
-                                            Overridden by your personal skill
+                                            {t('overridden')}
                                         </Badge>
                                     )}
                                 </div>
@@ -248,7 +252,7 @@ const SkillSection = ({ title, description, emptyText, skills, onView, onDelete 
                                     variant="ghost"
                                     size="icon"
                                     className="h-7 w-7"
-                                    title="Export as SKILL.md"
+                                    title={t('export')}
                                     onClick={() => downloadSkill(skill)}
                                 >
                                     <DownloadIcon className="h-3.5 w-3.5" />

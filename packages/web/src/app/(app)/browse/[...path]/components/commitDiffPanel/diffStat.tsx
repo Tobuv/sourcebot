@@ -1,4 +1,5 @@
 import { FileDiff } from "@/features/git";
+import { useTranslations } from "next-intl";
 
 const TOTAL_SQUARES = 5;
 
@@ -58,6 +59,7 @@ interface DiffStatProps {
 }
 
 export const DiffStat = ({ additions, deletions }: DiffStatProps) => {
+    const t = useTranslations('browse');
     const total = additions + deletions;
 
     // Skip rendering when there are no line-level changes (e.g. pure renames).
@@ -73,7 +75,7 @@ export const DiffStat = ({ additions, deletions }: DiffStatProps) => {
     return (
         <div
             className="flex flex-row items-center gap-2 text-xs flex-shrink-0 font-mono"
-            title={`${additions} additions, ${deletions} deletions`}
+            title={t('additionsDeletions', { additions, deletions })}
         >
             {additions > 0 && (
                 <span className="text-green-700 dark:text-green-400">+{additions}</span>

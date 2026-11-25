@@ -16,11 +16,17 @@ import { useHotkeys } from "react-hotkeys-hook";
 import { useSyntaxGuide } from "./syntaxGuideProvider";
 import { CodeSnippet } from "@/app/components/codeSnippet";
 import { ExternalLinkIcon, RegexIcon } from "lucide-react";
+import { useTranslations } from "next-intl";
 
 const LINGUIST_LINK = "https://github.com/github-linguist/linguist/blob/main/lib/linguist/languages.yml";
 const CTAGS_LINK = "https://ctags.io/";
 
 export const SyntaxReferenceGuide = () => {
+    const t = useTranslations('syntaxGuide');
+    const rich = {
+    code: (chunks: React.ReactNode) => <CodeSnippet>{chunks}</CodeSnippet>,
+    b: (chunks: React.ReactNode) => <b>{chunks}</b>,
+    };
     const { isOpen, onOpenChanged } = useSyntaxGuide();
     const previousFocusedElement = useRef<HTMLElement | null>(null);
 
@@ -53,7 +59,7 @@ export const SyntaxReferenceGuide = () => {
     }, {
         enableOnFormTags: true,
         enableOnContentEditable: true,
-        description: "Open Syntax Reference Guide",
+        description: t('open'),
     });
 
     return (
@@ -65,40 +71,40 @@ export const SyntaxReferenceGuide = () => {
                 className="max-h-[80vh] max-w-[700px] overflow-scroll gap-2"
             >
                 <DialogHeader>
-                    <DialogTitle>Syntax Reference Guide <Link href="https://docs.sourcebot.dev/docs/features/search/syntax-reference"><ExternalLinkIcon className="inline w-4 h-4 ml-1 mb-1 text-muted-foreground cursor-pointer" /></Link></DialogTitle>
+                    <DialogTitle>{t('title')} <Link href="https://docs.sourcebot.dev/docs/features/search/syntax-reference"><ExternalLinkIcon className="inline w-4 h-4 ml-1 mb-1 text-muted-foreground cursor-pointer" /></Link></DialogTitle>
                     <DialogDescription className="text-sm text-foreground">
-                        Queries consist of space-separated search patterns that are matched against file contents. A file must have at least one match for each expression to be included. Queries can optionally contain search filters to further refine the search results.
+                        {t('intro')}
                     </DialogDescription>
                 </DialogHeader>
 
                 <div>
-                    <h3 className="text-lg font-semibold mt-4 mb-0">Keyword search (default)</h3>
+                    <h3 className="text-lg font-semibold mt-4 mb-0">{t('keyword.title')}</h3>
                     <p className="text-sm mb-2 mt-0">
-                        Keyword search matches search patterns exactly in file contents. Wrapping search patterns in <CodeSnippet>{`""`}</CodeSnippet> combines them as a single expression.
+                        {t.rich('keyword.intro', rich)}
                     </p>
                     <Table>
                         <TableHeader>
                             <TableRow>
-                                <TableHead className="py-2">Example</TableHead>
-                                <TableHead className="py-2">Explanation</TableHead>
+                                <TableHead className="py-2">{t('example')}</TableHead>
+                                <TableHead className="py-2">{t('explanation')}</TableHead>
                             </TableRow>
                         </TableHeader>
                         <TableBody>
                             <TableRow>
                                 <TableCell className="py-2"><CodeSnippet>foo</CodeSnippet></TableCell>
-                                <TableCell className="py-2">Match files containing the keyword <CodeSnippet>foo</CodeSnippet></TableCell>
+                                <TableCell className="py-2">{t.rich('keyword.single', rich)}</TableCell>
                             </TableRow>
                             <TableRow>
                                 <TableCell className="py-2"><CodeSnippet>foo bar</CodeSnippet></TableCell>
-                                <TableCell className="py-2">Match files containing both <CodeSnippet>foo</CodeSnippet> <b>and</b> <CodeSnippet>bar</CodeSnippet></TableCell>
+                                <TableCell className="py-2">{t.rich('keyword.both', rich)}</TableCell>
                             </TableRow>
                             <TableRow>
                                 <TableCell className="py-2"><CodeSnippet>{`"foo bar"`}</CodeSnippet></TableCell>
-                                <TableCell className="py-2">Match files containing the phrase <CodeSnippet>foo bar</CodeSnippet></TableCell>
+                                <TableCell className="py-2">{t.rich('keyword.phrase', rich)}</TableCell>
                             </TableRow>
                             <TableRow>
                                 <TableCell className="py-2"><CodeSnippet>{'"foo \\"bar\\""'}</CodeSnippet></TableCell>
-                                <TableCell className="py-2">Match files containing <CodeSnippet>foo &quot;bar&quot;</CodeSnippet> exactly (escaped quotes)</TableCell>
+                                <TableCell className="py-2">{t.rich('keyword.escaped', rich)}</TableCell>
                             </TableRow>
                         </TableBody>
                     </Table>
@@ -107,33 +113,33 @@ export const SyntaxReferenceGuide = () => {
                 <Separator className="my-4"/>
 
                 <div>
-                    <h3 className="text-lg font-semibold mt-4 mb-0">Regex search</h3>
+                    <h3 className="text-lg font-semibold mt-4 mb-0">{t('regex.title')}</h3>
                     <p className="text-sm mb-2 mt-0">
-                        Toggle the <RegexIcon className="inline w-4 h-4 align-middle mx-0.5 border rounded px-0.5 py-0.5" /> button to interpret search patterns as regular expressions.
+                        {t.rich('regex.intro', { icon: () => <RegexIcon className="inline w-4 h-4 align-middle mx-0.5 border rounded px-0.5 py-0.5" /> })}
                     </p>
                     <Table>
                         <TableHeader>
                             <TableRow>
-                                <TableHead className="py-2">Example</TableHead>
-                                <TableHead className="py-2">Explanation</TableHead>
+                                <TableHead className="py-2">{t('example')}</TableHead>
+                                <TableHead className="py-2">{t('explanation')}</TableHead>
                             </TableRow>
                         </TableHeader>
                         <TableBody>
                             <TableRow>
                                 <TableCell className="py-2"><CodeSnippet>foo</CodeSnippet></TableCell>
-                                <TableCell className="py-2">Match files with regex <CodeSnippet>/foo/</CodeSnippet></TableCell>
+                                <TableCell className="py-2">{t.rich('regex.simple', rich)}</TableCell>
                             </TableRow>
                             <TableRow>
                                 <TableCell className="py-2"><CodeSnippet>foo.*bar</CodeSnippet></TableCell>
-                                <TableCell className="py-2">Match files with regex <CodeSnippet>/foo.*bar/</CodeSnippet> (foo followed by any characters, then bar)</TableCell>
+                                <TableCell className="py-2">{t.rich('regex.wildcard', rich)}</TableCell>
                             </TableRow>
                             <TableRow>
                                 <TableCell className="py-2"><CodeSnippet>{`^function\\s+\\w+`}</CodeSnippet></TableCell>
-                                <TableCell className="py-2">Match files with regex <CodeSnippet>/^function\s+\w+/</CodeSnippet> (function at start of line, followed by whitespace and word characters)</TableCell>
+                                <TableCell className="py-2">{t.rich('regex.function', rich)}</TableCell>
                             </TableRow>
                             <TableRow>
                                 <TableCell className="py-2"><CodeSnippet>{`"foo bar"`}</CodeSnippet></TableCell>
-                                <TableCell className="py-2">Match files with regex <CodeSnippet>/foo bar/</CodeSnippet>. Quotes are not matched.</TableCell>
+                                <TableCell className="py-2">{t.rich('regex.quotes', rich)}</TableCell>
                             </TableRow>
                         </TableBody>
                     </Table>
@@ -142,37 +148,37 @@ export const SyntaxReferenceGuide = () => {
                 <Separator className="my-4"/>
 
                 <div>
-                    <h3 className="text-lg font-semibold mt-4 mb-0">Search filters</h3>
+                    <h3 className="text-lg font-semibold mt-4 mb-0">{t('filters.title')}</h3>
                     <p className="text-sm mb-2 mt-0">
-                        Search queries (keyword or regex) can include multiple search filters to further refine the search results. Some filters can be negated using the <CodeSnippet>-</CodeSnippet> prefix.
+                        {t.rich('filters.intro', rich)}
                     </p>
 
                     <Table>
                     <TableHeader>
                         <TableRow>
-                            <TableHead className="py-2">Prefix</TableHead>
-                            <TableHead className="py-2">Description</TableHead>
-                            <TableHead className="py-2 w-[175px]">Example</TableHead>
+                            <TableHead className="py-2">{t('prefix')}</TableHead>
+                            <TableHead className="py-2">{t('description')}</TableHead>
+                            <TableHead className="py-2 w-[175px]">{t('example')}</TableHead>
                         </TableRow>
                     </TableHeader>
                     <TableBody>
                         <TableRow>
                             <TableCell className="py-2"><CodeSnippet><Highlight>file:</Highlight></CodeSnippet></TableCell>
-                            <TableCell className="py-2">Filter results from filepaths that match the regex. By default all files are searched.</TableCell>
+                            <TableCell className="py-2">{t('filters.file')}</TableCell>
                             <TableCell className="py-2">
                                 <div className="flex flex-col gap-1">
                                     <CodeSnippet
-                                        title="Filter results to filepaths that match regex /README/"
+                                        title={t('filters.fileReadme')}
                                     >
                                         <Highlight>file:</Highlight>README
                                     </CodeSnippet>
                                     <CodeSnippet
-                                        title="Filter results to filepaths that match regex /my file/"
+                                        title={t('filters.fileMyFile')}
                                     >
                                         <Highlight>file:</Highlight>{`"my file"`}
                                     </CodeSnippet>
                                     <CodeSnippet
-                                        title="Ignore results from filepaths match regex /test\.ts$/"
+                                        title={t('filters.fileNegated')}
                                     >
                                         <Highlight>-file:</Highlight>test\.ts$
                                     </CodeSnippet>
@@ -181,16 +187,16 @@ export const SyntaxReferenceGuide = () => {
                         </TableRow>
                         <TableRow>
                             <TableCell className="py-2"><CodeSnippet><Highlight>repo:</Highlight></CodeSnippet></TableCell>
-                            <TableCell className="py-2">Filter results from repos that match the regex. By default all repos are searched.</TableCell>
+                            <TableCell className="py-2">{t('filters.repo')}</TableCell>
                             <TableCell className="py-2">
                                 <div className="flex flex-col gap-1">
                                     <CodeSnippet
-                                        title="Filter results to repos that match regex /linux/"
+                                        title={t('filters.repoLinux')}
                                     >
                                         <Highlight>repo:</Highlight>linux
                                     </CodeSnippet>
                                     <CodeSnippet
-                                        title="Ignore results from repos that match regex /^web\/.*/"
+                                        title={t('filters.repoNegated')}
                                     >
                                         <Highlight>-repo:</Highlight>^web/.*
                                     </CodeSnippet>
@@ -199,11 +205,11 @@ export const SyntaxReferenceGuide = () => {
                         </TableRow>
                         <TableRow>
                             <TableCell className="py-2"><CodeSnippet><Highlight>rev:</Highlight></CodeSnippet></TableCell>
-                            <TableCell className="py-2">Filter results from a specific branch or tag. By default <b>only</b> the default branch is searched.</TableCell>
+                            <TableCell className="py-2">{t.rich('filters.rev', rich)}</TableCell>
                             <TableCell className="py-2">
                                 <div className="flex flex-col gap-1">
                                     <CodeSnippet
-                                        title="Filter results to branches that match regex /beta/"
+                                        title={t('filters.revBeta')}
                                     >
                                         <Highlight>rev:</Highlight>beta
                                     </CodeSnippet>
@@ -212,16 +218,16 @@ export const SyntaxReferenceGuide = () => {
                         </TableRow>
                         <TableRow>
                             <TableCell className="py-2"><CodeSnippet><Highlight>lang:</Highlight></CodeSnippet></TableCell>
-                            <TableCell className="py-2">Filter results by language (as defined by <Link className="text-blue-500" href={LINGUIST_LINK}>linguist</Link>). By default all languages are searched.</TableCell>
+                            <TableCell className="py-2">{t.rich('filters.lang', { link: (chunks) => <Link className="text-blue-500" href={LINGUIST_LINK}>{chunks}</Link> })}</TableCell>
                             <TableCell className="py-2">
                                 <div className="flex flex-col gap-1">
                                     <CodeSnippet
-                                        title="Filter results to TypeScript files"
+                                        title={t('filters.langTypeScript')}
                                     >
                                         <Highlight>lang:</Highlight>TypeScript
                                     </CodeSnippet>
                                     <CodeSnippet
-                                        title="Ignore results from YAML files"
+                                        title={t('filters.langNegated')}
                                     >
                                         <Highlight>-lang:</Highlight>YAML
                                     </CodeSnippet>
@@ -230,11 +236,11 @@ export const SyntaxReferenceGuide = () => {
                         </TableRow>
                         <TableRow>
                             <TableCell className="py-2"><CodeSnippet><Highlight>sym:</Highlight></CodeSnippet></TableCell>
-                            <TableCell className="py-2">Match symbol definitions created by <Link className="text-blue-500" href={CTAGS_LINK}>universal ctags</Link> at index time.</TableCell>
+                            <TableCell className="py-2">{t.rich('filters.sym', { link: (chunks) => <Link className="text-blue-500" href={CTAGS_LINK}>{chunks}</Link> })}</TableCell>
                             <TableCell className="py-2">
                                 <div className="flex flex-col gap-1">
                                     <CodeSnippet
-                                        title="Filter results to symbols that match regex /\bmain\b/"
+                                        title={t('filters.symMain')}
                                     >
                                         <Highlight>sym:</Highlight>\bmain\b
                                     </CodeSnippet>
@@ -248,29 +254,29 @@ export const SyntaxReferenceGuide = () => {
                 <Separator className="my-4"/>
 
                 <div>
-                    <h3 className="text-lg font-semibold mt-4 mb-0">Boolean operators &amp; grouping</h3>
+                    <h3 className="text-lg font-semibold mt-4 mb-0">{t('boolean.title')}</h3>
                     <p className="text-sm mb-2 mt-0">
-                        By default, space-seperated expressions are and&apos;d together. Using the <CodeSnippet>or</CodeSnippet> keyword as well as parantheses <CodeSnippet>()</CodeSnippet> can be used to create more complex boolean logic. Parantheses can be negated using the <CodeSnippet>-</CodeSnippet> prefix.
+                        {t.rich('boolean.intro', rich)}
                     </p>
                     <Table>
                         <TableHeader>
                             <TableRow>
-                                <TableHead className="py-2">Example</TableHead>
-                                <TableHead className="py-2">Explanation</TableHead>
+                                <TableHead className="py-2">{t('example')}</TableHead>
+                                <TableHead className="py-2">{t('explanation')}</TableHead>
                             </TableRow>
                         </TableHeader>
                         <TableBody>
                             <TableRow>
                                 <TableCell className="py-2"><CodeSnippet>foo <Highlight>or</Highlight> bar</CodeSnippet></TableCell>
-                                <TableCell className="py-2">Match files containing <CodeSnippet>foo</CodeSnippet> <b>or</b> <CodeSnippet>bar</CodeSnippet></TableCell>
+                                <TableCell className="py-2">{t.rich('boolean.or', rich)}</TableCell>
                             </TableRow>
                             <TableRow>
                                 <TableCell className="py-2"><CodeSnippet>foo (bar <Highlight>or</Highlight> baz)</CodeSnippet></TableCell>
-                                <TableCell className="py-2">Match files containing <CodeSnippet>foo</CodeSnippet> <b>and</b> either <CodeSnippet>bar</CodeSnippet> <b>or</b> <CodeSnippet>baz</CodeSnippet>.</TableCell>
+                                <TableCell className="py-2">{t.rich('boolean.group', rich)}</TableCell>
                             </TableRow>
                             <TableRow>
                                 <TableCell className="py-2"><CodeSnippet>-(foo) bar</CodeSnippet></TableCell>
-                                <TableCell className="py-2">Match files containing <CodeSnippet>bar</CodeSnippet> <b>and not</b> <CodeSnippet>foo</CodeSnippet>.</TableCell>
+                                <TableCell className="py-2">{t.rich('boolean.not', rich)}</TableCell>
                             </TableRow>
                         </TableBody>
                     </Table>

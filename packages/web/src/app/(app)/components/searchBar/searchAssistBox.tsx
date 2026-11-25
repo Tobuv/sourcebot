@@ -11,14 +11,11 @@ import { cn } from "@/lib/utils";
 import { Loader2, WandSparkles, Info } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import Link from "next/link";
+import { useTranslations } from "next-intl";
 
 const SEARCH_ASSIST_DOCS_URL = "https://docs.sourcebot.dev/docs/features/search/ai-search-assist";
 
-const EXAMPLES = [
-    "Find console.log statements",
-    "Find todo comments",
-    "Find hardcoded API keys or secrets",
-];
+const EXAMPLE_KEYS = ['consoleLog', 'todo', 'secrets'] as const;
 
 interface SearchAssistBoxProps {
     isEnabled: boolean;
@@ -39,6 +36,8 @@ export const SearchAssistBox = ({
     const [isLoading, setIsLoading] = useState(false);
     const { toast } = useToast();
     const captureEvent = useCaptureEvent();
+    const t = useTranslations('searchAssist');
+    const tCommon = useTranslations('common');
 
     const translateQuery = useCallback(async () => {
         if (!query.trim() || isLoading) {
@@ -49,7 +48,7 @@ export const SearchAssistBox = ({
         try {
             const result = await translateSearchQuery({ prompt: query });
             if (isServiceError(result)) {
-                toast({ title: "Failed to generate query", description: result.message ?? "An unexpected error occurred.", variant: "destructive" });
+                toast({ title: t('failed'), description: result.message ?? t('unexpectedError'), variant: "destructive" });
                 captureEvent('wa_search_assist_generate_failed', {});
                 return;
             }
@@ -57,12 +56,12 @@ export const SearchAssistBox = ({
             captureEvent('wa_search_assist_query_generated', {});
             setQuery("");
         } catch {
-            toast({ title: "Failed to generate query", description: "An unexpected error occurred.", variant: "destructive" });
+            toast({ title: t('failed'), description: t('unexpectedError'), variant: "destructive" });
             captureEvent('wa_search_assist_generate_failed', {});
         } finally {
             setIsLoading(false);
         }
-    }, [query, isLoading, toast, onQueryGenerated, captureEvent]);
+    }, [query, isLoading, toast, onQueryGenerated, captureEvent, t]);
 
     const onExampleClicked = useCallback((example: string) => {
         setQuery(example);
@@ -89,20 +88,20 @@ export const SearchAssistBox = ({
             }}
         >
             <div className="flex flex-row items-center gap-1.5 mb-2">
-                <p className="text-muted-foreground text-sm">Generate a query</p>
+                <p className="text-muted-foreground text-sm">{t('title')}</p>
                 <Tooltip>
                     <TooltipTrigger asChild>
                         <Info className="w-3.5 h-3.5 text-muted-foreground cursor-pointer" />
                     </TooltipTrigger>
                     <TooltipContent side="right" className="max-w-[260px] flex flex-col gap-2 p-3">
-                        <p className="text-sm">Describe what you&apos;re looking for in natural language and AI will generate a search query for you.</p>
+                        <p className="text-sm">{t('description')}</p>
                         <Link
                             href={SEARCH_ASSIST_DOCS_URL}
                             target="_blank"
                             rel="noopener noreferrer"
                             className="text-sm text-blue-500 hover:underline"
                         >
-                            Learn more
+                            {tCommon('learnMore')}
                         </Link>
                     </TooltipContent>
                 </Tooltip>
@@ -110,7 +109,7 @@ export const SearchAssistBox = ({
             <div className="flex flex-row gap-2 items-center">
                 <div className="relative flex-1">
                     <Input
-                        placeholder="Describe what you're looking for..."
+                        placeholder={t('placeholder')}
                         ref={inputRef}
                         value={query}
                         onChange={(e) => setQuery(e.target.value)}
@@ -140,11 +139,11 @@ export const SearchAssistBox = ({
                     ) : (
                         <WandSparkles className="w-4 h-4" />
                     )}
-                    Generate
+                    {t('generate')}
                 </Button>
             </div>
             <div className="flex flex-wrap gap-1.5 mt-2">
-                {EXAMPLES.map((example) => (
+                {EXAMPLE_KEYS.map((key) => t(`examples.${key}`)).map((example) => (
                     <button
                         key={example}
                         onClick={() => onExampleClicked(example)}

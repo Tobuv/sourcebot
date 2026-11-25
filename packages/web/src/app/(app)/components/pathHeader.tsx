@@ -16,6 +16,7 @@ import { VscodeFileIcon } from "@/app/components/vscodeFileIcon";
 import { CopyIconButton } from "./copyIconButton";
 import Link from "next/link";
 import { CodeHostType } from "@sourcebot/db";
+import { useTranslations } from "next-intl";
 
 interface FileHeaderProps {
     path: string;
@@ -62,6 +63,8 @@ export const PathHeader = ({
     isFileIconVisible = true,
     repoNameClassName,
 }: FileHeaderProps) => {
+    const t = useTranslations('shared');
+    const tCommon = useTranslations('common');
     const info = getCodeHostInfoForRepo({
         name: repo.name,
         codeHostType: repo.codeHostType,
@@ -178,9 +181,9 @@ export const PathHeader = ({
 
     const onCopyPath = useCallback(() => {
         navigator.clipboard.writeText(path);
-        toast({ description: "✅ Copied to clipboard" });
+        toast({ description: tCommon('copiedToClipboard') });
         return true;
-    }, [path, toast]);
+    }, [path, toast, tCommon]);
 
     const renderSegmentWithHighlight = (segment: BreadcrumbSegment) => {
         if (!segment.highlightRange) {
@@ -257,7 +260,7 @@ export const PathHeader = ({
                                 <DropdownMenuTrigger asChild>
                                     <button
                                         className="font-mono text-sm cursor-pointer hover:underline p-1 rounded transition-colors"
-                                        aria-label="Show hidden path segments"
+                                        aria-label={t('showHiddenPathSegments')}
                                     >
                                         <MoreHorizontal className="h-4 w-4" />
                                     </button>

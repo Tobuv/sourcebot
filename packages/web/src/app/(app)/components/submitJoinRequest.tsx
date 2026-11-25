@@ -1,8 +1,10 @@
 import { LogoutEscapeHatch } from "@/app/components/logoutEscapeHatch"
 import { SourcebotLogo } from "@/app/components/sourcebotLogo"
 import { SubmitAccountRequestButton } from "./submitAccountRequestButton"
+import { getTranslations } from "next-intl/server";
 
 export const SubmitJoinRequest = async () => {
+    const t = await getTranslations('shared');
     return (
         <div className="min-h-screen bg-[var(--background)] flex items-center justify-center p-6">
             <LogoutEscapeHatch className="absolute top-0 right-0 p-6" />
@@ -23,10 +25,10 @@ export const SubmitJoinRequest = async () => {
                         
                         <div className="space-y-2">
                             <h1 className="text-2xl font-semibold text-[var(--foreground)]">
-                                Request Access
+                                {t('requestAccess')}
                             </h1>
                             <p className="text-[var(--muted-foreground)] text-base">
-                                Submit a request to join this organization
+                                {t('requestAccessDescription')}
                             </p>
                         </div>
                     </div>

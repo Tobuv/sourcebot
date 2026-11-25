@@ -4,6 +4,7 @@ import { ConsentScreen } from './components/consentScreen';
 import { __unsafePrisma } from '@/prisma';
 import { hasEntitlement } from '@sourcebot/shared';
 import { redirect } from 'next/navigation';
+import { getTranslations } from "next-intl/server";
 
 export const dynamic = 'force-dynamic';
 
@@ -20,8 +21,9 @@ interface AuthorizePageProps {
 }
 
 export default async function AuthorizePage({ searchParams }: AuthorizePageProps) {
+    const t = await getTranslations('oauth');
     if (!hasEntitlement('oauth')) {
-        return <ErrorPage message="OAuth authorization is not available on this plan." />;
+        return <ErrorPage message={t('notAvailable')} />;
     }
 
     const params = await searchParams;
@@ -36,25 +38,25 @@ export default async function AuthorizePage({ searchParams }: AuthorizePageProps
     // Validate required parameters. Per spec, do NOT redirect on client errors —
     // show an error page instead to avoid open redirect vulnerabilities.
     if (!client_id || !redirect_uri || !code_challenge || !response_type) {
-        return <ErrorPage message="Missing required OAuth parameters." />;
+        return <ErrorPage message={t('missingParams')} />;
     }
 
     if (response_type !== 'code') {
-        return <ErrorPage message={`Unsupported response_type: ${response_type}. Only "code" is supported.`} />;
+        return <ErrorPage message={t('unsupportedResponseType', { value: String(response_type) })} />;
     }
 
     if (code_challenge_method && code_challenge_method !== 'S256') {
-        return <ErrorPage message={`Unsupported code_challenge_method: ${code_challenge_method}. Only "S256" is supported.`} />;
+        return <ErrorPage message={t('unsupportedChallenge', { value: String(code_challenge_method) })} />;
     }
 
     const client = await __unsafePrisma.oAuthClient.findUnique({ where: { id: client_id } });
 
     if (!client) {
-        return <ErrorPage message="Unknown client_id. The application has not been registered." />;
+        return <ErrorPage message={t('unknownClient')} />;
     }
 
     if (!client.redirectUris.includes(redirect_uri)) {
-        return <ErrorPage message="redirect_uri does not match the registered redirect URIs for this client." />;
+        return <ErrorPage message={t('redirectMismatch')} />;
     }
 
     // If the user is not logged in, redirect to login with this page as the callback.
@@ -81,12 +83,13 @@ export default async function AuthorizePage({ searchParams }: AuthorizePageProps
     );
 }
 
-function ErrorPage({ message }: { message: string }) {
+async function ErrorPage({ message }: { message: string }) {
+    const t = await getTranslations('oauth');
     return (
         <div className="relative min-h-screen flex items-center justify-center bg-background">
             <LogoutEscapeHatch className="absolute top-0 right-0 p-6" />
             <div className="w-full max-w-md rounded-lg border border-border bg-card p-8 shadow-sm text-center">
-                <h1 className="text-xl font-semibold text-foreground mb-2">Authorization Error</h1>
+                <h1 className="text-xl font-semibold text-foreground mb-2">{t('errorTitle')}</h1>
                 <p className="text-sm text-muted-foreground">{message}</p>
             </div>
         </div>

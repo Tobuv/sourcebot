@@ -29,6 +29,7 @@ import { DisplayDate } from "../../components/DisplayDate"
 import { LoadingButton } from "@/components/ui/loading-button"
 import { indexRepo } from "@/features/workerApi/actions"
 import { isServiceError } from "@/lib/utils"
+import { useTranslations } from "next-intl";
 
 // @see: https://v0.app/chat/repo-indexing-status-uhjdDim8OUS
 
@@ -54,14 +55,8 @@ const statusBadgeVariants = cva("", {
 })
 
 const getStatusBadge = (status: RepoIndexingJob["status"]) => {
-    const labels = {
-        PENDING: "Pending",
-        IN_PROGRESS: "In Progress",
-        COMPLETED: "Completed",
-        FAILED: "Failed",
-    }
 
-    return <Badge className={statusBadgeVariants({ status })}>{labels[status]}</Badge>
+    return <Badge className={statusBadgeVariants({ status })}><StatusLabel status={status} /></Badge>
 }
 
 const getTypeBadge = (type: RepoIndexingJob["type"]) => {
@@ -83,7 +78,7 @@ const getDuration = (start: Date, end: Date | null) => {
 export const columns: ColumnDef<RepoIndexingJob>[] = [
     {
         accessorKey: "type",
-        header: "Type",
+        header: () => <Label id="colType" />,
         cell: ({ row }) => getTypeBadge(row.getValue("type")),
         filterFn: (row, id, value) => {
             return value.includes(row.getValue(id))
@@ -91,7 +86,7 @@ export const columns: ColumnDef<RepoIndexingJob>[] = [
     },
     {
         accessorKey: "status",
-        header: "Status",
+        header: () => <SharedLabel id="colStatus" />,
         cell: ({ row }) => {
             const job = row.original
             return (
@@ -127,7 +122,7 @@ export const columns: ColumnDef<RepoIndexingJob>[] = [
         header: ({ column }) => {
             return (
                 <Button variant="ghost" onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}>
-                    Started
+                    <SharedLabel id="colStarted" />
                     <ArrowUpDown className="ml-2 h-4 w-4" />
                 </Button>
             )
@@ -139,7 +134,7 @@ export const columns: ColumnDef<RepoIndexingJob>[] = [
         header: ({ column }) => {
             return (
                 <Button variant="ghost" onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}>
-                    Completed
+                    <SharedLabel id="colCompleted" />
                     <ArrowUpDown className="ml-2 h-4 w-4" />
                 </Button>
             )
@@ -155,7 +150,7 @@ export const columns: ColumnDef<RepoIndexingJob>[] = [
     },
     {
         id: "duration",
-        header: "Duration",
+        header: () => <SharedLabel id="colDuration" />,
         cell: ({ row }) => {
             const job = row.original
             return getDuration(job.createdAt, job.completedAt)
@@ -163,7 +158,7 @@ export const columns: ColumnDef<RepoIndexingJob>[] = [
     },
     {
         accessorKey: "id",
-        header: "Job ID",
+        header: () => <SharedLabel id="colJobId" />,
         cell: ({ row }) => {
             const id = row.getValue("id") as string
             return (
@@ -188,6 +183,9 @@ export const RepoJobsTable = ({
     repoId: number,
     isIndexButtonVisible: boolean,
 }) => {
+    const t = useTranslations('repos');
+    const tConn = useTranslations('connections');
+    const tCommon = useTranslations('common');
     const [sorting, setSorting] = React.useState<SortingState>([{ id: "createdAt", desc: true }])
     const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([])
     const [columnVisibility, setColumnVisibility] = React.useState<VisibilityState>({})
@@ -202,17 +200,17 @@ export const RepoJobsTable = ({
         if (!isServiceError(response)) {
             const { jobId } = response;
             toast({
-                description: `✅ Repository sync triggered successfully. Job ID: ${jobId}`,
+                description: t('syncTriggered', { jobId }),
             })
             router.refresh();
         } else {
             toast({
-                description: `❌ Failed to index repository. ${response.message}`,
+                description: t('indexFailed', { reason: response.message }),
             });
         }
 
         setIsIndexSubmitting(false);
-    }, [repoId, router, toast]);
+    }, [repoId, router, toast, t]);
 
     const table = useReactTable({
         data,
@@ -253,14 +251,14 @@ export const RepoJobsTable = ({
                     onValueChange={(value) => table.getColumn("status")?.setFilterValue(value === "all" ? "" : value)}
                 >
                     <SelectTrigger className="w-[180px]">
-                        <SelectValue placeholder="Filter by status" />
+                        <SelectValue placeholder={tConn('filterByStatus')} />
                     </SelectTrigger>
                     <SelectContent>
-                        <SelectItem value="all">Filter by status</SelectItem>
-                        <SelectItem value="COMPLETED">Completed ({numCompleted})</SelectItem>
-                        <SelectItem value="IN_PROGRESS">In progress ({numInProgress})</SelectItem>
-                        <SelectItem value="PENDING">Pending ({numPending})</SelectItem>
-                        <SelectItem value="FAILED">Failed ({numFailed})</SelectItem>
+                        <SelectItem value="all">{tConn('filterByStatus')}</SelectItem>
+                        <SelectItem value="COMPLETED">{tConn('filterCompleted', { count: numCompleted })}</SelectItem>
+                        <SelectItem value="IN_PROGRESS">{tConn('filterInProgress', { count: numInProgress })}</SelectItem>
+                        <SelectItem value="PENDING">{tConn('filterPending', { count: numPending })}</SelectItem>
+                        <SelectItem value="FAILED">{tConn('filterFailed', { count: numFailed })}</SelectItem>
                     </SelectContent>
                 </Select>
 
@@ -269,12 +267,12 @@ export const RepoJobsTable = ({
                     onValueChange={(value) => table.getColumn("type")?.setFilterValue(value === "all" ? "" : value)}
                 >
                     <SelectTrigger className="w-[180px]">
-                        <SelectValue placeholder="Filter by type" />
+                        <SelectValue placeholder={t('filterByType')} />
                     </SelectTrigger>
                     <SelectContent>
-                        <SelectItem value="all">All types</SelectItem>
-                        <SelectItem value="INDEX">Index</SelectItem>
-                        <SelectItem value="CLEANUP">Cleanup</SelectItem>
+                        <SelectItem value="all">{t('allTypes')}</SelectItem>
+                        <SelectItem value="INDEX">{t('typeIndex')}</SelectItem>
+                        <SelectItem value="CLEANUP">{t('typeCleanup')}</SelectItem>
                     </SelectContent>
                 </Select>
 
@@ -284,12 +282,12 @@ export const RepoJobsTable = ({
                         onClick={() => {
                             router.refresh();
                             toast({
-                                description: "Page refreshed",
+                                description: tCommon('pageRefreshed'),
                             });
                         }}
                     >
                         <RefreshCwIcon className="w-3 h-3" />
-                        Refresh
+                        {tConn('refresh')}
                     </Button>
 
                     {isIndexButtonVisible && (
@@ -299,7 +297,7 @@ export const RepoJobsTable = ({
                             variant="outline"
                         >
                             <PlusCircleIcon className="w-3 h-3" />
-                            Trigger sync
+                            {t('triggerSync')}
                         </LoadingButton>
                     )}
                 </div>
@@ -332,7 +330,7 @@ export const RepoJobsTable = ({
                         ) : (
                             <TableRow>
                                 <TableCell colSpan={columns.length} className="h-24 text-center">
-                                    No indexing jobs found.
+                                    {t('noJobs')}
                                 </TableCell>
                             </TableRow>
                         )}
@@ -342,7 +340,7 @@ export const RepoJobsTable = ({
 
             <div className="flex items-center justify-end space-x-2 py-4">
                 <div className="flex-1 text-sm text-muted-foreground">
-                    {table.getFilteredRowModel().rows.length} job(s) total
+                    {tCommon('jobsTotal', { count: table.getFilteredRowModel().rows.length })}
                 </div>
                 <div className="space-x-2">
                     <Button
@@ -351,13 +349,32 @@ export const RepoJobsTable = ({
                         onClick={() => table.previousPage()}
                         disabled={!table.getCanPreviousPage()}
                     >
-                        Previous
+                        {tConn('previous')}
                     </Button>
                     <Button variant="outline" size="sm" onClick={() => table.nextPage()} disabled={!table.getCanNextPage()}>
-                        Next
+                        {tConn('next')}
                     </Button>
                 </div>
             </div>
         </div>
     )
+}
+
+type RepoLabelKey = 'colRepository' | 'colRevision' | 'colType' | 'colSyncedCommit' | 'firstIndex' | 'revisionNotIndexed';
+type ConnectionLabelKey = 'colStatus' | 'colLatestStatus' | 'colLastSynced' | 'colStarted' | 'colCompleted' | 'colDuration' | 'colJobId';
+
+/** Text rendered from column definitions, translated to the current locale. */
+const Label = ({ id }: { id: RepoLabelKey }) => {
+    const t = useTranslations('repos');
+    return <>{t(id)}</>;
+}
+
+const SharedLabel = ({ id }: { id: ConnectionLabelKey }) => {
+    const t = useTranslations('connections');
+    return <>{t(id)}</>;
+}
+
+const StatusLabel = ({ status }: { status: 'PENDING' | 'IN_PROGRESS' | 'COMPLETED' | 'FAILED' }) => {
+    const t = useTranslations('connections');
+    return <>{t(`status.${status}`)}</>;
 }

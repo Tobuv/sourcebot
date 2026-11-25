@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { LoadingButton } from "@/components/ui/loading-button";
 import { useCallback, useState } from "react";
+import { useTranslations } from "next-intl";
 
 interface DeleteChatDialogProps {
     isOpen: boolean;
@@ -12,6 +13,8 @@ interface DeleteChatDialogProps {
 }
 
 export const DeleteChatDialog = ({ isOpen, onOpenChange, onDelete }: DeleteChatDialogProps) => {
+    const t = useTranslations('chat');
+    const tCommon = useTranslations('common');
     const [isLoading, setIsLoading] = useState(false);
 
     const handleDelete = useCallback(async () => {
@@ -39,9 +42,9 @@ export const DeleteChatDialog = ({ isOpen, onOpenChange, onDelete }: DeleteChatD
         >
             <DialogContent>
                 <DialogHeader>
-                    <DialogTitle>Delete chat?</DialogTitle>
+                    <DialogTitle>{t('deleteDialogTitle')}</DialogTitle>
                     <DialogDescription>
-                        The chat will be deleted and removed from your chat history. This action cannot be undone.
+                        {t('deleteDialogDescription')}
                     </DialogDescription>
                 </DialogHeader>
                 <DialogFooter>
@@ -53,14 +56,14 @@ export const DeleteChatDialog = ({ isOpen, onOpenChange, onDelete }: DeleteChatD
                             onOpenChange(false);
                         }}
                     >
-                        Cancel
+                        {tCommon('cancel')}
                     </Button>
                     <LoadingButton
                         variant="destructive"
                         loading={isLoading}
                         onClick={handleDelete}
                     >
-                        Delete
+                        {t('delete')}
                     </LoadingButton>
                 </DialogFooter>
             </DialogContent>

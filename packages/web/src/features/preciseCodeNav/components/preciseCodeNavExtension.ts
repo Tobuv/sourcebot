@@ -6,7 +6,17 @@ import { Decoration, DecorationSet, EditorView, hoverTooltip, Tooltip, ViewPlugi
 import { getPreciseHover } from "../client";
 import { PreciseHoverResponse, SymbolPosition } from "../types";
 
+export type PreciseCodeNavLabels = {
+    local: string;
+    precise: string;
+    preciseTitle: string;
+    goToDefinition: string;
+    findReferences: string;
+};
+
 export type PreciseCodeNavHandlers = {
+    /** Translated text shown in the hover tooltip. */
+    labels: PreciseCodeNavLabels;
     onGoToDefinition: (position: SymbolPosition, displayName: string) => void;
     onFindReferences: (position: SymbolPosition, displayName: string) => void;
 };
@@ -77,6 +87,7 @@ const createTooltipDom = (
     position: SymbolPosition,
     handlers: { current: PreciseCodeNavHandlers },
 ) => {
+    const labels = handlers.current.labels;
     const displayName = getDisplayName(view, hover);
 
     const dom = document.createElement('div');
@@ -87,7 +98,7 @@ const createTooltipDom = (
     if (hover.kind || hover.isLocal) {
         const kind = document.createElement('span');
         kind.className = 'text-xs px-1.5 py-0.5 rounded border border-border text-muted-foreground';
-        kind.textContent = hover.isLocal ? 'Local' : hover.kind!;
+        kind.textContent = hover.isLocal ? labels.local : hover.kind!;
         header.appendChild(kind);
     }
     const name = document.createElement('span');
@@ -96,8 +107,8 @@ const createTooltipDom = (
     header.appendChild(name);
     const precise = document.createElement('span');
     precise.className = 'ml-auto text-xs text-muted-foreground';
-    precise.textContent = 'Precise';
-    precise.title = 'Resolved using a precise code intelligence (SCIP) index';
+    precise.textContent = labels.precise;
+    precise.title = labels.preciseTitle;
     header.appendChild(precise);
     dom.appendChild(header);
 
@@ -122,8 +133,8 @@ const createTooltipDom = (
         });
         return button;
     }
-    actions.appendChild(makeButton('Go to definition', () => handlers.current.onGoToDefinition(position, displayName)));
-    actions.appendChild(makeButton('Find references', () => handlers.current.onFindReferences(position, displayName)));
+    actions.appendChild(makeButton(labels.goToDefinition, () => handlers.current.onGoToDefinition(position, displayName)));
+    actions.appendChild(makeButton(labels.findReferences, () => handlers.current.onFindReferences(position, displayName)));
     dom.appendChild(actions);
 
     if (hover.documentation) {

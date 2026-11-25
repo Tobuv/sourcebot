@@ -9,6 +9,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
+import { useTranslations } from "next-intl";
 
 interface RenameChatDialogProps {
     isOpen: boolean;
@@ -18,6 +19,8 @@ interface RenameChatDialogProps {
 }
 
 export const RenameChatDialog = ({ isOpen, onOpenChange, onRename, currentName }: RenameChatDialogProps) => {
+    const t = useTranslations('chat');
+    const tCommon = useTranslations('common');
     const [isLoading, setIsLoading] = useState(false);
 
     const formSchema = z.object({
@@ -63,9 +66,9 @@ export const RenameChatDialog = ({ isOpen, onOpenChange, onRename, currentName }
         >
             <DialogContent>
                 <DialogHeader>
-                    <DialogTitle>Rename Chat</DialogTitle>
+                    <DialogTitle>{t('renameDialogTitle')}</DialogTitle>
                     <DialogDescription className="sr-only">
-                        {`Rename "${currentName ?? 'untitled chat'}" to a new name.`}
+                        {t('renameDialogDescription', { name: currentName ?? t('untitled') })}
                     </DialogDescription>
                 </DialogHeader>
                 <Form
@@ -85,11 +88,11 @@ export const RenameChatDialog = ({ isOpen, onOpenChange, onRename, currentName }
                                 <FormItem
                                     className="flex flex-col gap-2"
                                 >
-                                    <FormLabel className="font-normal">New chat title</FormLabel>
+                                    <FormLabel className="font-normal">{t('newChatTitle')}</FormLabel>
                                     <FormControl>
                                         <Input
                                             {...field}
-                                            placeholder="Enter chat name"
+                                            placeholder={t('enterChatName')}
                                             disabled={isLoading}
                                         />
                                     </FormControl>
@@ -108,7 +111,7 @@ export const RenameChatDialog = ({ isOpen, onOpenChange, onRename, currentName }
                             onOpenChange(false);
                         }}
                     >
-                        Cancel
+                        {tCommon('cancel')}
                     </Button>
                     <LoadingButton
                         loading={isLoading}
@@ -116,7 +119,7 @@ export const RenameChatDialog = ({ isOpen, onOpenChange, onRename, currentName }
                             form.handleSubmit(onSubmit)();
                         }}
                     >
-                        Rename
+                        {t('rename')}
                     </LoadingButton>
                 </DialogFooter>
             </DialogContent>

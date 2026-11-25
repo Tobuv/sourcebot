@@ -12,6 +12,7 @@ import { newsData } from "@/lib/newsData"
 import { env, SOURCEBOT_VERSION } from "@sourcebot/shared/client"
 import Link from "next/link"
 import { Separator } from "@/components/ui/separator"
+import { useTranslations } from "next-intl";
 
 interface WhatsNewProps {
   newsItems?: NewsItem[]
@@ -52,6 +53,7 @@ const setReadItems = (readItems: string[]) => {
 }
 
 export default function WhatsNewIndicator({ newsItems = newsData, autoMarkAsRead = true }: WhatsNewProps) {
+  const t = useTranslations('shared');
   const [isOpen, setIsOpen] = useState(false)
   const [readItems, setReadItemsState] = useState<string[]>([])
   const [isInitialized, setIsInitialized] = useState(false)
@@ -104,7 +106,7 @@ export default function WhatsNewIndicator({ newsItems = newsData, autoMarkAsRead
           variant="ghost"
           size="icon"
           className="relative h-9 w-9 rounded-full hover:bg-muted"
-          aria-label={`What's new${unreadCount > 0 ? ` (${unreadCount} unread)` : ""}`}
+          aria-label={t('whatsNewAriaLabel', { unread: unreadCount })}
         >
           <HelpCircle className="h-4 w-4" />
           {isInitialized && unreadCount > 0 && (
@@ -113,7 +115,7 @@ export default function WhatsNewIndicator({ newsItems = newsData, autoMarkAsRead
               className="absolute -top-1 -right-1 h-5 w-5 p-0 text-[10px] flex items-center justify-center"
             >
               {unreadCount > 9 ? "9+" : unreadCount}
-              <span className="sr-only">{unreadCount} unread updates</span>
+              <span className="sr-only">{t('unreadUpdates', { count: unreadCount })}</span>
             </Badge>
           )}
         </Button>
@@ -122,14 +124,14 @@ export default function WhatsNewIndicator({ newsItems = newsData, autoMarkAsRead
         <div className="border-b p-4">
           <div className="flex items-center justify-between">
             <div>
-              <h3 className="font-semibold text-sm">{"What's New"}</h3>
+              <h3 className="font-semibold text-sm">{t('whatsNew')}</h3>
               <p className="text-xs text-muted-foreground mt-1">
-                {unreadCount > 0 ? `${unreadCount} unread update${unreadCount === 1 ? "" : "s"}` : "All caught up!"}
+                {unreadCount > 0 ? t('unreadUpdates', { count: unreadCount }) : t('allCaughtUp')}
               </p>
             </div>
             {unreadCount > 0 && (
               <Button variant="ghost" size="sm" onClick={markAllAsRead} className="text-xs h-7">
-                Mark all read
+                {t('markAllRead')}
               </Button>
             )}
           </div>
@@ -137,7 +139,7 @@ export default function WhatsNewIndicator({ newsItems = newsData, autoMarkAsRead
         </div>
         <div className="max-h-[32rem] overflow-y-auto scrollbar-thin scrollbar-thumb-muted-foreground/20 scrollbar-track-transparent">
           {newsItemsWithReadState.length === 0 ? (
-            <div className="p-4 text-center text-sm text-muted-foreground">No recent updates</div>
+            <div className="p-4 text-center text-sm text-muted-foreground">{t('noRecentUpdates')}</div>
           ) : (
             <div className="space-y-1 p-2">
               {newsItemsWithReadState.map((item, index) => (

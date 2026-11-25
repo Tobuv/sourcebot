@@ -11,6 +11,7 @@ import { useState } from "react";
 import { Loader2 } from "lucide-react";
 import useCaptureEvent from "@/hooks/useCaptureEvent";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 
 const magicLinkSchema = z.object({
     email: z.string().email(),
@@ -25,6 +26,7 @@ export const MagicLinkForm = ({ callbackUrl, context }: MagicLinkFormProps) => {
     const captureEvent = useCaptureEvent();
     const [isLoading, setIsLoading] = useState(false);
     const router = useRouter();
+    const t = useTranslations('login');
 
     const magicLinkForm = useForm<z.infer<typeof magicLinkSchema>>({
         resolver: zodResolver(magicLinkSchema),
@@ -62,7 +64,7 @@ export const MagicLinkForm = ({ callbackUrl, context }: MagicLinkFormProps) => {
                     name="email"
                     render={({ field }) => (
                         <FormItem className="mb-4">
-                            <FormLabel>Email</FormLabel>
+                            <FormLabel>{t('email')}</FormLabel>
                             <FormControl>
                                 <Input placeholder="email@example.com" {...field} />
                             </FormControl>
@@ -77,7 +79,7 @@ export const MagicLinkForm = ({ callbackUrl, context }: MagicLinkFormProps) => {
                     disabled={isLoading}
                 >
                     {isLoading ? <Loader2 className="animate-spin mr-2" /> : ""}
-                    {context === "login" ? "Sign in with login code" : "Sign up with login code"}
+                    {context === "login" ? t('signInWithCode') : t('signUpWithCode')}
                 </Button>
             </form>
         </Form>

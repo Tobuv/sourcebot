@@ -13,6 +13,7 @@ import { OrgRole } from "@sourcebot/db";
 import { NotificationDot } from "../../components/notificationDot";
 import { Badge } from "@/components/ui/badge";
 import { authenticatedPage } from "@/middleware/authenticatedPage";
+import { getTranslations } from "next-intl/server";
 
 type MembersSettingsPageProps = {
     searchParams: Promise<{
@@ -21,6 +22,7 @@ type MembersSettingsPageProps = {
 }
 
 export default authenticatedPage<MembersSettingsPageProps>(async ({ org, role }, props) => {
+    const t = await getTranslations('settings.members');
     const searchParams = await props.searchParams;
 
     const {
@@ -57,16 +59,15 @@ export default authenticatedPage<MembersSettingsPageProps>(async ({ org, role },
         <div className="flex flex-col gap-6">
             <div className="flex items-start justify-between">
                 <div>
-                    <h3 className="text-lg font-medium">Members</h3>
-                    <p className="text-sm text-muted-foreground">Invite and manage members of your organization.</p>
+                    <h3 className="text-lg font-medium">{t('title')}</h3>
+                    <p className="text-sm text-muted-foreground">{t('description')}</p>
                 </div>
                 {seats && seats !== SOURCEBOT_UNLIMITED_SEATS && (
                     <div className="bg-card px-4 py-2 rounded-md border shadow-sm">
                         <div className="text-sm">
-                            <span className="text-foreground font-medium">{usedSeats}</span>
-                            <span className="text-muted-foreground"> of </span>
-                            <span className="text-foreground font-medium">{seats}</span>
-                            <span className="text-muted-foreground"> seats used</span>
+                            <span className="text-muted-foreground">
+                                {t.rich('seatsUsed', { used: usedSeats, total: seats, b: (chunks) => <span className="text-foreground font-medium">{chunks}</span> })}
+                            </span>
                         </div>
                     </div>
                 )}
@@ -85,7 +86,7 @@ export default authenticatedPage<MembersSettingsPageProps>(async ({ org, role },
                             {
                                 label: (
                                     <div className="flex items-center gap-2">
-                                        Team Members
+                                        {t('teamMembers')}
                                         <Badge variant="secondary" className="px-1.5 relative">
                                             {members.length}
                                         </Badge>
@@ -100,7 +101,7 @@ export default authenticatedPage<MembersSettingsPageProps>(async ({ org, role },
                                             {requests.length > 0 && (
                                                 <NotificationDot />
                                             )}
-                                            Pending Requests
+                                            {t('pendingRequests')}
                                             {requests.length > 0 && (
                                                 <Badge variant="secondary" className="px-1.5 relative">
                                                     {requests.length}
@@ -113,7 +114,7 @@ export default authenticatedPage<MembersSettingsPageProps>(async ({ org, role },
                                 {
                                     label: (
                                         <div className="flex items-center gap-2">
-                                            Pending Invites
+                                            {t('pendingInvites')}
                                             {invites.length > 0 && (
                                                 <Badge variant="secondary" className="px-1.5 relative">
                                                     {invites.length}

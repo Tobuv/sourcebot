@@ -9,6 +9,7 @@ import { getBrowsePath } from "../../../hooks/utils";
 import { computeChangeCounts, DiffStat } from "./diffStat";
 import { getFileStatus, StatusBadge } from "./fileStatus";
 import { LightweightDiffViewer } from "./lightweightDiffViewer";
+import { useTranslations } from "next-intl";
 
 const getDisplayPath = (file: FileDiff): string => {
     if (getFileStatus(file) === 'renamed') {
@@ -29,6 +30,7 @@ interface FileDiffRowProps {
 }
 
 export const FileDiffRow = ({ file, yOffset, repoName, commitSha, parentSha, isCollapsed, onToggleCollapsed }: FileDiffRowProps) => {
+    const t = useTranslations('browse');
     const status = getFileStatus(file);
 
     // Deleted files don't exist at the commit, so the link points to the
@@ -72,7 +74,7 @@ export const FileDiffRow = ({ file, yOffset, repoName, commitSha, parentSha, isC
                 {viewAtCommitHref && (
                     <CommitActionLink
                         href={viewAtCommitHref}
-                        label="View code at this commit"
+                        label={t('viewCodeAtCommit')}
                         icon={<FileCode className="h-3 w-3" />}
                     />
                 )}
@@ -80,7 +82,7 @@ export const FileDiffRow = ({ file, yOffset, repoName, commitSha, parentSha, isC
             {!isCollapsed && (
                 file.hunks.length === 0 ? (
                     <div className="p-4 text-sm text-muted-foreground">
-                        No textual diff (binary file or empty change).
+                        {t('noTextualDiff')}
                     </div>
                 ) : (
                     <LightweightDiffViewer

@@ -2,8 +2,10 @@
 
 import { formatBytes } from "./attachments";
 import {
+    defaultImageAttachmentErrorMessages,
     getScaledDimensions,
     ImageAttachment,
+    ImageAttachmentErrorMessages,
     MAX_IMAGE_BYTES,
     SUPPORTED_IMAGE_MEDIA_TYPES,
     SupportedImageMediaType,
@@ -39,12 +41,15 @@ const getFileName = (file: File, mediaType: string) => {
  * others are downscaled (longest side <= MAX_IMAGE_DIMENSION) and re-encoded
  * (PNG sources stay PNG when small enough, everything else becomes JPEG).
  */
-export const processImageFile = async (file: File): Promise<ImageAttachment | { error: string }> => {
+export const processImageFile = async (
+    file: File,
+    messages: ImageAttachmentErrorMessages = defaultImageAttachmentErrorMessages,
+): Promise<ImageAttachment | { error: string }> => {
     let bitmap: ImageBitmap;
     try {
         bitmap = await createImageBitmap(file);
     } catch {
-        return { error: `"${file.name || 'Image'}" could not be read as an image.` };
+        return { error: messages.unreadable(file.name || 'Image') };
     }
 
     try {
@@ -67,7 +72,7 @@ export const processImageFile = async (file: File): Promise<ImageAttachment | { 
         canvas.height = height;
         const context = canvas.getContext('2d');
         if (!context) {
-            return { error: 'Your browser could not process the image.' };
+            return { error: messages.browserCannotProcess() };
         }
 
         // Screenshots and diagrams are usually PNG; keep PNG when it stays small enough
@@ -93,7 +98,7 @@ export const processImageFile = async (file: File): Promise<ImageAttachment | { 
             }
         }
 
-        return { error: `"${file.name || 'Image'}" is too large even after compression (limit ${formatBytes(MAX_IMAGE_BYTES)}).` };
+        return { error: messages.tooLargeAfterCompression(file.name || 'Image', formatBytes(MAX_IMAGE_BYTES)) };
     } finally {
         bitmap.close();
     }

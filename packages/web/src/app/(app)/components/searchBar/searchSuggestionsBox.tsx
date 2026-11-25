@@ -18,6 +18,8 @@ import { KeyboardShortcutHint } from "@/app/components/keyboardShortcutHint";
 import { useSyntaxGuide } from "@/app/(app)/components/syntaxGuideProvider";
 import { useRefineModeSuggestions } from "./useRefineModeSuggestions";
 import { cn } from "@/lib/utils";
+import { useTranslations } from "next-intl";
+import type { TranslatableSuggestion } from "./constants";
 
 export type Suggestion = {
     value: string;
@@ -86,11 +88,15 @@ const SearchSuggestionsBox = forwardRef(({
     const [highlightedSuggestionIndex, setHighlightedSuggestionIndex] = useState(0);
     const { onOpenChanged } = useSyntaxGuide();
     const refineModeSuggestions = useRefineModeSuggestions();
+    const t = useTranslations('searchBar');
 
     const { suggestions, isHighlightEnabled, descriptionPlacement, DefaultIcon, onSuggestionClicked } = useMemo(() => {
         if (!isEnabled) {
             return {};
         }
+
+        const translateSuggestions = (list: TranslatableSuggestion[]): Suggestion[] =>
+            list.map(({ value, descriptionKey }) => ({ value, description: t(descriptionKey) }));
 
         const createOnSuggestionClickedHandler = (params: { regexEscaped?: boolean, trailingSpace?: boolean } = {}) => {
             const {
@@ -140,17 +146,17 @@ const SearchSuggestionsBox = forwardRef(({
             switch (suggestionMode) {
                 case "visibility":
                     return {
-                        list: visibilityModeSuggestions,
+                        list: translateSuggestions(visibilityModeSuggestions),
                         onSuggestionClicked: createOnSuggestionClickedHandler(),
                     }
                 case "fork":
                     return {
-                        list: forkModeSuggestions,
+                        list: translateSuggestions(forkModeSuggestions),
                         onSuggestionClicked: createOnSuggestionClickedHandler(),
                     }
                 case "archived":
                     return {
-                        list: archivedModeSuggestions,
+                        list: translateSuggestions(archivedModeSuggestions),
                         onSuggestionClicked: createOnSuggestionClickedHandler(),
                     }
                 case "repo":
@@ -260,6 +266,7 @@ const SearchSuggestionsBox = forwardRef(({
         }
 
     }, [
+        t,
         isEnabled,
         suggestionQuery,
         suggestionMode,
@@ -286,23 +293,23 @@ const SearchSuggestionsBox = forwardRef(({
         }
         switch (suggestionMode) {
             case "repo":
-                return "Repositories";
+                return t('mode.repositories');
             case "refine":
-                return "Refine search";
+                return t('mode.refine');
             case "file":
-                return "Files";
+                return t('mode.files');
             case "symbol":
-                return "Symbols";
+                return t('mode.symbols');
             case "language":
-                return "Languages";
+                return t('mode.languages');
             case "searchHistory":
-                return "Search history"
+                return t('mode.searchHistory')
             case "context":
-                return "Search contexts"
+                return t('mode.searchContexts')
             default:
                 return "";
         }
-    }, [suggestionMode]);
+    }, [suggestionMode, t]);
 
     if (
         !isEnabled ||
@@ -412,7 +419,7 @@ const SearchSuggestionsBox = forwardRef(({
                     onClick={() => onOpenChanged(true)}
                 >
                     <p className="text-muted-foreground text-sm">
-                        Syntax help:
+                        {t('syntaxHelp')}
                     </p>
                     <div className="flex flex-row gap-0.5 items-center">
                         <KeyboardShortcutHint shortcut="mod" />
@@ -423,7 +430,7 @@ const SearchSuggestionsBox = forwardRef(({
                     <span className="flex flex-row gap-1.5 items-center">
                         <KeyboardShortcutHint shortcut="enter" />
                         <span className="text-muted-foreground text-sm font-medium">
-                            to select
+                            {t('toSelect')}
                         </span>
                     </span>
                 )}

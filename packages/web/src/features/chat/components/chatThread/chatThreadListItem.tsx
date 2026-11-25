@@ -17,6 +17,7 @@ import { ImageAttachmentChip } from '../imageAttachmentChip';
 import { ReferencedSourcesListView } from './referencedSourcesListView';
 import isEqual from "fast-deep-equal/react";
 import { ANSWER_TAG } from '../../constants';
+import { useTranslations } from "next-intl";
 
 interface ChatThreadListItemProps {
     userMessage: SBChatMessage;
@@ -35,6 +36,7 @@ const ChatThreadListItemComponent = forwardRef<HTMLDivElement, ChatThreadListIte
     chatId,
     index,
 }, ref) => {
+    const t = useTranslations('chatThread');
     const leftPanelRef = useRef<HTMLDivElement>(null);
     const [leftPanelHeight, setLeftPanelHeight] = useState<number | null>(null);
     const answerRef = useRef<HTMLDivElement>(null);
@@ -412,7 +414,7 @@ const ChatThreadListItemComponent = forwardRef<HTMLDivElement, ChatThreadListIte
                                 sources={referencedFileSources}
                             />
                         ) : !isStreaming && (
-                            <p className="text-destructive">Error: No answer response was provided</p>
+                            <p className="text-destructive">{t('noAnswer')}</p>
                         )}
                     </div>
                 </ResizablePanel>
@@ -450,7 +452,7 @@ const ChatThreadListItemComponent = forwardRef<HTMLDivElement, ChatThreadListIte
                             </div>
                         ) : (
                             <div className="p-4 text-center text-muted-foreground text-sm">
-                                No file references found
+                                {t('noFileReferences')}
                             </div>
                         )}
                     </div>

@@ -5,9 +5,11 @@ import { AlertCircle } from "lucide-react"
 import { SourcebotLogo } from "@/app/components/sourcebotLogo"
 import { useRouter } from "next/navigation"
 import { SOURCEBOT_SUPPORT_EMAIL } from "@/lib/constants"
+import { useTranslations } from "next-intl"
 
 export default function VerificationFailed() {
   const router = useRouter()
+  const t = useTranslations('login')
 
   return (
     <div className="flex min-h-screen flex-col items-center justify-center bg-[#111318] text-white">
@@ -20,23 +22,23 @@ export default function VerificationFailed() {
           <div className="mb-4 flex justify-center">
             <AlertCircle className="h-10 w-10 text-red-500" />
           </div>
-          <p className="mb-2 text-center text-lg font-medium">Login verification failed</p>
+          <p className="mb-2 text-center text-lg font-medium">{t('verificationFailedTitle')}</p>
           <p className="text-center text-sm text-gray-400">
-            Something went wrong when trying to verify your login. Please try again.
+            {t('verificationFailedDescription')}
           </p>
         </div>
 
         <Button onClick={() => router.push("/login")} className="w-full bg-purple-600 hover:bg-purple-700">
-          Return to login
+          {t('returnToLogin')}
         </Button>
       </div>
 
       <div className="mt-8 flex gap-6 text-sm text-gray-500">
         <a href="https://www.sourcebot.dev" className="hover:text-gray-300">
-          About
+          {t('about')}
         </a>
         <a href={`mailto:${SOURCEBOT_SUPPORT_EMAIL}`} className="hover:text-gray-300">
-          Contact Us
+          {t('contactUs')}
         </a>
       </div>
     </div>

@@ -5,6 +5,7 @@ import { PathHeader } from "@/app/(app)/components/pathHeader";
 import { getFolderContents } from "@/features/git/getFolderContentsApi";
 import { isServiceError } from "@/lib/utils";
 import { PureTreePreviewPanel } from "./pureTreePreviewPanel";
+import { getTranslations } from "next-intl/server";
 
 interface TreePreviewPanelProps {
     path: string;
@@ -13,6 +14,7 @@ interface TreePreviewPanelProps {
 }
 
 export const TreePreviewPanel = async ({ path, repoName, revisionName }: TreePreviewPanelProps) => {
+    const t = await getTranslations('browse');
     const [repoInfoResponse, folderContentsResponse] = await Promise.all([
         getRepoInfoByName(repoName),
         getFolderContents({
@@ -23,7 +25,7 @@ export const TreePreviewPanel = async ({ path, repoName, revisionName }: TreePre
     ]);
 
     if (isServiceError(folderContentsResponse) || isServiceError(repoInfoResponse)) {
-        return <div>Error loading tree preview</div>
+        return <div>{t('errorLoadingTreePreview')}</div>
     }
 
     return (

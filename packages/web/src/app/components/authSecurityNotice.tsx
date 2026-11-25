@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from "react";
+import { useTranslations } from "next-intl";
 
 interface AuthSecurityNoticeProps {
     closable?: boolean;
@@ -39,6 +40,8 @@ const setSecurityNoticeDismissed = (dismissed: boolean) => {
 export const AuthSecurityNotice = ({ closable = false }: AuthSecurityNoticeProps) => {
     const [isDismissed, setIsDismissed] = useState(false);
     const [hasMounted, setHasMounted] = useState(false);
+    const t = useTranslations('login');
+    const tCommon = useTranslations('common');
 
     // Only check cookie after component mounts to avoid hydration error
     useEffect(() => {
@@ -64,7 +67,7 @@ export const AuthSecurityNotice = ({ closable = false }: AuthSecurityNoticeProps
                 <button
                     onClick={handleDismiss}
                     className="absolute top-3 right-3 p-1 text-[var(--highlight)] hover:text-[var(--highlight)]/80 transition-colors"
-                    aria-label="Dismiss security notice"
+                    aria-label={t('dismissSecurityNotice')}
                 >
                     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -76,14 +79,14 @@ export const AuthSecurityNotice = ({ closable = false }: AuthSecurityNoticeProps
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
                 </svg>
                 <span>
-                    <strong>Security Notice:</strong> Authentication data is managed by your deployment and is encrypted at rest. Zero data leaves your deployment.{' '}
+                    {t.rich('securityNotice', { strong: (chunks) => <strong>{chunks}</strong> })}{' '}
                     <a
                         href="https://docs.sourcebot.dev/docs/configuration/auth/faq"
                         target="_blank"
                         rel="noopener"
                         className="underline text-[var(--highlight)] hover:text-[var(--highlight)]/80 font-medium"
                     >
-                        Learn more
+                        {tCommon('learnMore')}
                     </a>
                 </span>
             </p>

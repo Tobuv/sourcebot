@@ -1,6 +1,7 @@
 import { LogOutIcon } from "lucide-react";
 import { signOut } from "@/auth";
 import posthog from "posthog-js";
+import { useTranslations } from "next-intl";
 
 interface LogoutEscapeHatchProps {
     className?: string;
@@ -9,6 +10,7 @@ interface LogoutEscapeHatchProps {
 export const LogoutEscapeHatch = ({
     className,
 }: LogoutEscapeHatchProps) => {
+    const t = useTranslations('common');
     return (
         <div className={className}>
             <form
@@ -26,7 +28,7 @@ export const LogoutEscapeHatch = ({
                     className="flex flex-row items-center gap-2 text-sm text-muted-foreground cursor-pointer"
                 >
                     <LogOutIcon className="w-4 h-4" />
-                    Log out
+                    {t('logOut')}
                 </button>
             </form>
         </div>

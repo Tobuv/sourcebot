@@ -26,6 +26,7 @@ import { ModelProviderLogo } from "./modelProviderLogo";
 import { getLanguageModelKey } from "../../utils";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { LanguageModelInfoCard } from "./languageModelInfoCard";
+import { useTranslations } from "next-intl";
 
 interface LanguageModelSelectorProps {
     languageModels: LanguageModelInfo[];
@@ -40,6 +41,7 @@ export const LanguageModelSelector = ({
     onSelectedModelChange,
     className,
 }: LanguageModelSelectorProps) => {
+    const t = useTranslations('chatBox');
     const [isPopoverOpen, setIsPopoverOpen] = useState(false);
 
     const handleInputKeyDown = (
@@ -95,7 +97,7 @@ export const LanguageModelSelector = ({
                                         "text-sm text-muted-foreground mx-1 text-ellipsis overflow-hidden whitespace-nowrap font-medium",
                                     )}
                                 >
-                                    {selectedModel ? (selectedModel.displayName ?? selectedModel.model) : "Select model"}
+                                    {selectedModel ? (selectedModel.displayName ?? selectedModel.model) : t('selectModel')}
                                 </span>
                                 <ChevronDown className="h-4 cursor-pointer text-muted-foreground" />
                             </div>
@@ -112,12 +114,12 @@ export const LanguageModelSelector = ({
                 >
                     <Command>
                         <CommandInput
-                            placeholder="Search models..."
+                            placeholder={t('searchModels')}
                             onKeyDown={handleInputKeyDown}
                         />
                         <CommandList>
                             <CommandEmpty>
-                                <p>No models found.</p>
+                                <p>{t('noModelsFound')}</p>
                             </CommandEmpty>
                             <CommandGroup>
                                 {languageModels

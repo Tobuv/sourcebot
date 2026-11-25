@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { serviceErrorSchema } from '@/lib/serviceError';
 import { AlertCircle, X } from "lucide-react";
 import { useMemo } from 'react';
+import { useTranslations } from "next-intl";
 
 interface ErrorBannerProps {
     error: Error;
@@ -12,6 +13,7 @@ interface ErrorBannerProps {
 }
 
 export const ErrorBanner = ({ error, isVisible, onClose }: ErrorBannerProps) => {
+    const t = useTranslations('chatThread');
     const errorMessage = useMemo(() => {
         try {
             const errorJson = JSON.parse(error.message);
@@ -33,7 +35,7 @@ export const ErrorBanner = ({ error, isVisible, onClose }: ErrorBannerProps) => 
                     <div className="flex items-center gap-2">
                         <AlertCircle className="h-4 w-4 text-red-600 dark:text-red-400" />
                         <span className="text-sm font-medium text-red-800 dark:text-red-200">
-                            Error occurred
+                            {t('errorOccurred')}
                         </span>
                         <span className="text-sm text-red-600 dark:text-red-400">
                             {errorMessage}

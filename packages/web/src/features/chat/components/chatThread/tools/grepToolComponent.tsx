@@ -7,17 +7,19 @@ import { HoverCard, HoverCardContent, HoverCardTrigger } from "@/components/ui/h
 import { Separator } from "@/components/ui/separator";
 import { RepoHeader } from "./repoHeader";
 import { FileRow } from "./fileRow";
+import { useTranslations } from "next-intl";
 
 export const GrepToolComponent = (output: ToolResult<GrepMetadata>) => {
+    const t = useTranslations('chatTools');
     const stats = useMemo(() => {
         const { matchCount, repoCount } = output.metadata;
-        const matchLabel = `${matchCount} ${matchCount === 1 ? 'match' : 'matches'}`;
+        const matchLabel = t('matches', { count: matchCount });
         if (matchCount === 0 || repoCount === 1) {
             return matchLabel;
         }
-        const repoLabel = `${repoCount} ${repoCount === 1 ? 'repo' : 'repos'}`;
+        const repoLabel = t('repos', { count: repoCount });
         return `${matchLabel} · ${repoLabel}`;
-    }, [output]);
+    }, [output, t]);
 
     const filesByRepo = useMemo(() => {
         const groups = new Map<string, GrepFile[]>();
@@ -36,9 +38,9 @@ export const GrepToolComponent = (output: ToolResult<GrepMetadata>) => {
                 <div className="flex-1 min-w-0">
                     <HoverCardTrigger asChild>
                         <span className="flex items-center gap-1.5 text-sm text-muted-foreground min-w-0 overflow-hidden">
-                            <span className="flex-shrink-0">Searched</span>
+                            <span className="flex-shrink-0">{t('searched')}</span>
                             <code className="text-xs bg-muted px-1 py-0.5 rounded truncate text-foreground max-w-[300px]">{output.metadata.pattern}</code>
-                            {output.metadata.inputRepo && <><span className="flex-shrink-0">in</span><RepoBadge repo={output.metadata.inputRepo} /></>}
+                            {output.metadata.inputRepo && <><span className="flex-shrink-0">{t('in')}</span><RepoBadge repo={output.metadata.inputRepo} /></>}
                         </span>
                     </HoverCardTrigger>
                 </div>

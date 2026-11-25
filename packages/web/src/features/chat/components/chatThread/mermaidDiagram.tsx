@@ -6,6 +6,7 @@ import { CheckIcon, CodeIcon, CopyIcon, DownloadIcon, ImageIcon, Loader2 } from 
 import { useTheme } from 'next-themes';
 import { useCallback, useEffect, useId, useState } from 'react';
 import { CodeBlock } from './codeBlock';
+import { useTranslations } from "next-intl";
 
 interface MermaidDiagramProps {
     code: string;
@@ -46,6 +47,7 @@ const renderMermaid = async (code: string, isDarkMode: boolean, idPrefix: string
 }
 
 export const MermaidDiagram = ({ code }: MermaidDiagramProps) => {
+    const t = useTranslations('chatThread');
     const { resolvedTheme } = useTheme();
     const isDarkMode = resolvedTheme === 'dark';
     const idPrefix = `mermaid-${useId().replace(/[^a-zA-Z0-9_-]/g, '')}`;
@@ -120,13 +122,13 @@ export const MermaidDiagram = ({ code }: MermaidDiagramProps) => {
     return (
         <div className="not-prose my-4 flex flex-col rounded-md border overflow-hidden">
             <div className="flex items-center justify-between border-b bg-accent/50 px-2 py-1">
-                <span className="text-xs text-muted-foreground">Diagram</span>
+                <span className="text-xs text-muted-foreground">{t('diagram')}</span>
                 <div className="flex items-center gap-0.5">
                     <Button
                         variant="ghost"
                         size="icon"
                         className="h-6 w-6"
-                        title={isSourceVisible ? 'Show diagram' : 'Show source'}
+                        title={isSourceVisible ? t('showDiagram') : t('showSource')}
                         onClick={() => setIsSourceVisible(!isSourceVisible)}
                     >
                         {isSourceVisible ? <ImageIcon className="h-3 w-3" /> : <CodeIcon className="h-3 w-3" />}
@@ -135,7 +137,7 @@ export const MermaidDiagram = ({ code }: MermaidDiagramProps) => {
                         variant="ghost"
                         size="icon"
                         className="h-6 w-6"
-                        title="Copy source"
+                        title={t('copySource')}
                         onClick={onCopySource}
                     >
                         {isCopied ? <CheckIcon className="h-3 w-3" /> : <CopyIcon className="h-3 w-3" />}
@@ -144,7 +146,7 @@ export const MermaidDiagram = ({ code }: MermaidDiagramProps) => {
                         variant="ghost"
                         size="icon"
                         className="h-6 w-6"
-                        title="Download SVG"
+                        title={t('downloadSvg')}
                         disabled={!svg}
                         onClick={onDownloadSvg}
                     >

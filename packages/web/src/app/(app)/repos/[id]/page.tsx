@@ -20,8 +20,11 @@ import { DisplayDate } from "../../components/DisplayDate"
 import { RepoBranchesTable } from "../components/repoBranchesTable"
 import { RepoJobsTable } from "../components/repoJobsTable"
 import { OrgRole } from "@sourcebot/db"
+import { getTranslations } from "next-intl/server";
 
 export default async function RepoDetailPage({ params }: { params: Promise<{ id: string }> }) {
+    const t = await getTranslations('repos');
+    const tCommon = await getTranslations('common');
     const { id } = await params
     const repo = await getRepoWithJobs(Number.parseInt(id))
     if (isServiceError(repo)) {
@@ -62,7 +65,7 @@ export default async function RepoDetailPage({ params }: { params: Promise<{ id:
             <div className="mb-6">
                 <BackButton
                     href={`/repos`}
-                    name="Back to repositories"
+                    name={t('backToRepositories')}
                     className="mb-2"
                 />
 
@@ -78,7 +81,7 @@ export default async function RepoDetailPage({ params }: { params: Promise<{ id:
                                     alt={codeHostInfo.codeHostName}
                                     className={cn("w-4 h-4 flex-shrink-0", codeHostInfo.iconClassName)}
                                 />
-                                Open in {codeHostInfo.codeHostName}
+                                {tCommon('openInCodeHost', { host: codeHostInfo.codeHostName })}
                                 <ExternalLink className="ml-2 h-4 w-4" />
                             </Link>
                         </Button>
@@ -86,8 +89,8 @@ export default async function RepoDetailPage({ params }: { params: Promise<{ id:
                 </div>
 
                 <div className="flex gap-2 mt-4">
-                    {repo.isArchived && <Badge variant="secondary">Archived</Badge>}
-                    {repo.isPublic && <Badge variant="outline">Public</Badge>}
+                    {repo.isArchived && <Badge variant="secondary">{t('archived')}</Badge>}
+                    {repo.isPublic && <Badge variant="outline">{t('public')}</Badge>}
                 </div>
             </div>
 
@@ -95,13 +98,13 @@ export default async function RepoDetailPage({ params }: { params: Promise<{ id:
                 <Card>
                     <CardHeader className="pb-3">
                         <CardTitle className="text-sm font-medium flex items-center gap-1.5">
-                            Created
+                            {t('created')}
                             <Tooltip>
                                 <TooltipTrigger asChild>
                                     <Info className="h-3.5 w-3.5 text-muted-foreground cursor-help" />
                                 </TooltipTrigger>
                                 <TooltipContent>
-                                    <p>When this repository was first added to NexusCode</p>
+                                    <p>{t('createdHint')}</p>
                                 </TooltipContent>
                             </Tooltip>
                         </CardTitle>
@@ -114,13 +117,13 @@ export default async function RepoDetailPage({ params }: { params: Promise<{ id:
                 <Card>
                     <CardHeader className="pb-3">
                         <CardTitle className="text-sm font-medium flex items-center gap-1.5">
-                            Last indexed
+                            {t('lastIndexed')}
                             <Tooltip>
                                 <TooltipTrigger asChild>
                                     <Info className="h-3.5 w-3.5 text-muted-foreground cursor-help" />
                                 </TooltipTrigger>
                                 <TooltipContent>
-                                    <p>The last time this repository was successfully indexed</p>
+                                    <p>{t('lastIndexedHint')}</p>
                                 </TooltipContent>
                             </Tooltip>
                         </CardTitle>
@@ -133,13 +136,13 @@ export default async function RepoDetailPage({ params }: { params: Promise<{ id:
                 <Card>
                     <CardHeader className="pb-3">
                         <CardTitle className="text-sm font-medium flex items-center gap-1.5">
-                            Scheduled
+                            {t('scheduled')}
                             <Tooltip>
                                 <TooltipTrigger asChild>
                                     <Info className="h-3.5 w-3.5 text-muted-foreground cursor-help" />
                                 </TooltipTrigger>
                                 <TooltipContent>
-                                    <p>When the next indexing job is scheduled to run</p>
+                                    <p>{t('scheduledHint')}</p>
                                 </TooltipContent>
                             </Tooltip>
                         </CardTitle>
@@ -154,9 +157,9 @@ export default async function RepoDetailPage({ params }: { params: Promise<{ id:
                 <Card className="mb-8">
                     <CardHeader>
                         <div className="flex items-center gap-2">
-                            <CardTitle>Indexed Branches</CardTitle>
+                            <CardTitle>{t('indexedBranches')}</CardTitle>
                         </div>
-                        <CardDescription>Branches that have been indexed for this repository. <Link href="https://docs.sourcebot.dev/docs/features/search/multi-branch-indexing" target="_blank" className="text-link hover:underline">Docs</Link></CardDescription>
+                        <CardDescription>{t.rich('indexedBranchesDescription', { link: (chunks) => <Link href="https://docs.sourcebot.dev/docs/features/search/multi-branch-indexing" target="_blank" className="text-link hover:underline">{chunks}</Link> })}</CardDescription>
                     </CardHeader>
                     <CardContent>
                         <Suspense fallback={<Skeleton className="h-64 w-full" />}>
@@ -172,8 +175,8 @@ export default async function RepoDetailPage({ params }: { params: Promise<{ id:
 
             <Card>
                 <CardHeader>
-                    <CardTitle>Indexing History</CardTitle>
-                    <CardDescription>History of all indexing and cleanup jobs for this repository.</CardDescription>
+                    <CardTitle>{t('indexingHistory')}</CardTitle>
+                    <CardDescription>{t('indexingHistoryDescription')}</CardDescription>
                 </CardHeader>
                 <CardContent>
                     <Suspense fallback={<Skeleton className="h-96 w-full" />}>

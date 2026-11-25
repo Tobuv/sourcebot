@@ -22,6 +22,7 @@ import { MermaidDiagram } from './mermaidDiagram';
 import { FILE_REFERENCE_REGEX } from '@/features/chat/constants';
 import { createFileReference } from '@/features/chat/utils';
 import isEqual from "fast-deep-equal/react";
+import { useTranslations } from "next-intl";
 
 const LINEAR_ISSUE_URL_REGEX = /^https:\/\/linear\.app\/[^/]+\/issue\/([A-Z]+-\d+)\/([^/\s"]+)$/;
 
@@ -45,7 +46,11 @@ const annotateCodeBlocks: Plugin<[], Root> = () => {
 }
 
 // @see: https://unifiedjs.com/learn/guide/create-a-remark-plugin/
-function remarkReferencesPlugin() {
+const escapeHtmlAttribute = (value: string) =>
+    value.replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+
+function remarkReferencesPlugin(options: { citationTitle?: string } = {}) {
+    const citationTitle = options.citationTitle ?? "Click to navigate to code";
     return function (tree: Nodes) {
         findAndReplace(tree, [
             FILE_REFERENCE_REGEX,
@@ -74,7 +79,7 @@ function remarkReferencesPlugin() {
                         role="button"
                         class="${fileReference.id}"
                         className="font-mono cursor-pointer text-xs px-1 py-[1.5px] rounded-md transition-all duration-150 bg-chat-citation"
-                        title="Click to navigate to code"
+                        title="${escapeHtmlAttribute(citationTitle)}"
                         ${REFERENCE_PAYLOAD_ATTRIBUTE}="${encodeURIComponent(JSON.stringify(fileReference))}"
                     >${displayText}</span>`
                 }
@@ -134,15 +139,16 @@ interface MarkdownRendererProps {
 
 const MarkdownRendererComponent = forwardRef<HTMLDivElement, MarkdownRendererProps>(({ content, className, escapeHtml = false }, ref) => {
     const router = useRouter();
+    const t = useTranslations('chatThread');
 
     const remarkPlugins = useMemo((): PluggableList => {
         return [
             remarkGfm,
             ...(escapeHtml ? [remarkPreserveHtml] : []),
-            remarkReferencesPlugin,
+            [remarkReferencesPlugin, { citationTitle: t('navigateToCode') }],
             remarkTocExtractor,
         ];
-    }, [escapeHtml]);
+    }, [escapeHtml, t]);
 
     const rehypePlugins = useMemo((): PluggableList => {
         return [
@@ -237,7 +243,7 @@ const MarkdownRendererComponent = forwardRef<HTMLDivElement, MarkdownRendererPro
                                 const url = createPathWithQueryParams(`/search`, [SearchQueryParams.query, `"${text}"`])
                                 router.push(url);
                             }}
-                            title="Search for snippet"
+                            title={t('searchSnippet')}
                         >
                             <SearchIcon className="w-3 h-3" />
                         </button>
@@ -248,7 +254,7 @@ const MarkdownRendererComponent = forwardRef<HTMLDivElement, MarkdownRendererPro
                                 e.stopPropagation();
                                 navigator.clipboard.writeText(text);
                             }}
-                            title="Copy snippet"
+                            title={t('copySnippet')}
                         >
                             <CopyIcon className="w-3 h-3" />
                         </button>
@@ -257,7 +263,7 @@ const MarkdownRendererComponent = forwardRef<HTMLDivElement, MarkdownRendererPro
             </span>
         )
 
-    }, [router]);
+    }, [router, t]);
 
     return (
         <div

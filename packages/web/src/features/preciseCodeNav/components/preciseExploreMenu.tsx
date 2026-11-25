@@ -13,6 +13,7 @@ import { useMemo } from "react";
 import { findPreciseRelatedSymbols } from "../client";
 import { PreciseFileMatches, PreciseMatch, PreciseRelatedSymbolsResponse, SymbolPosition } from "../types";
 import { getPreciseMatchBrowsePath } from "./usePreciseCodeNavHandlers";
+import { useTranslations } from "next-intl";
 
 interface PreciseExploreMenuProps {
     symbol: SymbolPosition & { displayName: string };
@@ -33,6 +34,7 @@ const useRelatedSymbols = ({ repoName, revisionName, path, line, character }: Sy
 }
 
 export const PreciseExploreMenu = ({ symbol }: PreciseExploreMenuProps) => {
+    const t = useTranslations('preciseNav');
     const { state: { activeExploreMenuTab }, updateBrowseState } = useBrowseState();
     const references = useRelatedSymbols(symbol, 'references');
     const definitions = useRelatedSymbols(symbol, 'definitions');
@@ -45,7 +47,7 @@ export const PreciseExploreMenu = ({ symbol }: PreciseExploreMenuProps) => {
             <div className="flex flex-col w-56 shrink-0 p-2 gap-2 border-r">
                 <div className="flex flex-col gap-0.5 px-1">
                     <span className="font-mono text-sm font-semibold truncate" title={symbol.displayName}>{symbol.displayName}</span>
-                    <span className="text-xs text-muted-foreground">Precise code navigation</span>
+                    <span className="text-xs text-muted-foreground">{t('title')}</span>
                 </div>
                 <Tabs
                     value={activeExploreMenuTab}
@@ -56,13 +58,13 @@ export const PreciseExploreMenu = ({ symbol }: PreciseExploreMenuProps) => {
                             value="references"
                             onClick={() => updateBrowseState({ activeExploreMenuTab: 'references' })}
                         >
-                            References{countLabel(references.data?.matchCount, references.data?.truncated)}
+                            {t('references')}{countLabel(references.data?.matchCount, references.data?.truncated)}
                         </LowProfileTabsTrigger>
                         <LowProfileTabsTrigger
                             value="definitions"
                             onClick={() => updateBrowseState({ activeExploreMenuTab: 'definitions' })}
                         >
-                            Definitions{countLabel(definitions.data?.matchCount, definitions.data?.truncated)}
+                            {t('definitions')}{countLabel(definitions.data?.matchCount, definitions.data?.truncated)}
                         </LowProfileTabsTrigger>
                     </TabsList>
                 </Tabs>
@@ -75,17 +77,17 @@ export const PreciseExploreMenu = ({ symbol }: PreciseExploreMenuProps) => {
                         ))}
                     </div>
                 ) : active.isError ? (
-                    <p className="p-4 text-sm text-destructive">Failed to load results: {active.error.message}</p>
+                    <p className="p-4 text-sm text-destructive">{t('loadFailed', { reason: active.error.message })}</p>
                 ) : active.data.files.length === 0 ? (
                     <p className="p-4 text-sm text-muted-foreground">
                         {activeExploreMenuTab === 'definitions'
-                            ? 'No definition found. It may be defined in a dependency that isn\'t indexed.'
-                            : 'No references found.'}
+                            ? t('noDefinition')
+                            : t('noReferences')}
                     </p>
                 ) : (
                     <div className="flex flex-col">
                         {active.data.truncated && (
-                            <p className="px-3 py-1 text-xs text-muted-foreground">Showing the first {active.data.matchCount} results.</p>
+                            <p className="px-3 py-1 text-xs text-muted-foreground">{t('showingFirst', { count: active.data.matchCount })}</p>
                         )}
                         {active.data.files.map((file) => (
                             <FileMatches
@@ -124,6 +126,7 @@ const FileMatches = ({ file, showRepo }: { file: PreciseFileMatches, showRepo: b
 }
 
 const MatchRow = ({ file, match }: { file: PreciseFileMatches, match: PreciseMatch }) => {
+    const t = useTranslations('preciseNav');
     const router = useRouter();
 
     const [before, highlighted, after] = useMemo(() => {
@@ -148,7 +151,7 @@ const MatchRow = ({ file, match }: { file: PreciseFileMatches, match: PreciseMat
                 {after}
             </span>
             {match.isDefinition && (
-                <span className="ml-auto shrink-0 text-[10px] uppercase text-muted-foreground">definition</span>
+                <span className="ml-auto shrink-0 text-[10px] uppercase text-muted-foreground">{t('definitionBadge')}</span>
             )}
         </button>
     );

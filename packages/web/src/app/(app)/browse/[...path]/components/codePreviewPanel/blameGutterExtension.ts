@@ -31,10 +31,27 @@ type LineEntry = {
 const FILE_STACK_SVG = '<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-file-stack-icon lucide-file-stack"><path d="M11 21a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1v-8a1 1 0 0 1 1-1"/><path d="M16 16a1 1 0 0 1-1 1H9a1 1 0 0 1-1-1V8a1 1 0 0 1 1-1"/><path d="M21 6a2 2 0 0 0-.586-1.414l-2-2A2 2 0 0 0 17 2h-3a1 1 0 0 0-1 1v8a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1z"/></svg>'
 
 
+/**
+ * Localized text used by the blame gutter. The gutter renders plain DOM (not
+ * React), so callers pass already-translated strings / formatters.
+ */
+export type BlameGutterLabels = {
+    /** Relative age of a commit, e.g. "3 months ago". */
+    formatRelativeDate: (date: Date) => string;
+    /** Tooltip of the "blame prior to <hash>" button. */
+    reblameTitle: (shortHash: string) => string;
+};
+
+const defaultLabels: BlameGutterLabels = {
+    formatRelativeDate: (date) => formatDistanceToNowStrict(date, { addSuffix: true }),
+    reblameTitle: (shortHash) => `Blame prior to ${shortHash}`,
+};
+
 const buildCellDom = (
     entry: LineEntry,
     onCommitClick: (commit: { hash: string; path: string }) => void,
     onReblameClick: (previous: { hash: string; path: string }) => void,
+    labels: BlameGutterLabels,
 ): HTMLElement => {
     const cell = document.createElement('div');
     // `relative` so the absolutely-positioned age stripe inside has a
@@ -63,7 +80,7 @@ const buildCellDom = (
 
     const dateEl = document.createElement('span');
     dateEl.className = 'flex-shrink-0 w-24 truncate opacity-70 mr-1';
-    dateEl.textContent = formatDistanceToNowStrict(new Date(entry.date), { addSuffix: true });
+    dateEl.textContent = labels.formatRelativeDate(new Date(entry.date));
     cell.appendChild(dateEl);
 
     // Avatar replicates UserAvatar's structure inline. Goes through the same
@@ -91,7 +108,7 @@ const buildCellDom = (
         const previous = entry.previous;
         const reblameBtn = document.createElement('button');
         reblameBtn.type = 'button';
-        reblameBtn.title = `Blame prior to ${previous.hash.slice(0, 7)}`;
+        reblameBtn.title = labels.reblameTitle(previous.hash.slice(0, 7));
         reblameBtn.className = 'flex-shrink-0 ml-1 p-0.5 bg-transparent border-0 cursor-pointer text-muted-foreground hover:text-foreground';
         reblameBtn.innerHTML = FILE_STACK_SVG;
         reblameBtn.addEventListener('click', (e) => {
@@ -109,6 +126,7 @@ class BlameMarker extends GutterMarker {
         readonly entry: LineEntry,
         readonly onCommitClick: (commit: { hash: string; path: string }) => void,
         readonly onReblameClick: (previous: { hash: string; path: string }) => void,
+        readonly labels: BlameGutterLabels,
     ) {
         super();
     }
@@ -128,12 +146,14 @@ class BlameMarker extends GutterMarker {
             a.showStartBorder === b.showStartBorder &&
             a.ageBucket === b.ageBucket &&
             a.previous?.hash === b.previous?.hash &&
-            a.previous?.path === b.previous?.path
+            a.previous?.path === b.previous?.path &&
+            // Re-render when the language changes.
+            this.labels === other.labels
         );
     }
 
     toDOM(): HTMLElement {
-        return buildCellDom(this.entry, this.onCommitClick, this.onReblameClick);
+        return buildCellDom(this.entry, this.onCommitClick, this.onReblameClick, this.labels);
     }
 }
 
@@ -245,6 +265,7 @@ export const blameGutterExtension = (
     blame: FileBlameResponse,
     onCommitClick: (commit: { hash: string; path: string }) => void,
     onReblameClick: (previous: { hash: string; path: string }) => void,
+    labels: BlameGutterLabels = defaultLabels,
 ): Extension => {
     const lineIndex = buildLineIndex(blame);
 
@@ -291,7 +312,7 @@ export const blameGutterExtension = (
                 if (!entry) {
                     return null;
                 }
-                return new BlameMarker(entry, onCommitClick, onReblameClick);
+                return new BlameMarker(entry, onCommitClick, onReblameClick, labels);
             },
         })),
         blameTheme,
