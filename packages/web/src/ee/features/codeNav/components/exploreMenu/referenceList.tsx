@@ -6,7 +6,6 @@ import { LightweightCodeHighlighter } from "@/app/(app)/components/lightweightCo
 import { FindRelatedSymbolsResponse } from "@/features/codeNav/types";
 import { RepositoryInfo, SourceRange } from "@/features/search";
 import { useMemo, useRef } from "react";
-import useCaptureEvent from "@/hooks/useCaptureEvent";
 import { useVirtualizer } from "@tanstack/react-virtual";
 import Link from "next/link";
 
@@ -28,8 +27,6 @@ export const ReferenceList = ({
             return acc;
         }, {} as Record<number, RepositoryInfo>);
     }, [data.repositoryInfo]);
-
-    const captureEvent = useCaptureEvent();
 
     // Virtualization setup
     const parentRef = useRef<HTMLDivElement>(null);
@@ -111,9 +108,6 @@ export const ReferenceList = ({
                                                 pathType: 'blob',
                                                 highlightRange: match.range,
                                             })}
-                                            onClick={() => {
-                                                captureEvent('wa_explore_menu_reference_clicked', {});
-                                            }}
                                             key={index}
                                         >
                                             <ReferenceListItem

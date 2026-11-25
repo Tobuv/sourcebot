@@ -15,7 +15,6 @@ import { createInvites } from "@/actions";
 import { isServiceError } from "@/lib/utils";
 import { useToast } from "@/components/hooks/use-toast";
 import { useRouter } from "next/navigation";
-import useCaptureEvent from "@/hooks/useCaptureEvent";
 import { useTranslations } from "next-intl";
 export const createInviteMemberFormSchema = (duplicateEmailsMessage: string) => z.object({
     emails: z.array(z.object({
@@ -41,7 +40,6 @@ export const InviteMemberCard = ({ currentUserRole, seatsAvailable = true }: Inv
     const [isLoading, setIsLoading] = useState(false);
     const { toast } = useToast();
     const router = useRouter();
-    const captureEvent = useCaptureEvent();
 
     const form = useForm<z.infer<typeof inviteMemberFormSchema>>({
         resolver: zodResolver(createInviteMemberFormSchema(t('duplicateEmails'))),
@@ -63,25 +61,18 @@ export const InviteMemberCard = ({ currentUserRole, seatsAvailable = true }: Inv
                     toast({
                         description: t('inviteFailed', { reason: res.message })
                     });
-                    captureEvent('wa_invite_member_card_invite_fail', {
-                        errorCode: res.errorCode,
-                        num_emails: data.emails.length,
-                    });
                 } else {
                     form.reset();
                     router.push(`?tab=invites`);
                     toast({
                         description: t('invited', { count: data.emails.length })
                     });
-                    captureEvent('wa_invite_member_card_invite_success', {
-                        num_emails: data.emails.length,
-                    });
                 }
             })
             .finally(() => {
                 setIsLoading(false);
             });
-    }, [form, toast, router, captureEvent, t]);
+    }, [form, toast, router, t]);
 
     const isDisabled = !seatsAvailable || currentUserRole !== OrgRole.OWNER || isLoading;
 
@@ -182,9 +173,7 @@ export const InviteMemberCard = ({ currentUserRole, seatsAvailable = true }: Inv
                         </div>
                     </div>
                     <AlertDialogFooter>
-                        <AlertDialogCancel onClick={() => captureEvent('wa_invite_member_card_invite_cancel', {
-                            num_emails: form.getValues().emails.length,
-                        })}>{tCommon('cancel')}</AlertDialogCancel>
+                        <AlertDialogCancel>{tCommon('cancel')}</AlertDialogCancel>
                         <AlertDialogAction
                             onClick={() => onSubmit(form.getValues())}
                         >

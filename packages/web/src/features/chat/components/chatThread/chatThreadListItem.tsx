@@ -395,7 +395,6 @@ const ChatThreadListItemComponent = forwardRef<HTMLDivElement, ChatThreadListIte
                         )}
 
                         <DetailsCard
-                            chatId={chatId}
                             isExpanded={isDetailsPanelExpanded}
                             onExpandedChanged={onExpandDetailsPanel}
                             isThinking={isThinking}

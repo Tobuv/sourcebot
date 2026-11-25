@@ -1,7 +1,6 @@
 'use client';
 
 import { Button } from '@/components/ui/button';
-import { captureEvent } from '@/hooks/useCaptureEvent';
 import { X } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
@@ -48,19 +47,13 @@ export const SignInPromptBanner = ({
     useEffect(() => {
         if (isBannerVisible && !hasDisplayedEventFired) {
             setHasDisplayedEventFired(true);
-            captureEvent('wa_chat_sign_in_banner_displayed', { chatId });
         }
     }, [isBannerVisible, chatId, hasDisplayedEventFired]);
 
 
     const handleDismiss = () => {
-        captureEvent('wa_chat_sign_in_banner_dismissed', { chatId });
         setIsDismissed(true);
         sessionStorage.setItem(DISMISSED_KEY, 'true');
-    };
-
-    const handleSignInClick = () => {
-        captureEvent('wa_chat_sign_in_banner_clicked', { chatId });
     };
 
     if (!isBannerVisible) {
@@ -77,7 +70,6 @@ export const SignInPromptBanner = ({
                     variant="default"
                     size="sm"
                     asChild
-                    onClick={handleSignInClick}
                 >
                     <Link href={`/login?callbackUrl=${encodeURIComponent(pathname)}`}>
                         {tCommon('signIn')}

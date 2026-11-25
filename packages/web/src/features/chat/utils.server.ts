@@ -1,7 +1,6 @@
 import 'server-only';
 
 import { getAnonymousId } from '@/lib/anonymousId';
-import { createPostHogClient, tryGetPostHogDistinctId } from "@/lib/posthog";
 import { createAmazonBedrock } from '@ai-sdk/amazon-bedrock';
 import { AnthropicProviderOptions, createAnthropic } from '@ai-sdk/anthropic';
 import { createAzure } from '@ai-sdk/azure';
@@ -16,7 +15,6 @@ import { LanguageModelV3 as AISDKLanguageModelV3 } from "@ai-sdk/provider";
 import { createXai } from '@ai-sdk/xai';
 import { fromNodeProviderChain } from '@aws-sdk/credential-providers';
 import { createOpenRouter } from '@openrouter/ai-sdk-provider';
-import { withTracing } from "@posthog/ai";
 import { Chat, Prisma, PrismaClient, User } from '@sourcebot/db';
 import { LanguageModel } from '@sourcebot/schemas/v3/languageModel.type';
 import { Token } from "@sourcebot/schemas/v3/shared.type";
@@ -487,15 +485,7 @@ export const getAISDKLanguageModelAndOptions = async (config: LanguageModel): Pr
         }
     })();
 
-    const posthog = await createPostHogClient();
-    const distinctId = await tryGetPostHogDistinctId();
-
-    // Only enable posthog LLM analytics for the ask GH experiment.
-    const model = env.EXPERIMENT_ASK_GH_ENABLED === 'true' ?
-        withTracing(_model, posthog, {
-            posthogDistinctId: distinctId,
-        }) :
-        _model;
+    const model = _model;
 
     return {
         model,

@@ -4,7 +4,6 @@ import { useMemo } from "react";
 import { Card } from "@/components/ui/card";
 import { SourcebotLogo } from "@/app/components/sourcebotLogo";
 import { AuthMethodSelector } from "@/app/components/authMethodSelector";
-import useCaptureEvent from "@/hooks/useCaptureEvent";
 import Link from "next/link";
 import { useTranslations } from "next-intl";
 import type { IdentityProviderMetadata } from "@/lib/identityProviders";
@@ -19,7 +18,6 @@ interface LoginFormProps {
 }
 
 export const LoginForm = ({ callbackUrl, error, providers, context, isAnonymousAccessEnabled = false, hideSecurityNotice = false }: LoginFormProps) => {
-    const captureEvent = useCaptureEvent();
     const t = useTranslations('login');
 
     const safeCallbackUrl = useMemo(() => {
@@ -45,33 +43,6 @@ export const LoginForm = ({ callbackUrl, error, providers, context, isAnonymousA
         }
     }, [error, t]);
 
-    // Helper function to get the correct analytics event name
-    const getLoginEventName = (providerId: string) => {
-        switch (providerId) {
-            case "github":
-                return "wa_login_with_github" as const;
-            case "google":
-                return "wa_login_with_google" as const;
-            case "gitlab":
-                return "wa_login_with_gitlab" as const;
-            case "okta":
-                return "wa_login_with_okta" as const;
-            case "keycloak":
-                return "wa_login_with_keycloak" as const;
-            case "microsoft-entra-id":
-                return "wa_login_with_microsoft_entra_id" as const;
-            case "jumpcloud":
-                return "wa_login_with_jumpcloud" as const;
-            default:
-                return "wa_login_with_github" as const; // fallback
-        }
-    };
-
-    // Analytics callback for provider clicks
-    const handleProviderClick = (providerId: string) => {
-        captureEvent(getLoginEventName(providerId), {});
-    };
-
     return (
         <div className="flex flex-col items-center justify-center w-full">
             <div className="mb-6 flex flex-col items-center">
@@ -92,7 +63,6 @@ export const LoginForm = ({ callbackUrl, error, providers, context, isAnonymousA
                     providers={providers}
                     callbackUrl={callbackUrl}
                     context={context}
-                    onProviderClick={handleProviderClick}
                     securityNoticeClosable={true}
                     hideSecurityNotice={hideSecurityNotice}
                 />

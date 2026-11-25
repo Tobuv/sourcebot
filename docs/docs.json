@@ -224,11 +224,6 @@
             "linkedin": "https://www.linkedin.com/company/sourcebot"
         }
     },
-    "integrations": {
-        "posthog": {
-            "apiKey": "phc_DBGufjG0rkj3OEhuTcZ04xfeZB6eDhO7dP8ZCnqH7K7"
-        }
-    },
     "appearance": {
         "default": "dark",
         "strict": false

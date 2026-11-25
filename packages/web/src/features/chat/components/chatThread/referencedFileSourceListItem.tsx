@@ -163,7 +163,6 @@ const ReferencedFileSourceListItemComponent = ({
                 >
                     {editorRef && hasCodeNavEntitlement && (
                         <SymbolHoverPopup
-                            source="chat"
                             editorRef={editorRef}
                             revisionName={revision}
                             language={language}

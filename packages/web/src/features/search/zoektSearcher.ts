@@ -17,7 +17,6 @@ import { createLogger, env } from "@sourcebot/shared";
 import path from 'path';
 import { isBranchQuery, QueryIR, someInQueryIR } from './ir';
 import { RepositoryInfo, SearchResponse, SearchResultFile, SearchStats, SourceRange, StreamedSearchErrorResponse, StreamedSearchResponse } from "./types";
-import { captureEvent } from "@/lib/posthog";
 import { getBrowsePath } from "@/app/(app)/browse/hooks/utils";
 
 const logger = createLogger("zoekt-searcher");
@@ -393,7 +392,6 @@ const transformZoektSearchResponse = async (response: ZoektGrpcSearchResponse, r
 
             logger.error(errorMessage);
             Sentry.captureMessage(errorMessage);
-            captureEvent('wa_repo_not_found_for_zoekt_file', {});
 
             return undefined;
         }

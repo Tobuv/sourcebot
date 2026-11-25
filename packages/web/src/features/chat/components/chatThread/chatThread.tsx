@@ -25,7 +25,6 @@ import { RepositoryQuery, SearchContextQuery } from '@/lib/types';
 import { duplicateChat, generateAndUpdateChatNameFromMessage } from '../../actions';
 import { isServiceError } from '@/lib/utils';
 import { NotConfiguredErrorBanner } from '../notConfiguredErrorBanner';
-import useCaptureEvent from '@/hooks/useCaptureEvent';
 import { SignInPromptBanner } from './signInPromptBanner';
 import { DuplicateChatDialog } from '@/app/(app)/chat/components/duplicateChatDialog';
 import { LoginModal } from '@/app/components/loginModal';
@@ -80,7 +79,6 @@ export const ChatThread = ({
     const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
     const [loginWallProviders, setLoginWallProviders] = useState<IdentityProviderMetadata[]>([]);
     const hasRestoredPendingMessage = useRef(false);
-    const captureEvent = useCaptureEvent();
 
     // Initial state is from attachments that exist in in the chat history.
     const [sources, setSources] = useState<Source[]>(
@@ -313,7 +311,6 @@ export const ChatThread = ({
         if (!isAuthenticated) {
             const result = await getAskGhLoginWallData();
             if (!isServiceError(result) && result.isEnabled) {
-                captureEvent('wa_askgh_login_wall_prompted', {});
                 sessionStorage.setItem(PENDING_MESSAGE_STORAGE_KEY, JSON.stringify({ chatId, children }));
                 setLoginWallProviders(result.providers);
                 setIsLoginModalOpen(true);
@@ -330,7 +327,7 @@ export const ChatThread = ({
         scrollToBottom();
 
         resetEditor(editor);
-    }, [sendMessage, selectedSearchScopes, isAuthenticated, captureEvent, chatId, scrollToBottom]);
+    }, [sendMessage, selectedSearchScopes, isAuthenticated, chatId, scrollToBottom]);
 
     const onDuplicate = useCallback(async (newName: string): Promise<string | null> => {
         if (!defaultChatId) {
@@ -346,10 +343,9 @@ export const ChatThread = ({
             return null;
         }
 
-        captureEvent('wa_chat_duplicated', { chatId: defaultChatId });
         router.push(`/chat/${result.id}`);
         return result.id;
-    }, [defaultChatId, toast, router, captureEvent, t]);
+    }, [defaultChatId, toast, router, t]);
 
     return (
         <>

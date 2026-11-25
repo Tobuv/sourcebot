@@ -10,7 +10,6 @@ import { OrgRole, RepoIndexingJobStatus, RepoIndexingJobType } from "@sourcebot/
 import { env } from "@sourcebot/shared";
 import Link from "next/link";
 import { MeControlDropdownMenu } from "../meControlDropdownMenu";
-import WhatsNewIndicator from "../whatsNewIndicator";
 import { NavigationItems } from "./navigationItems";
 import { ProgressIndicator } from "./progressIndicator";
 import { redirect } from "next/navigation";
@@ -119,7 +118,6 @@ export const NavigationMenu = async () => {
                         numberOfReposWithFirstTimeIndexingJobsInProgress={numberOfReposWithFirstTimeIndexingJobsInProgress}
                         sampleRepos={sampleRepos}
                     />
-                    <WhatsNewIndicator />
                     {session ? (
                         <MeControlDropdownMenu
                             session={session}

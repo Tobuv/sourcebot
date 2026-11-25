@@ -18,7 +18,6 @@ import { getBrowsePath } from "../hooks/utils";
 import { ExploreMenu } from "@/ee/features/codeNav/components/exploreMenu";
 import { PreciseExploreMenu } from "@/features/preciseCodeNav/components/preciseExploreMenu";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { History } from "lucide-react";
 import type { BrowseState } from "../browseStateProvider";
 import { HistoryPanel } from "./historyPanel";
@@ -40,7 +39,6 @@ export const BottomPanel = ({ order }: BottomPanelProps) => {
     const tCommon = useTranslations('common');
     const panelRef = useRef<ImperativePanelHandle>(null);
     const hasCodeNavEntitlement = useHasEntitlement("code-nav");
-    const router = useRouter();
 
     const {
         state: { selectedSymbolInfo, preciseSymbolInfo, isBottomPanelCollapsed, bottomPanelSize, activeBottomPanelTab },
@@ -181,7 +179,7 @@ export const BottomPanel = ({ order }: BottomPanelProps) => {
                         <div className="flex flex-col items-center justify-center h-full text-muted-foreground gap-2">
                             <VscSymbolMisc className="w-6 h-6" />
                             <p className="text-sm">
-                                {t.rich('codeNavNotEnabled', { link: (chunks) => <span className="text-blue-500 hover:underline cursor-pointer" onClick={() => router.push(`/settings/license`)}>{chunks}</span> })}
+                                {t('codeNavNotEnabled')}
                             </p>
 
                             <Link

@@ -13,7 +13,6 @@ import { Copy, MoreVertical, Search } from "lucide-react";
 import { useCallback, useMemo, useState } from "react";
 import { cancelInvite } from "@/actions";
 import { useRouter } from "next/navigation";
-import useCaptureEvent from "@/hooks/useCaptureEvent";
 import { useTranslations } from "next-intl";
 interface Invite {
     id: string;
@@ -34,7 +33,6 @@ export const InvitesList = ({ invites, currentUserRole }: InviteListProps) => {
     const [inviteToCancel, setInviteToCancel] = useState<Invite | null>(null)
     const { toast } = useToast();
     const router = useRouter();
-    const captureEvent = useCaptureEvent();
 
     const filteredInvites = useMemo(() => {
         return invites
@@ -58,18 +56,14 @@ export const InvitesList = ({ invites, currentUserRole }: InviteListProps) => {
                     toast({
                         description: t('cancelInviteFailed', { reason: response.message })
                     })
-                    captureEvent('wa_invites_list_cancel_invite_fail', {
-                        errorCode: response.errorCode,
-                    })
                 } else {
                     toast({
                         description: t('inviteCancelled')
                     })
-                    captureEvent('wa_invites_list_cancel_invite_success', {})
                     router.refresh();
                 }
             });
-    }, [toast, router, captureEvent, t]);
+    }, [toast, router, t]);
 
     return (
         <div className="w-full mx-auto space-y-6">
@@ -126,13 +120,11 @@ export const InvitesList = ({ invites, currentUserRole }: InviteListProps) => {
                                                     toast({
                                                         description: t('inviteLinkCopied', { email: invite.email })
                                                     })
-                                                    captureEvent('wa_invites_list_copy_invite_link_success', {})
                                                 })
                                                 .catch(() => {
                                                     toast({
                                                         description: t('inviteLinkCopyFailed')
                                                     })
-                                                    captureEvent('wa_invites_list_copy_invite_link_fail', {})
                                                 })
                                         }}
                                     >
@@ -154,13 +146,11 @@ export const InvitesList = ({ invites, currentUserRole }: InviteListProps) => {
                                                             toast({
                                                                 description: t('emailCopied')
                                                             })
-                                                            captureEvent('wa_invites_list_copy_email_success', {})
                                                         })
                                                         .catch(() => {
                                                             toast({
                                                                 description: t('emailCopyFailed')
                                                             })
-                                                            captureEvent('wa_invites_list_copy_email_fail', {})
                                                         })
                                                 }}
                                             >

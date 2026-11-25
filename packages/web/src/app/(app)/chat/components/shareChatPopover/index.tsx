@@ -15,7 +15,6 @@ import { isServiceError } from "@/lib/utils";
 import { Link2Icon, LockIcon } from "lucide-react";
 import { SessionUser } from "@/auth";
 import { InvitePanel } from "./ee/invitePanel";
-import { captureEvent } from "@/hooks/useCaptureEvent";
 import { useTranslations } from "next-intl";
 
 interface ShareChatPopoverProps {
@@ -46,7 +45,6 @@ export const ShareChatPopover = ({
     const [view, setView] = useState<View>('main');
 
     const onChatVisibilityChange = useCallback(async (newVisibility: ChatVisibility) => {
-        const previousVisibility = visibility;
         const response = await updateChatVisibility({ chatId, visibility: newVisibility });
         if (isServiceError(response)) {
             toast({
@@ -56,17 +54,12 @@ export const ShareChatPopover = ({
             return false;
         } else {
             setVisibility(newVisibility);
-            captureEvent('wa_chat_visibility_changed', {
-                chatId,
-                fromVisibility: previousVisibility,
-                toVisibility: newVisibility,
-            });
             toast({
                 description: t('visibilityUpdated')
             });
             return true;
         }
-    }, [chatId, toast, visibility, t]);
+    }, [chatId, toast, t]);
 
     const onUnshareChatWithUser = useCallback(async (userId: string) => {
         const response = await unshareChatWithUser({ chatId, userId });
@@ -78,7 +71,6 @@ export const ShareChatPopover = ({
             return false;
         } else {
             setSharedWithUsers(prev => prev.filter(u => u.id !== userId));
-            captureEvent('wa_chat_user_removed', { chatId });
             toast({
                 description: t('accessRemoved')
             });
@@ -101,10 +93,6 @@ export const ShareChatPopover = ({
             return false;
         } else {
             setSharedWithUsers(prev => [...prev, ...users]);
-            captureEvent('wa_chat_users_invited', {
-                chatId,
-                numUsersInvited: users.length,
-            });
             toast({
                 description: t('invited', { count: users.length })
             });
@@ -115,19 +103,13 @@ export const ShareChatPopover = ({
 
     const onOpenChange = useCallback((open: boolean) => {
         _setIsOpen(open);
-        if (open) {
-            captureEvent('wa_chat_share_dialog_opened', {
-                chatId,
-                currentVisibility: visibility,
-            });
-        }
         // Small delay to ensure the popover close animation completes
         setTimeout(() => {
             if (!open) {
                 setView('main');
             }
         }, 100);
-    }, [chatId, visibility]);
+    }, []);
 
 
     return (
@@ -149,7 +131,6 @@ export const ShareChatPopover = ({
             <PopoverContent align="end" className="w-[420px] p-0">
                 {view === 'main' ? (
                     <ShareSettings
-                        chatId={chatId}
                         visibility={visibility}
                         onVisibilityChange={onChatVisibilityChange}
                         onRemoveSharedWithUser={onUnshareChatWithUser}

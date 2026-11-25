@@ -139,11 +139,6 @@ export const onCreateUser = async ({ user }: { user: AuthJsUser }) => {
             },
         });
     }
-
-    // Dynamic import to avoid circular dependency:
-    // authUtils -> posthog -> auth -> authUtils
-    const { captureEvent } = await import("@/lib/posthog");
-    await captureEvent('wa_user_created', { userId: user.id });
 };
 
 

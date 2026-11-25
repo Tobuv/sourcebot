@@ -231,7 +231,6 @@ export const PureCodePreviewPanel = ({
                 )}
                 {editorRef && isSearchBasedCodeNavEnabled && (
                     <SymbolHoverPopup
-                        source="preview"
                         editorRef={editorRef}
                         revisionName={revisionName}
                         language={language}

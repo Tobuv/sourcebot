@@ -12,7 +12,6 @@ import {
 import { Separator } from "@/components/ui/separator";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { RepositoryInfo, SearchResultFile, SearchStats } from "@/features/search";
-import useCaptureEvent from "@/hooks/useCaptureEvent";
 import { useNonEmptyQueryParam } from "@/hooks/useNonEmptyQueryParam";
 import { useSearchHistory } from "@/hooks/useSearchHistory";
 import { SearchQueryParams } from "@/lib/types";
@@ -57,7 +56,6 @@ export const SearchResultsPage = ({
     const router = useRouter();
     const { setSearchHistory } = useSearchHistory();
     const { toast } = useToast();
-    const captureEvent = useCaptureEvent();
 
     // Encodes the number of matches to return in the search response.
     const _maxMatchCount = parseInt(useNonEmptyQueryParam(SearchQueryParams.matches) ?? `${defaultMaxMatchCount}`);
@@ -117,41 +115,10 @@ export const SearchResultsPage = ({
             return;
         }
 
-        const fileLanguages = files.map(file => file.language) || [];
-
         console.debug('timeToFirstSearchResultMs:', timeToFirstSearchResultMs);
         console.debug('timeToSearchCompletionMs:', timeToSearchCompletionMs);
 
-        captureEvent("search_finished", {
-            durationMs: timeToSearchCompletionMs,
-            timeToSearchCompletionMs,
-            timeToFirstSearchResultMs,
-            fileCount: stats.fileCount,
-            matchCount: stats.totalMatchCount,
-            actualMatchCount: stats.actualMatchCount,
-            filesSkipped: stats.filesSkipped,
-            contentBytesLoaded: stats.contentBytesLoaded,
-            indexBytesLoaded: stats.indexBytesLoaded,
-            crashes: stats.crashes,
-            shardFilesConsidered: stats.shardFilesConsidered,
-            filesConsidered: stats.filesConsidered,
-            filesLoaded: stats.filesLoaded,
-            shardsScanned: stats.shardsScanned,
-            shardsSkipped: stats.shardsSkipped,
-            shardsSkippedFilter: stats.shardsSkippedFilter,
-            ngramMatches: stats.ngramMatches,
-            ngramLookups: stats.ngramLookups,
-            wait: stats.wait,
-            matchTreeConstruction: stats.matchTreeConstruction,
-            matchTreeSearch: stats.matchTreeSearch,
-            regexpsConsidered: stats.regexpsConsidered,
-            flushReason: stats.flushReason,
-            fileLanguages,
-            isSearchExhaustive: isExhaustive,
-            isBranchFilteringEnabled,
-        });
     }, [
-        captureEvent,
         files,
         isStreaming,
         isExhaustive,

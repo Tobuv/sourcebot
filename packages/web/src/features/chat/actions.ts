@@ -4,7 +4,6 @@ import { sew } from "@/middleware/sew";
 import { getAuditService } from "@/ee/features/audit/factory";
 import { getAnonymousId, getOrCreateAnonymousId } from "@/lib/anonymousId";
 import { ErrorCode } from "@/lib/errorCodes";
-import { captureEvent } from "@/lib/posthog";
 import { notFound, ServiceError } from "@/lib/serviceError";
 import { withAuth, withOptionalAuth } from "@/middleware/withAuth";
 import { ChatVisibility, Prisma } from "@sourcebot/db";
@@ -49,11 +48,6 @@ export const createChat = async ({ source }: { source?: string } = {}) => sew(()
             });
         }
 
-        await captureEvent('ask_thread_created', {
-            chatId: chat.id,
-            isAnonymous: isGuestUser,
-            source,
-        });
 
         return {
             id: chat.id,
@@ -302,12 +296,6 @@ export const claimAnonymousChats = async () => sew(() =>
                 anonymousCreatorId: null,
             },
         });
-
-        if (result.count > 0) {
-            captureEvent('wa_anonymous_chats_claimed', {
-                claimedCount: result.count,
-            });
-        }
 
         return { claimed: result.count };
     })

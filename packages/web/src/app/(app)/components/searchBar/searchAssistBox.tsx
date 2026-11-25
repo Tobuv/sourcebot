@@ -4,7 +4,6 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useCallback, useRef, useState } from "react";
 import { useToast } from "@/components/hooks/use-toast";
-import useCaptureEvent from "@/hooks/useCaptureEvent";
 import { translateSearchQuery } from "@/features/searchAssist/actions";
 import { isServiceError } from "@/lib/utils";
 import { cn } from "@/lib/utils";
@@ -35,7 +34,6 @@ export const SearchAssistBox = ({
     const inputRef = useRef<HTMLInputElement>(null);
     const [isLoading, setIsLoading] = useState(false);
     const { toast } = useToast();
-    const captureEvent = useCaptureEvent();
     const t = useTranslations('searchAssist');
     const tCommon = useTranslations('common');
 
@@ -49,25 +47,21 @@ export const SearchAssistBox = ({
             const result = await translateSearchQuery({ prompt: query });
             if (isServiceError(result)) {
                 toast({ title: t('failed'), description: result.message ?? t('unexpectedError'), variant: "destructive" });
-                captureEvent('wa_search_assist_generate_failed', {});
                 return;
             }
             onQueryGenerated(result.query);
-            captureEvent('wa_search_assist_query_generated', {});
             setQuery("");
         } catch {
             toast({ title: t('failed'), description: t('unexpectedError'), variant: "destructive" });
-            captureEvent('wa_search_assist_generate_failed', {});
         } finally {
             setIsLoading(false);
         }
-    }, [query, isLoading, toast, onQueryGenerated, captureEvent, t]);
+    }, [query, isLoading, toast, onQueryGenerated, t]);
 
     const onExampleClicked = useCallback((example: string) => {
         setQuery(example);
         inputRef.current?.focus();
-        captureEvent('wa_search_assist_example_clicked', { example });
-    }, [captureEvent]);
+    }, []);
 
     if (!isEnabled) {
         return null;

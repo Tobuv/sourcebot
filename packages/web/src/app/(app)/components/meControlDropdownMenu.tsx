@@ -14,7 +14,6 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { cn } from "@/lib/utils"
 import { signOut } from "next-auth/react"
-import posthog from "posthog-js";
 import { Session } from "next-auth";
 import { AppearanceDropdownMenuGroup } from "./appearanceDropdownMenuGroup";
 import { UserAvatar } from "@/components/userAvatar";
@@ -70,9 +69,7 @@ export const MeControlDropdownMenu = ({
                         onClick={() => {
                             signOut({
                                 redirectTo: "/login",
-                            }).then(() => {
-                                posthog.reset();
-                            })
+                            });
                         }}
                     >
                         <LogOut className="mr-2 h-4 w-4" />

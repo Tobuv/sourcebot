@@ -206,7 +206,6 @@ export const CodePreview = ({
 
                     {editorRef && hasCodeNavEntitlement && (
                         <SymbolHoverPopup
-                            source="preview"
                             editorRef={editorRef}
                             language={file.language}
                             revisionName={file.revision}

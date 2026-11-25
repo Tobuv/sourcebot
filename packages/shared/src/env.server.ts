@@ -203,8 +203,6 @@ const options = {
         // Misc
         CONFIG_MAX_REPOS_NO_TOKEN: numberSchema.default(Number.MAX_SAFE_INTEGER),
         NODE_ENV: z.enum(["development", "test", "production"]),
-        // @note: this is also declared in the Dockerfile.
-        POSTHOG_PAPIK: z.string().default("phc_lLPuFFi5LH6c94eFJcqvYVFwiJffVcV6HD8U4a1OnRW"),
 
         // Database variables
         // Either DATABASE_URL or DATABASE_HOST, DATABASE_USERNAME, DATABASE_PASSWORD, and DATABASE_NAME must be set.
@@ -312,7 +310,6 @@ const options = {
         EXPERIMENT_ASK_GH_ENABLED: booleanSchema.default('false'),
 
         SOURCEBOT_ENCRYPTION_KEY: z.string(),
-        SOURCEBOT_INSTALL_ID: z.string().default("unknown"),
 
         FALLBACK_GITHUB_CLOUD_TOKEN: z.string().optional(),
         FALLBACK_GITLAB_CLOUD_TOKEN: z.string().optional(),
@@ -385,17 +382,9 @@ const options = {
         EXPERIMENT_EE_PERMISSION_SYNC_ENABLED: booleanSchema.default('false'),
 
         /**
-         * Configure whether to send telemetry events. Disabled by default;
-         * set to false to opt in.
-         * By default, all events are anonymized and do not contain PII data,
-         * unless SOURCEBOT_TELEMETRY_PII_COLLECTION_ENABLED is set to true.
-         */
-        SOURCEBOT_TELEMETRY_DISABLED: booleanSchema.default('true'),
-
-        /**
-         * Configure whether to collect PII data in telemetry events.
-         * If SOURCEBOT_TELEMETRY_DISABLED is true, this setting is
-         * ignored.
+         * Configure whether Ask's LLM calls emit OpenTelemetry traces (including
+         * prompts and responses) to the self-hosted exporter configured in
+         * instrumentation.ts (e.g. Langfuse).
          */
         SOURCEBOT_TELEMETRY_PII_COLLECTION_ENABLED: booleanSchema.default('false'),
 

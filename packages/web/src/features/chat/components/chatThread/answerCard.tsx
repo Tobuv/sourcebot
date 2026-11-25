@@ -14,7 +14,6 @@ import { useToast } from "@/components/hooks/use-toast";
 import { convertLLMOutputToPortableMarkdown } from "../../utils";
 import { submitFeedback } from "../../actions";
 import { isServiceError } from "@/lib/utils";
-import useCaptureEvent from "@/hooks/useCaptureEvent";
 import { LangfuseWeb } from "langfuse";
 import { env } from "@sourcebot/shared/client";
 import isEqual from "fast-deep-equal/react";
@@ -49,7 +48,6 @@ const AnswerCardComponent = forwardRef<HTMLDivElement, AnswerCardProps>(({
     const { toast } = useToast();
     const [isSubmittingFeedback, setIsSubmittingFeedback] = useState(false);
     const [feedback, setFeedback] = useState<'like' | 'dislike' | undefined>(undefined);
-    const captureEvent = useCaptureEvent();
 
     useImperativeHandle(
         forwardedRef,
@@ -63,9 +61,8 @@ const AnswerCardComponent = forwardRef<HTMLDivElement, AnswerCardProps>(({
         toast({
             description: t('copied'),
         });
-        captureEvent('wa_chat_copy_answer_pressed', { chatId });
         return true;
-    }, [answerText, sources, chatId, captureEvent, toast, t]);
+    }, [answerText, sources, toast, t]);
 
     const onFeedback = useCallback(async (feedbackType: 'like' | 'dislike') => {
         setIsSubmittingFeedback(true);
@@ -86,11 +83,6 @@ const AnswerCardComponent = forwardRef<HTMLDivElement, AnswerCardProps>(({
                 description: t('feedbackSubmitted'),
             });
             setFeedback(feedbackType);
-            captureEvent('wa_chat_feedback_submitted', {
-                feedback: feedbackType,
-                chatId,
-                messageId,
-            });
 
             langfuseWeb?.score({
                 traceId: traceId,
@@ -100,7 +92,7 @@ const AnswerCardComponent = forwardRef<HTMLDivElement, AnswerCardProps>(({
         }
 
         setIsSubmittingFeedback(false);
-    }, [chatId, messageId, toast, captureEvent, traceId, t]);
+    }, [chatId, messageId, toast, traceId, t]);
 
     return (
         <div className="flex flex-row w-full relative scroll-mt-16">
@@ -137,7 +129,6 @@ const AnswerCardComponent = forwardRef<HTMLDivElement, AnswerCardProps>(({
                                             pressed={isTOCButtonToggled}
                                             onPressedChange={(next) => {
                                                 setIsTOCButtonToggled(next);
-                                                captureEvent('wa_chat_toc_toggled', { chatId, isExpanded: next });
                                             }}
                                         >
                                             <TableOfContentsIcon className="h-3 w-3" />

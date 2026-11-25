@@ -8,7 +8,6 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { deleteChat, duplicateChat, updateChatName } from "@/features/chat/actions";
-import { captureEvent } from "@/hooks/useCaptureEvent";
 import { cn, isServiceError } from "@/lib/utils";
 import { CirclePlusIcon, EllipsisIcon } from "lucide-react";
 import { ChatActionsDropdown } from "./chatActionsDropdown";
@@ -87,7 +86,6 @@ export const ChatSidePanel = ({
             toast({
                 description: t('renamed')
             });
-            captureEvent('wa_chat_renamed', { chatId });
             router.refresh();
             return true;
         }
@@ -109,7 +107,6 @@ export const ChatSidePanel = ({
             toast({
                 description: t('deleted')
             });
-            captureEvent('wa_chat_deleted', { chatId: chatIdToDelete });
 
             // If we just deleted the current chat, navigate to new chat
             if (chatIdToDelete === chatId) {
@@ -136,7 +133,6 @@ export const ChatSidePanel = ({
             toast({
                 description: t('duplicated')
             });
-            captureEvent('wa_chat_duplicated', { chatId: chatIdToDuplicate });
             router.push(`/chat/${response.id}`);
             return response.id;
         }

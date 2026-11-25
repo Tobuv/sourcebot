@@ -14,7 +14,6 @@ import { AccountPermissionSyncer } from "./ee/accountPermissionSyncer.js";
 import { AuditLogPruner } from "./ee/auditLogPruner.js";
 import { GithubAppManager } from "./ee/githubAppManager.js";
 import { RepoPermissionSyncer } from './ee/repoPermissionSyncer.js';
-import { shutdownPosthog } from "./posthog.js";
 import { PromClient } from './promClient.js';
 import { RepoIndexManager } from "./repoIndexManager.js";
 import { redis } from "./redis.js";
@@ -119,7 +118,6 @@ const listenToShutdownSignals = () => {
             await prisma.$disconnect();
             await redis.quit();
             await api.dispose();
-            await shutdownPosthog();
 
             logger.info('All workers shut down gracefully');
             signals.forEach(sig => process.removeListener(sig, cleanup));

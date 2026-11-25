@@ -12,7 +12,6 @@ import { CheckCircle, Search, XCircle } from "lucide-react";
 import { useCallback, useMemo, useState } from "react";
 import { approveAccountRequest, rejectAccountRequest } from "@/actions";
 import { useRouter } from "next/navigation";
-import useCaptureEvent from "@/hooks/useCaptureEvent";
 import { useTranslations } from "next-intl";
 
 interface Request {
@@ -37,7 +36,6 @@ export const RequestsList = ({ requests, currentUserRole }: RequestsListProps) =
     const [requestToAction, setRequestToAction] = useState<Request | null>(null)
     const { toast } = useToast();
     const router = useRouter();
-    const captureEvent = useCaptureEvent();
 
     const filteredRequests = useMemo(() => {
         return requests
@@ -62,18 +60,14 @@ export const RequestsList = ({ requests, currentUserRole }: RequestsListProps) =
                     toast({
                         description: t('approveFailed', { reason: response.message })
                     })
-                    captureEvent('wa_requests_list_approve_request_fail', {
-                        errorCode: response.errorCode,
-                    })
                 } else {
                     toast({
                         description: t('approved')
                     })
-                    captureEvent('wa_requests_list_approve_request_success', {})
                     router.refresh();
                 }
             });
-    }, [toast, router, captureEvent, t]);
+    }, [toast, router, t]);
 
     const onRejectRequest = useCallback((requestId: string) => {
         rejectAccountRequest(requestId)
@@ -82,18 +76,14 @@ export const RequestsList = ({ requests, currentUserRole }: RequestsListProps) =
                     toast({
                         description: t('rejectFailed')
                     })
-                    captureEvent('wa_requests_list_reject_request_fail', {
-                        errorCode: response.errorCode,
-                    })
                 } else {
                     toast({
                         description: t('rejected')
                     })
-                    captureEvent('wa_requests_list_reject_request_success', {})
                     router.refresh();
                 }
             });
-    }, [toast, router, captureEvent, t]);
+    }, [toast, router, t]);
 
     return (
         <div className="w-full mx-auto space-y-6">

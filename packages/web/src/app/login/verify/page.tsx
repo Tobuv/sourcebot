@@ -11,9 +11,7 @@ import { useRouter, useSearchParams } from "next/navigation"
 import { useCallback, useState, Suspense } from "react"
 import VerificationFailed from "./verificationFailed"
 import { SourcebotLogo } from "@/app/components/sourcebotLogo"
-import useCaptureEvent from "@/hooks/useCaptureEvent"
 import { Footer } from "@/app/components/footer"
-import { SOURCEBOT_SUPPORT_EMAIL } from "@/lib/constants"
 import { useTranslations } from "next-intl"
 
 function VerifyPageContent() {
@@ -21,7 +19,6 @@ function VerifyPageContent() {
     const searchParams = useSearchParams()
     const email = searchParams.get("email")
     const router = useRouter()
-    const captureEvent = useCaptureEvent();
     const t = useTranslations('login');
 
     const handleSubmit = useCallback(() => {
@@ -34,7 +31,6 @@ function VerifyPageContent() {
     }, [value, email, router])
 
     if (!email) {
-        captureEvent("wa_login_verify_page_no_email", {})
         return <VerificationFailed />
     }
 
@@ -92,17 +88,6 @@ function VerifyPageContent() {
                             </Button>
                         </CardFooter>
                     </Card>
-                    <div className="mt-8 text-center text-sm text-muted-foreground">
-                        <p>
-                            {t.rich('havingTrouble', {
-                                link: (chunks) => (
-                                    <a href={`mailto:${SOURCEBOT_SUPPORT_EMAIL}`} className="text-primary hover:underline">
-                                        {chunks}
-                                    </a>
-                                ),
-                            })}
-                        </p>
-                    </div>
                 </div>
             </div>
             <Footer />

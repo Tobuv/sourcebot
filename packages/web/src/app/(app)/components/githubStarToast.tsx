@@ -4,7 +4,6 @@ import { useToast } from "@/components/hooks/use-toast";
 import { ToastAction } from "@/components/ui/toast";
 import { useEffect } from "react";
 import { GitHubLogoIcon } from "@radix-ui/react-icons";
-import { captureEvent } from "@/hooks/useCaptureEvent";
 import { useTranslations } from "next-intl";
 
 const POPUP_SHOWN_COOKIE = "github_popup_shown";
@@ -64,7 +63,6 @@ export const GitHubStarToast = () => {
                         <ToastAction
                             altText="GitHub Button"
                             onClick={() => {
-                                captureEvent('wa_github_star_toast_clicked', {});
                                 window.open(SOURCEBOT_GITHUB_URL, "_blank");
                             }}
                         >
@@ -77,7 +75,6 @@ export const GitHubStarToast = () => {
                 )
             });
             
-            captureEvent('wa_github_star_toast_displayed', {});
             setCookie(POPUP_SHOWN_COOKIE, "true");
         }
     }, [toast, t]);

@@ -227,21 +227,11 @@ ENV DATA_CACHE_DIR=$DATA_DIR/.sourcebot
 ENV DATABASE_DATA_DIR=$DATA_CACHE_DIR/db
 ENV REDIS_DATA_DIR=$DATA_CACHE_DIR/redis
 ENV SOURCEBOT_PUBLIC_KEY_PATH=/app/public.pem
-# PAPIK = Project API Key
-# Note that this key does not need to be kept secret, so it's not
-# necessary to use Docker build secrets here.
-# @see: https://posthog.com/tutorials/api-capture-events#authenticating-with-the-project-api-key
-# @note: this is also declared in the shared env.server.ts file.
-ENV POSTHOG_PAPIK=phc_lLPuFFi5LH6c94eFJcqvYVFwiJffVcV6HD8U4a1OnRW
-
 # Valid values are: debug, info, warn, error
 ENV SOURCEBOT_LOG_LEVEL=info
 
-# Sourcebot collects anonymous usage data using [PostHog](https://posthog.com/). Uncomment this line to disable.
-# ENV SOURCEBOT_TELEMETRY_DISABLED=1
-
 # Configure dependencies
-RUN apk add --no-cache git ca-certificates bind-tools tini jansson wget supervisor uuidgen curl perl jq redis postgresql16 postgresql16-contrib openssl util-linux unzip && \
+RUN apk add --no-cache git ca-certificates bind-tools tini jansson wget supervisor curl perl jq redis postgresql16 postgresql16-contrib openssl util-linux unzip && \
     apk upgrade --no-cache
 
 # Configure SCIP indexers (precise code navigation)

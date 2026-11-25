@@ -8,7 +8,6 @@ import { Card } from "@/components/ui/card";
 import { CardContent } from "@/components/ui/card";
 import { DemoExamples, DemoSearchExample, DemoSearchScope } from "@/types";
 import { cn, getCodeHostIcon } from "@/lib/utils";
-import useCaptureEvent from "@/hooks/useCaptureEvent";
 import { SearchScopeInfoCard } from "@/features/chat/components/chatBox/searchScopeInfoCard";
 import { CodeHostType } from "@sourcebot/db";
 import { useTranslations } from "next-intl";
@@ -21,14 +20,9 @@ export const DemoCards = ({
     demoExamples,
 }: DemoCards) => {
     const t = useTranslations('chat');
-    const captureEvent = useCaptureEvent();
     const [selectedFilterSearchScope, setSelectedFilterSearchScope] = useState<number | null>(null);
 
     const handleExampleClick = (example: DemoSearchExample) => {
-        captureEvent('wa_demo_search_example_card_pressed', {
-            exampleTitle: example.title,
-            exampleUrl: example.url || '',
-        });
 
         if (example.url) {
             window.open(example.url, '_blank');

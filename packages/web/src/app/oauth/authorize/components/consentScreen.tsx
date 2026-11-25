@@ -7,8 +7,7 @@ import { isServiceError } from '@/lib/utils';
 import { ClientIcon } from './clientIcon';
 import Image from 'next/image';
 import logo from '@/public/logo_512.png';
-import { useEffect, useState } from 'react';
-import useCaptureEvent from '@/hooks/useCaptureEvent';
+import { useState } from 'react';
 import { useToast } from '@/components/hooks/use-toast';
 import { useTranslations } from "next-intl";
 
@@ -36,15 +35,9 @@ export function ConsentScreen({
     const t = useTranslations('oauth');
     const tCommon = useTranslations('common');
     const [pending, setPending] = useState<'approve' | 'deny' | null>(null);
-    const captureEvent = useCaptureEvent();
     const { toast } = useToast();
 
-    useEffect(() => {
-        captureEvent('wa_oauth_consent_viewed', { clientId, clientName });
-    }, [captureEvent, clientId, clientName]);
-
     const onApprove = async () => {
-        captureEvent('wa_oauth_authorization_approved', { clientId, clientName });
         setPending('approve');
         const result = await approveAuthorization({ clientId, redirectUri, codeChallenge, resource, state });
         if (!isServiceError(result)) {
@@ -67,7 +60,6 @@ export function ConsentScreen({
     };
 
     const onDeny = async () => {
-        captureEvent('wa_oauth_authorization_denied', { clientId, clientName });
         setPending('deny');
         const result = await denyAuthorization({ redirectUri, state });
         if (isServiceError(result)) {

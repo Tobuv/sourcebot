@@ -17,7 +17,6 @@ import { isServiceError } from "@/lib/utils";
 import { useToast } from "@/components/hooks/use-toast";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { useRouter } from "next/navigation";
-import useCaptureEvent from "@/hooks/useCaptureEvent";
 import Link from "next/link";
 import { useTranslations } from "next-intl";
 
@@ -58,7 +57,6 @@ export const MembersList = ({ members, currentUserId, currentUserRole, orgName, 
     const [passwordResetResult, setPasswordResetResult] = useState<{ member: Member, temporaryPassword: string } | null>(null)
     const [isTemporaryPasswordCopied, setIsTemporaryPasswordCopied] = useState(false)
     const router = useRouter();
-    const captureEvent = useCaptureEvent();
 
     const ownerCount = useMemo(() => members.filter(m => m.role === OrgRole.OWNER).length, [members]);
 
@@ -85,18 +83,14 @@ export const MembersList = ({ members, currentUserId, currentUserRole, orgName, 
                     toast({
                         description: t('removeFailed', { reason: response.message })
                     })
-                    captureEvent('wa_members_list_remove_member_fail', {
-                        errorCode: response.errorCode,
-                    })
                 } else {
                     toast({
                         description: t('removed')
                     })
-                    captureEvent('wa_members_list_remove_member_success', {})
                     router.refresh();
                 }
             });
-    }, [toast, router, captureEvent, t]);
+    }, [toast, router, t]);
 
     const onResetPassword = useCallback((member: Member) => {
         resetMemberPassword(member.id)
@@ -119,18 +113,14 @@ export const MembersList = ({ members, currentUserId, currentUserRole, orgName, 
                     toast({
                         description: t('promoteFailed', { reason: response.message })
                     })
-                    captureEvent('wa_members_list_promote_to_owner_fail', {
-                        errorCode: response.errorCode,
-                    })
                 } else {
                     toast({
                         description: t('promoted')
                     })
-                    captureEvent('wa_members_list_promote_to_owner_success', {})
                     router.refresh();
                 }
             });
-    }, [toast, router, captureEvent, t]);
+    }, [toast, router, t]);
 
     const onDemoteToMember = useCallback((memberId: string) => {
         demoteToMember(memberId)
@@ -139,18 +129,14 @@ export const MembersList = ({ members, currentUserId, currentUserRole, orgName, 
                     toast({
                         description: t('demoteFailed', { reason: response.message })
                     })
-                    captureEvent('wa_members_list_demote_to_member_fail', {
-                        errorCode: response.errorCode,
-                    })
                 } else {
                     toast({
                         description: t('demoted')
                     })
-                    captureEvent('wa_members_list_demote_to_member_success', {})
                     router.refresh();
                 }
             });
-    }, [toast, router, captureEvent, t]);
+    }, [toast, router, t]);
 
     const onLeaveOrg = useCallback(() => {
         leaveOrg()
@@ -159,18 +145,14 @@ export const MembersList = ({ members, currentUserId, currentUserRole, orgName, 
                     toast({
                         description: t('leaveFailed', { reason: response.message })
                     })
-                    captureEvent('wa_members_list_leave_org_fail', {
-                        errorCode: response.errorCode,
-                    })
                 } else {
                     toast({
                         description: t('left')
                     })
-                    captureEvent('wa_members_list_leave_org_success', {})
                     router.push("/");
                 }
             });
-    }, [toast, router, captureEvent, t]);
+    }, [toast, router, t]);
 
     return (
         <div>

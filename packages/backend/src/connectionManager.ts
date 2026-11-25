@@ -6,7 +6,6 @@ import { Job, Queue, Worker } from "bullmq";
 import { Redis } from 'ioredis';
 import { WORKER_STOP_GRACEFUL_TIMEOUT_MS } from "./constants.js";
 import { syncSearchContexts } from "./ee/syncSearchContexts.js";
-import { captureEvent } from "./posthog.js";
 import { PromClient } from "./promClient.js";
 import { compileAzureDevOpsConfig, compileBitbucketConfig, compileGenericGitHostConfig, compileGerritConfig, compileGiteaConfig, compileGithubConfig, compileGitlabConfig } from "./repoCompileUtils.js";
 import { Settings } from "./types.js";
@@ -336,11 +335,6 @@ export class ConnectionManager {
             this.promClient.connectionSyncJobSuccessTotal.inc({ connection: connectionName });
 
             const config = connection.config as unknown as ConnectionConfig;
-            captureEvent('backend_connection_sync_job_completed', {
-                connectionId: connectionId,
-                repoCount: result.repoCount,
-                type: config.type,
-            });
         } catch (error) {
             Sentry.captureException(error);
             logger.error(`Exception thrown while executing lifecycle function \`onJobCompleted\`.`, error);
@@ -381,10 +375,6 @@ export class ConnectionManager {
             jobLogger.error(`Failed job ${job.id} for connection ${connection.name} (id: ${connection.id}). Reason: ${job.failedReason}`);
 
             const config = connection.config as unknown as ConnectionConfig;
-            captureEvent('backend_connection_sync_job_failed', {
-                connectionId: job.data.connectionId,
-                type: config.type,
-            });
         } catch (err) {
             Sentry.captureException(err);
             logger.error(`Exception thrown while executing lifecycle function \`onJobMaybeFailed\`.`, err);

@@ -70,12 +70,10 @@
         "verifyTitle": "Verify your email",
         "verifyDescription": "Enter the 6-digit code we sent to <highlight>{email}</highlight>",
         "backToLogin": "Back to login",
-        "havingTrouble": "Having trouble? <link>Contact support</link>",
         "verificationFailedTitle": "Login verification failed",
         "verificationFailedDescription": "Something went wrong when trying to verify your login. Please try again.",
         "returnToLogin": "Return to login",
-        "about": "About",
-        "contactUs": "Contact Us"
+        "about": "About"
     },
     "searchBar": {
         "placeholder": "Search (/) through repos...",
@@ -205,11 +203,6 @@
         "newVersionTitle": "New version available 📣 ",
         "newVersionDescription": "Upgrade from {current} to {latest}",
         "upgrade": "Upgrade",
-        "whatsNew": "What's New",
-        "whatsNewAriaLabel": "What's new{unread, plural, =0 {} other { (# unread)}}",
-        "unreadUpdates": "{count, plural, one {# unread update} other {# unread updates}}",
-        "allCaughtUp": "All caught up!",
-        "markAllRead": "Mark all read",
         "copiedLinkToSelection": "✅ Copied link to selection",
         "shareSelection": "Share selection",
         "fileTooLarge": "File too large to display in preview.",
@@ -227,8 +220,7 @@
         "noRepositoriesFound": "No repositories found",
         "reposIndexed": "{count} <link>{count, plural, one {repository} other {repositories}}</link> indexed",
         "createConnectionToIndex": "Create a <link>connection</link> to start indexing repositories",
-        "awaitingReview": "Awaiting review",
-        "noRecentUpdates": "No recent updates"
+        "awaitingReview": "Awaiting review"
     },
     "syntaxGuide": {
         "hint": "Reference guide: ",
@@ -288,7 +280,7 @@
         "openExplorePanel": "Open Explore Panel",
         "openHistoryPanel": "Open History Panel",
         "viewFullHistory": "View full history",
-        "codeNavNotEnabled": "Code navigation is not enabled for <link>your plan</link>.",
+        "codeNavNotEnabled": "Code navigation is not enabled for your plan.",
         "noSymbolSelected": "No symbol selected",
         "openCommitDetails": "Open commit details",
         "openFileSearch": "Open File Search",
@@ -415,36 +407,6 @@
         "signInToChangeVisibility": "<link>Sign in</link> to change chat visibility.",
         "howSharingWorks": "How does sharing chats work?",
         "copyLink": "Copy Link"
-    },
-    "chatTutorial": {
-        "dialogTitle": "Ask NexusCode tutorial",
-        "intro": "Ask questions about your <b>entire codebase</b> in natural language. Get back responses grounded in code with <b>inline citations</b>.",
-        "introDetails": "Ask NexusCode is an agentic search tool that can answer questions about your codebase by searching, reading files, navigating references, and more. Supports any <link>compatible LLM.</link>",
-        "scopesTitle": "Search Scopes",
-        "scopesIntro": "When asking NexusCode a question, you can select one or more scopes to focus the search.",
-        "scopesTypes": "There are two types of search scopes:",
-        "scopeRepository": "<b>Repository</b>: A single repository.",
-        "scopeReposet": "<b>Reposet</b>: A collection of repositories (<link>configuration docs</link>).",
-        "scopeDemoAlt": "Search scope demo",
-        "mentionsTitle": "Mentions",
-        "mentionsIntro": "@ mention specific <icon></icon> files to add them to the model's context. Suggestions will be scoped to the selected search scopes.",
-        "comingSoon": "Coming soon",
-        "mentionDirectories": "<b>Directories</b>: Include entire folders as context",
-        "mentionCommits": "<b>Commits</b>: Reference specific git commits",
-        "mentionDocs": "<b>Docs</b>: Link to external docs and wikis",
-        "mentionIssues": "<b>Issues</b>: GitHub issues, Jira tickets, and more",
-        "mentionsDemoAlt": "Mentions demo",
-        "citationsTitle": "Inline Citations",
-        "citationsIntro": "NexusCode searches your codebase and provides responses with clickable citations that link directly to relevant sections of code.",
-        "citationsDemoAlt": "Citations demo",
-        "allSetTitle": "You're all set!",
-        "allSetIntro": "You can now ask NexusCode any question about your codebase. Checkout the <link>docs</link> for more information.",
-        "hitBug": "<b>Hit a bug?</b> Open up <link>an issue</link>.",
-        "featureRequest": "<b>Feature request?</b> Open a <link>discussion</link>.",
-        "anythingElse": "<b>Anything else?</b> <link>Contact us</link>.",
-        "previous": "Previous",
-        "next": "Next",
-        "getStarted": "Get Started"
     },
     "chatBox": {
         "placeholder": "Ask a question about your code. @mention files, type / to use a skill, or select search scopes to refine your query.",
@@ -606,8 +568,7 @@
     "footer": {
         "about": "About",
         "docs": "Docs",
-        "security": "Security",
-        "contactUs": "Contact Us"
+        "security": "Security"
     },
     "settings": {
         "title": "Settings",
@@ -619,9 +580,7 @@
             "models": "Models",
             "skills": "Skills",
             "apiKeys": "API Keys",
-            "analytics": "Analytics",
-            "linkedAccounts": "Linked Accounts",
-            "license": "License"
+            "linkedAccounts": "Linked Accounts"
         },
         "access": {
             "title": "Access Control",
@@ -662,24 +621,6 @@
             "teamMembers": "Team Members",
             "pendingRequests": "Pending Requests",
             "pendingInvites": "Pending Invites"
-        },
-        "license": {
-            "title": "License",
-            "description": "View your license details.",
-            "notFound": "No License Found",
-            "notFoundDescription": "Check out the <link>docs</link> for more information.",
-            "requestTrial": "Request a trial license",
-            "contactSupport": "Contact Support",
-            "details": "License Details",
-            "id": "License ID",
-            "plan": "Plan",
-            "entitlements": "Entitlements",
-            "seats": "Seats",
-            "unlimited": "Unlimited",
-            "expiryDate": "Expiry Date",
-            "expired": "(Expired)",
-            "trialPitch": "Want to try out NexusCode's enterprise features? Reach out to us and we'll get back to you within a couple hours with a trial license.",
-            "none": "None"
         }
     },
     "members": {
@@ -979,7 +920,7 @@
         "anonymousFailed": "Failed to update anonymous access setting",
         "anonymousTitle": "Enable anonymous access",
         "anonymousDescription": "When enabled, users can access your deployment without logging in.",
-        "anonymousPlan": "Your current plan doesn't allow for anonymous access. Please <link>reach out</link> for assistance.",
+        "anonymousPlan": "Your current plan doesn't allow for anonymous access.",
         "inviteLinkFailed": "Failed to update invite link setting",
         "inviteLinkCopyFailed": "Failed to copy invite link to clipboard",
         "inviteLinkTitle": "Enable invite link",
@@ -1011,13 +952,11 @@
         "securityStorage": "All data is stored on Google Cloud Platform in the United States (us-west-1)",
         "securityEncryption": "All data is encrypted in transit using TLS 1.2+, and at rest using AES-256",
         "securityFairSource": "NexusCode is fair-source and trusted by thousands of developers",
-        "haveQuestions": "Have questions?",
-        "getInTouch": "Get in touch",
         "learnSecurity": "Learn about our security measures"
     },
     "errorPage": {
         "title": "Unexpected Error",
-        "description": "An unexpected error occurred. Please reload the page and try again. If the issue persists, <link>please contact us</link>.",
+        "description": "An unexpected error occurred. Please reload the page and try again. If the issue persists, contact your administrator.",
         "errorMessage": "Error Message",
         "errorCode": "Error Code",
         "statusCode": "Status Code",

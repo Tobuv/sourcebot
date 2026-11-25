@@ -6,7 +6,6 @@ import { LoadingButton } from "@/components/ui/loading-button";
 import { Separator } from "@/components/ui/separator";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { createAuditAction } from "@/ee/features/audit/actions";
-import useCaptureEvent from "@/hooks/useCaptureEvent";
 import { computePosition, flip, offset, shift, VirtualElement } from "@floating-ui/react";
 import { ReactCodeMirrorRef } from "@uiw/react-codemirror";
 import { Loader2 } from "lucide-react";
@@ -22,7 +21,6 @@ interface SymbolHoverPopupProps {
     revisionName: string;
     repoName: string;
     fileName: string;
-    source: 'browse' | 'preview' | 'chat';
 }
 
 export const SymbolHoverPopup: React.FC<SymbolHoverPopupProps> = ({
@@ -31,13 +29,11 @@ export const SymbolHoverPopup: React.FC<SymbolHoverPopupProps> = ({
     language,
     repoName,
     fileName,
-    source,
 }) => {
     const ref = useRef<HTMLDivElement>(null);
     const [isSticky, setIsSticky] = useState(false);
     const { toast } = useToast();
     const { navigateToPath } = useBrowseNavigation();
-    const captureEvent = useCaptureEvent();
 
     const symbolInfo = useHoveredOverSymbolInfo({
         editorRef,
@@ -115,9 +111,6 @@ export const SymbolHoverPopup: React.FC<SymbolHoverPopupProps> = ({
             return;
         }
 
-        captureEvent('wa_goto_definition_pressed', {
-            source,
-        });
 
         createAuditAction({
             action: "user.performed_goto_definition",
@@ -158,10 +151,8 @@ export const SymbolHoverPopup: React.FC<SymbolHoverPopupProps> = ({
             } : {}),
         });
     }, [
-        captureEvent,
         previewedSymbolDefinition,
         navigateToPath,
-        source,
         symbolInfo
     ]);
 
@@ -170,9 +161,6 @@ export const SymbolHoverPopup: React.FC<SymbolHoverPopupProps> = ({
             return;
         }
 
-        captureEvent('wa_find_references_pressed', {
-            source,
-        });
 
         createAuditAction({
             action: "user.performed_find_references",
@@ -200,7 +188,7 @@ export const SymbolHoverPopup: React.FC<SymbolHoverPopupProps> = ({
                 activeBottomPanelTab: 'explore'
             }
         })
-    }, [captureEvent, fileName, language, navigateToPath, repoName, revisionName, source, symbolInfo]);
+    }, [fileName, language, navigateToPath, repoName, revisionName, symbolInfo]);
 
     // @todo: We should probably make the behaviour s.t., the ctrl / cmd key needs to be held
     // down to navigate to the definition. We should also only show the underline when the key

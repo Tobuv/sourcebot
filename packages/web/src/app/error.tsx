@@ -4,12 +4,10 @@ import * as Sentry from "@sentry/nextjs";
 import { useEffect, useMemo } from 'react'
 import { useState } from "react"
 import { Copy, CheckCircle2, TriangleAlert } from "lucide-react"
-import Link from 'next/link';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { serviceErrorSchema } from '@/lib/serviceError';
 import { SourcebotLogo } from './components/sourcebotLogo';
-import { SOURCEBOT_SUPPORT_EMAIL } from "@/lib/constants";
 import { useTranslations } from "next-intl";
 
 export default function Error({ error, reset }: { error: Error & { digest?: string }, reset: () => void }) {
@@ -79,7 +77,7 @@ function ErrorCard({ message, errorCode, statusCode, onReloadButtonClicked }: Er
                     {t('title')}
                 </CardTitle>
                 <CardDescription className="text-sm">
-                    {t.rich('description', { link: (chunks) => <Link href={`mailto:${SOURCEBOT_SUPPORT_EMAIL}?subject=NexusCode%20Error%20Report${errorCode ? `%20|%20Code:%20${errorCode}` : ''}`} className='underline'>{chunks}</Link> })}
+                    {t('description')}
                 </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">

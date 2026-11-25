@@ -58,10 +58,6 @@ vi.mock('./zoekt.js', () => ({
     indexGitRepository: vi.fn().mockResolvedValue({ stdout: '', stderr: '' }),
 }));
 
-vi.mock('./posthog.js', () => ({
-    captureEvent: vi.fn(),
-}));
-
 vi.mock('./utils.js', () => ({
     getAuthCredentialsForRepo: vi.fn().mockResolvedValue(null),
     getShardPrefix: vi.fn((orgId: number, repoId: number) => `${orgId}_${repoId}`),

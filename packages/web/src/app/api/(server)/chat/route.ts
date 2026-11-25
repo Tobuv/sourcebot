@@ -8,12 +8,11 @@ import { getLanguageModelKey } from "@/features/chat/utils";
 import { getAISDKLanguageModelAndOptions, getConfiguredLanguageModels, isOwnerOfChat, updateChatMessages } from "@/features/chat/utils.server";
 import { apiHandler } from "@/lib/apiHandler";
 import { ErrorCode } from "@/lib/errorCodes";
-import { captureEvent } from "@/lib/posthog";
 import { notFound, requestBodySchemaValidationError, ServiceError, serviceErrorResponse } from "@/lib/serviceError";
 import { isServiceError } from "@/lib/utils";
 import { withOptionalAuth } from "@/middleware/withAuth";
 import * as Sentry from "@sentry/nextjs";
-import { createLogger, env } from "@sourcebot/shared";
+import { createLogger } from "@sourcebot/shared";
 import {
     createUIMessageStreamResponse
 } from "ai";
@@ -138,16 +137,6 @@ export const POST = apiHandler(async (req: NextRequest) => {
                 }
                 return [];
             }))).flat();
-
-            const source = req.headers.get('X-Sourcebot-Client-Source') ?? undefined;
-
-            await captureEvent('ask_message_sent', {
-                chatId: id,
-                messageCount: messages.length,
-                selectedReposCount: expandedRepos.length,
-                source,
-                ...(env.EXPERIMENT_ASK_GH_ENABLED === 'true' ? { selectedRepos: expandedRepos } : {}),
-            });
 
             const skills = (await getVisibleSkills({ prisma, orgId: org.id, userId: user?.id }))
                 .map(({ id, name, description, instructions, autoInvoke }) => ({ id, name, description, instructions, autoInvoke }));

@@ -1,6 +1,5 @@
 import { findSearchBasedSymbolDefinitions } from "@/app/api/(client)/client";
 import { SourceRange } from "@/features/search";
-import useCaptureEvent from "@/hooks/useCaptureEvent";
 import { measure, unwrapServiceError } from "@/lib/utils";
 import { useQuery } from "@tanstack/react-query";
 import { ReactCodeMirrorRef } from "@uiw/react-codemirror";
@@ -52,8 +51,6 @@ export const useHoveredOverSymbolInfo = ({
         return (symbolElement && symbolElement.textContent) ?? undefined;
     }, [symbolElement]);
 
-    const captureEvent = useCaptureEvent();
-
     const { data: symbolDefinitions, isLoading: isSymbolDefinitionsLoading } = useQuery({
         queryKey: ["definitions", symbolName, revisionName, language, repoName],
         queryFn: async () => {
@@ -66,9 +63,6 @@ export const useHoveredOverSymbolInfo = ({
                 })
             ), 'findSearchBasedSymbolDefinitions', false);
 
-            captureEvent('wa_symbol_hover_popup_definitions_loaded', {
-                durationMs: response.durationMs,
-            });
 
             return response.data;
         },

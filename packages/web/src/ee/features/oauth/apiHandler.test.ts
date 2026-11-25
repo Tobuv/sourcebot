@@ -1,10 +1,6 @@
-import { describe, expect, test, vi } from 'vitest';
+import { describe, expect, test } from 'vitest';
 import { NextRequest } from 'next/server';
 import { oauthApiHandler } from './apiHandler';
-
-vi.mock('@/lib/posthog', () => ({
-    captureEvent: vi.fn(),
-}));
 
 const makeRequest = () => new NextRequest('http://localhost/api/ee/oauth/test', { method: 'POST' });
 

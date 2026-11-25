@@ -4,7 +4,6 @@ import { Button } from "@/components/ui/button"
 import { AlertCircle } from "lucide-react"
 import { SourcebotLogo } from "@/app/components/sourcebotLogo"
 import { useRouter } from "next/navigation"
-import { SOURCEBOT_SUPPORT_EMAIL } from "@/lib/constants"
 import { useTranslations } from "next-intl"
 
 export default function VerificationFailed() {
@@ -36,9 +35,6 @@ export default function VerificationFailed() {
       <div className="mt-8 flex gap-6 text-sm text-gray-500">
         <a href="https://www.sourcebot.dev" className="hover:text-gray-300">
           {t('about')}
-        </a>
-        <a href={`mailto:${SOURCEBOT_SUPPORT_EMAIL}`} className="hover:text-gray-300">
-          {t('contactUs')}
         </a>
       </div>
     </div>

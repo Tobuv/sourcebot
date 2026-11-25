@@ -13,21 +13,8 @@ const nextConfig = {
     // @see: https://env.t3.gg/docs/nextjs#create-your-schema
     transpilePackages: ["@t3-oss/env-core"],
 
-    // @see : https://posthog.com/docs/advanced/proxy/nextjs
     async rewrites() {
         return [
-            {
-                source: "/ingest/static/:path*",
-                destination: `https://us-assets.i.posthog.com/static/:path*`,
-            },
-            {
-                source: "/ingest/:path*",
-                destination: `https://us.i.posthog.com/:path*`,
-            },
-            {
-                source: "/ingest/decide",
-                destination: `https://us.i.posthog.com/decide`,
-            },
             // Expose OAuth discovery documents at canonical RFC paths (without /api/ee prefix)
             // so MCP clients and OAuth tools can find them via standard discovery.
             //
@@ -55,8 +42,6 @@ const nextConfig = {
             }
         ];
     },
-    // This is required to support PostHog trailing slash API requests
-    skipTrailingSlashRedirect: true,
 
     images: {
         remotePatterns: [

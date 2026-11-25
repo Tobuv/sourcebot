@@ -2,7 +2,6 @@
 
 import { useToast } from "@/components/hooks/use-toast";
 import { Button } from "@/components/ui/button";
-import useCaptureEvent from "@/hooks/useCaptureEvent";
 import { createPathWithQueryParams } from "@/lib/utils";
 import { autoPlacement, computePosition, offset, shift, VirtualElement } from "@floating-ui/react";
 import { Link2Icon } from "@radix-ui/react-icons";
@@ -29,7 +28,6 @@ export const EditorContextMenu = ({
     const t = useTranslations('shared');
     const ref = useRef<HTMLDivElement>(null);
     const { toast } = useToast();
-    const captureEvent = useCaptureEvent();
     useEffect(() => {
         if (selection.empty) {
             ref.current?.classList.add('hidden');
@@ -115,7 +113,6 @@ export const EditorContextMenu = ({
             description: t('copiedLinkToSelection'),
         });
 
-        captureEvent('wa_share_link_created', {});
 
         // Reset the selection
         view.dispatch(
@@ -126,7 +123,7 @@ export const EditorContextMenu = ({
                 }     
             }
         )
-    }, [selection.from, selection.to, repoName, revisionName, path, toast, captureEvent, view, t]);
+    }, [selection.from, selection.to, repoName, revisionName, path, toast, view, t]);
 
     return (
         <div

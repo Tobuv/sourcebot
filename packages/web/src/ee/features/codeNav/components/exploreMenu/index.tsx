@@ -16,7 +16,6 @@ import { VscSymbolMisc } from "react-icons/vsc";
 import { ReferenceList } from "./referenceList";
 import { KeyboardShortcutHint } from "@/app/components/keyboardShortcutHint";
 import { useHotkeys } from "react-hotkeys-hook";
-import useCaptureEvent from "@/hooks/useCaptureEvent";
 
 interface ExploreMenuProps {
     selectedSymbolInfo: {
@@ -30,7 +29,6 @@ interface ExploreMenuProps {
 export const ExploreMenu = ({
     selectedSymbolInfo,
 }: ExploreMenuProps) => {
-    const captureEvent = useCaptureEvent();
     const {
         state: { activeExploreMenuTab },
         updateBrowseState,
@@ -55,10 +53,6 @@ export const ExploreMenu = ({
                 })
             ), 'findSearchBasedSymbolReferences', false);
 
-            captureEvent('wa_explore_menu_references_loaded', {
-                durationMs: response.durationMs,
-                isGlobalSearchEnabled,
-            })
 
             return response.data;
         }
@@ -81,10 +75,6 @@ export const ExploreMenu = ({
                 })
             ), 'findSearchBasedSymbolDefinitions', false);
 
-            captureEvent('wa_explore_menu_definitions_loaded', {
-                durationMs: response.durationMs,
-                isGlobalSearchEnabled,
-            })
 
             return response.data;
         }

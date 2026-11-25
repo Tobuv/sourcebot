@@ -9,7 +9,6 @@ import micromatch from 'micromatch';
 import Redlock, { ExecutionError } from 'redlock';
 import { INDEX_CACHE_DIR, REPOS_CACHE_DIR, WORKER_STOP_GRACEFUL_TIMEOUT_MS } from './constants.js';
 import { cloneRepository, fetchRepository, getBranches, getCommitHashForRefName, getLatestCommitTimestamp, getLocalDefaultBranch, getTags, isPathAValidGitRepoRoot, isRepoEmpty, unsetGitConfig, upsertGitConfig, writeCommitGraph } from './git.js';
-import { captureEvent } from './posthog.js';
 import { PromClient } from './promClient.js';
 import { RepoWithConnections, Settings } from "./types.js";
 import { getAuthCredentialsForRepo, getRepoIdFromShardFileName, getShardPrefix, measure, setIntervalAsync } from './utils.js';
@@ -507,10 +506,6 @@ export class RepoIndexManager {
         // zoekt has a limit of 64 branches/tags to index.
         if (revisions.length > 64) {
             logger.warn(`Too many revisions (${revisions.length}) for repo ${repo.id}, truncating to 64`);
-            captureEvent('backend_revisions_truncated', {
-                repoId: repo.id,
-                revisionCount: revisions.length,
-            });
             revisions = revisions.slice(0, 64);
         }
 
@@ -620,12 +615,6 @@ export class RepoIndexManager {
             this.promClient.activeRepoIndexJobs.dec({ repo: job.data.repoName, type: jobTypeLabel });
             this.promClient.repoIndexJobSuccessTotal.inc({ repo: job.data.repoName, type: jobTypeLabel });
 
-            if (jobData.type === RepoIndexingJobType.INDEX && jobData.repo.indexedAt === null) {
-                captureEvent('backend_repo_first_indexed', {
-                    repoId: job.data.repoId,
-                    type: jobData.repo.external_codeHostType,
-                });
-            }
         } catch (error) {
             Sentry.captureException(error);
             logger.error(`Exception thrown while executing lifecycle function \`onJobCompleted\`.`, error);
@@ -670,11 +659,6 @@ export class RepoIndexManager {
 
             jobLogger.error(`Failed job ${job.data.jobId} for repo ${repo.name} (id: ${repo.id}). Reason: ${error.message}`);
 
-            captureEvent('backend_repo_index_job_failed', {
-                repoId: job.data.repoId,
-                jobType: job.data.type,
-                type: repo.external_codeHostType,
-            });
         } catch (err) {
             Sentry.captureException(err);
             logger.error(`Exception thrown while executing lifecycle function \`onJobMaybeFailed\`.`, err);

@@ -10,7 +10,6 @@ import { createLogger, env } from "@sourcebot/shared";
 import { randomUUID } from "crypto";
 import { StatusCodes } from "http-status-codes";
 import { InferUIMessageChunk, UIDataTypes, UIMessage, UITools } from "ai";
-import { captureEvent } from "@/lib/posthog";
 import { getAuditService } from "@/ee/features/audit/factory";
 import { createMessageStream } from "../chat/agent";
 import { getVisibleSkills } from "../chat/skills/skills.server";
@@ -87,11 +86,6 @@ export const askCodebase = (params: AskCodebaseParams): Promise<AskCodebaseResul
                 },
             });
 
-            await captureEvent('ask_thread_created', {
-                chatId: chat.id,
-                isAnonymous: !user,
-                source,
-            });
 
             if (user) {
                 getAuditService().createAudit({
@@ -139,15 +133,6 @@ export const askCodebase = (params: AskCodebaseParams): Promise<AskCodebaseResul
 
             let finalMessages: SBChatMessage[] = [];
 
-            await captureEvent('ask_message_sent', {
-                chatId: chat.id,
-                messageCount: 1,
-                selectedReposCount: selectedRepos.length,
-                source,
-                ...(env.EXPERIMENT_ASK_GH_ENABLED === 'true' ? {
-                    selectedRepos: selectedRepos.map(r => r.value)
-                } : {}),
-            });
 
             const skills = (await getVisibleSkills({ prisma, orgId: org.id, userId: user?.id }))
                 .map(({ id, name, description, instructions, autoInvoke }) => ({ id, name, description, instructions, autoInvoke }));

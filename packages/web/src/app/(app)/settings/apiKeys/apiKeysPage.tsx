@@ -8,7 +8,6 @@ import { isServiceError } from "@/lib/utils";
 import { Copy, Check, AlertTriangle, Loader2, Plus } from "lucide-react";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useToast } from "@/components/hooks/use-toast";
-import useCaptureEvent from "@/hooks/useCaptureEvent";
 import { DataTable } from "@/components/ui/data-table";
 import { columns, ApiKeyColumnInfo } from "./columns";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -19,7 +18,6 @@ export function ApiKeysPage({ canCreateApiKey }: { canCreateApiKey: boolean }) {
     const t = useTranslations('apiKeys');
     const tCommon = useTranslations('common');
     const { toast } = useToast();
-    const captureEvent = useCaptureEvent();
 
     const [apiKeys, setApiKeys] = useState<{ name: string; createdAt: Date; lastUsedAt: Date | null }[]>([]);
     const [isLoading, setIsLoading] = useState(true);
@@ -81,14 +79,12 @@ export function ApiKeysPage({ canCreateApiKey }: { canCreateApiKey: boolean }) {
                     description: t('createFailed', { reason: result.message }),
                     variant: "destructive",
                 });
-                captureEvent('wa_api_key_creation_fail', {});
 
                 return;
             }
 
             setNewlyCreatedKey(result.key);
             await loadApiKeys();
-            captureEvent('wa_api_key_created', {});
         } catch (error) {
             console.error(error);
             toast({
@@ -96,7 +92,6 @@ export function ApiKeysPage({ canCreateApiKey }: { canCreateApiKey: boolean }) {
                 description: t('createFailed', { reason: String(error) }),
                 variant: "destructive",
             });
-            captureEvent('wa_api_key_creation_fail', {});
         } finally {
             setIsCreatingKey(false);
         }

@@ -16,7 +16,6 @@ import { setPendingChatImages } from "./pendingChatImages";
 import { SET_CHAT_STATE_SESSION_STORAGE_KEY } from "./constants";
 import { useSessionStorage } from "usehooks-ts";
 import type { IdentityProviderMetadata } from "@/lib/identityProviders";
-import useCaptureEvent from "@/hooks/useCaptureEvent";
 
 const PENDING_NEW_CHAT_KEY = "askgh_pending_new_chat";
 
@@ -31,7 +30,6 @@ export const useCreateNewChatThread = ({ isAuthenticated = false }: UseCreateNew
     const [, setChatState] = useSessionStorage<SetChatStatePayload | null>(SET_CHAT_STATE_SESSION_STORAGE_KEY, null);
     const [loginWallState, setLoginWallState] = useState<{ isOpen: boolean; providers: IdentityProviderMetadata[] }>({ isOpen: false, providers: [] });
     const hasRestoredPendingMessage = useRef(false);
-    const captureEvent = useCaptureEvent();
 
     const doCreateChat = useCallback(async (children: Descendant[], selectedSearchScopes: SearchScope[], attachments: TextAttachment[] = [], images: ImageAttachment[] = []) => {
         const text = slateContentToString(children);
@@ -68,7 +66,6 @@ export const useCreateNewChatThread = ({ isAuthenticated = false }: UseCreateNew
         if (!isAuthenticated) {
             const result = await getAskGhLoginWallData();
             if (!isServiceError(result) && result.isEnabled) {
-                captureEvent('wa_askgh_login_wall_prompted', {});
                 sessionStorage.setItem(PENDING_NEW_CHAT_KEY, JSON.stringify({ children, selectedSearchScopes }));
                 setLoginWallState({ isOpen: true, providers: result.providers });
                 return;
@@ -76,7 +73,7 @@ export const useCreateNewChatThread = ({ isAuthenticated = false }: UseCreateNew
         }
 
         doCreateChat(children, selectedSearchScopes, attachments, images);
-    }, [isAuthenticated, captureEvent, doCreateChat]);
+    }, [isAuthenticated, doCreateChat]);
 
     // Restore pending message after OAuth redirect
     useEffect(() => {

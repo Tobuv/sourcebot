@@ -17,14 +17,6 @@ export type ApiKeyPayload = {
     domain: string;
 };
 
-export type NewsItem = {
-    unique_id: string;
-    header: string;
-    sub_header: string;
-    url: string;
-    read?: boolean;
-}
-
 export type RepositoryQuery = z.infer<typeof repositoryQuerySchema>;
 export type SearchContextQuery = z.infer<typeof searchContextQuerySchema>;
 export type ListReposResponse = z.infer<typeof listReposResponseSchema>;

@@ -19,11 +19,9 @@ import { Info, Link2Icon, Loader2, Lock, X } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useCallback, useState } from "react";
-import { captureEvent } from "@/hooks/useCaptureEvent";
 import { useTranslations } from "next-intl";
 
 interface ShareSettingsProps {
-    chatId: string;
     visibility: ChatVisibility;
     onVisibilityChange: (visibility: ChatVisibility) => Promise<boolean>;
     onRemoveSharedWithUser: (userId: string) => Promise<boolean>;
@@ -35,7 +33,6 @@ interface ShareSettingsProps {
 }
 
 export const ShareSettings = ({
-    chatId,
     visibility,
     onVisibilityChange,
     onRemoveSharedWithUser,
@@ -55,10 +52,6 @@ export const ShareSettings = ({
     const handleCopyLink = useCallback(async () => {
         try {
             await navigator.clipboard.writeText(window.location.href);
-            captureEvent('wa_chat_link_copied', {
-                chatId,
-                visibility,
-            });
             toast({
                 description: t('linkCopied'),
             });
@@ -68,7 +61,7 @@ export const ShareSettings = ({
                 variant: "destructive",
             });
         }
-    }, [chatId, visibility, toast, t]);
+    }, [toast, t]);
 
     return (
         <div className="flex flex-col py-3 px-4">

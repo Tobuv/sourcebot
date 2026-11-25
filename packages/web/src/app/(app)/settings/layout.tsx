@@ -118,22 +118,10 @@ export const getSidebarNavItems = async () =>
                     href: `/settings/apiKeys`,
                 }
             ] : []),
-            ...(role === OrgRole.OWNER ? [
-                {
-                    title: t('nav.analytics'),
-                    href: `/settings/analytics`,
-                },
-            ] : []),
             ...(hasEntitlement("sso") ? [
                 {
                     title: t('nav.linkedAccounts'),
                     href: `/settings/linked-accounts`,
-                }
-            ] : []),
-            ...(role === OrgRole.OWNER ? [
-                {
-                    title: t('nav.license'),
-                    href: `/settings/license`,
                 }
             ] : []),
         ]

@@ -1,14 +1,11 @@
 "use client"
 
 import Link from "next/link"
-import { Shield, Lock, CheckCircle, ExternalLink, Mail } from "lucide-react"
-import useCaptureEvent from "@/hooks/useCaptureEvent"
-import { SOURCEBOT_SUPPORT_EMAIL } from "@/lib/constants"
+import { Shield, Lock, CheckCircle, ExternalLink } from "lucide-react"
 import { useTranslations } from "next-intl";
 
 export default function SecurityCard() {
     const t = useTranslations('cards');
-    const captureEvent = useCaptureEvent();
 
     return (
         <div className="mt-12 max-w-md mx-auto text-center">
@@ -61,22 +58,10 @@ export default function SecurityCard() {
                     </div>
                 </div>
 
-                <div className="flex flex-row justify-center text-sm text-[#A1A1AA] mb-5">
-                    {t('haveQuestions')}
-                    <Link
-                        href={`mailto:${SOURCEBOT_SUPPORT_EMAIL}`}
-                        className="inline-flex items-center ml-2 text-[#9D5CFF] hover:text-[#B47EFF] transition-colors"
-                    >
-                        <Mail className="h-3.5 w-3.5 mr-1" />
-                        <span>{t('getInTouch')}</span>
-                    </Link>
-                </div>
-
                 <Link
                     href="https://sourcebot.dev/security"
                     target="_blank"
                     className="inline-flex items-center justify-center px-5 py-2.5 rounded-md bg-backgroundSecondary border border-[#1E2A3A] text-foreground hover:bg-backgroundSecondary/80 transition-colors"
-                    onClick={() => captureEvent('wa_security_page_click', {})}
                 >
                     <Lock className="h-4 w-4 mr-2" />
                     <span>{t('learnSecurity')}</span>

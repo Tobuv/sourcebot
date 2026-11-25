@@ -5,7 +5,6 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/component
 import { Separator } from '@/components/ui/separator';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
-import useCaptureEvent from '@/hooks/useCaptureEvent';
 import { cn, getShortenedNumberDisplayString } from '@/lib/utils';
 import isEqual from "fast-deep-equal/react";
 import { useStickToBottom } from 'use-stick-to-bottom';
@@ -31,7 +30,6 @@ import { useTranslations } from "next-intl";
 
 
 interface DetailsCardProps {
-    chatId: string;
     isExpanded: boolean;
     onExpandedChanged: (isExpanded: boolean) => void;
     isThinking: boolean;
@@ -41,7 +39,6 @@ interface DetailsCardProps {
 }
 
 const DetailsCardComponent = ({
-    chatId,
     isExpanded,
     onExpandedChanged,
     isThinking,
@@ -50,14 +47,12 @@ const DetailsCardComponent = ({
     thinkingSteps,
 }: DetailsCardProps) => {
     const t = useTranslations('chatThread');
-    const captureEvent = useCaptureEvent();
 
     const toolCallCount = useMemo(() => thinkingSteps.flat().filter(part => part.type.startsWith('tool-') || part.type === 'dynamic-tool').length, [thinkingSteps]);
 
     const handleExpandedChanged = useCallback((next: boolean) => {
-        captureEvent('wa_chat_details_card_toggled', { chatId, isExpanded: next });
         onExpandedChanged(next);
-    }, [chatId, captureEvent, onExpandedChanged]);
+    }, [onExpandedChanged]);
 
     return (
         <Card className="mb-4">

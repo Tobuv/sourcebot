@@ -5,13 +5,11 @@ import Link from "next/link"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { ArrowRight, Database, Search } from "lucide-react"
-import useCaptureEvent from "@/hooks/useCaptureEvent"
 import { useTranslations } from "next-intl";
 
 export default function RegistrationCard() {
   const t = useTranslations('cards');
   const [isHovered, setIsHovered] = useState(false)
-  const captureEvent = useCaptureEvent()
 
   return (
     <Card
@@ -36,7 +34,7 @@ export default function RegistrationCard() {
         </div>
       </CardContent>
       <CardFooter className="flex flex-col space-y-3 pt-0">
-        <Link href="https://app.sourcebot.dev" className="w-full" rel="noopener noreferrer" onClick={() => captureEvent("wa_demo_try_card_pressed", {})}>
+        <Link href="https://app.sourcebot.dev" className="w-full" rel="noopener noreferrer">
           <Button className={`w-full transition-all duration-300 ${isHovered ? "translate-y-[-2px]" : ""}`}>
             {t('tryWithYourCode')}
             <ArrowRight className="ml-2 h-4 w-4" />

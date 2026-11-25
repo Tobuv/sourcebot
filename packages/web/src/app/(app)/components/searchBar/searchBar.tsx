@@ -47,7 +47,6 @@ import { useTranslations } from "next-intl";
 import Link from "next/link";
 import { CaseSensitiveIcon, RegexIcon, Wand2Icon } from "lucide-react";
 import { SearchAssistBox } from "./searchAssistBox";
-import useCaptureEvent from "@/hooks/useCaptureEvent";
 
 const LANGUAGE_MODEL_DOCS_URL = "https://docs.sourcebot.dev/docs/configuration/language-model-providers"; 
 
@@ -110,7 +109,6 @@ export const SearchBar = ({
     isSearchAssistSupported,
 }: SearchBarProps) => {
     const router = useRouter();
-    const captureEvent = useCaptureEvent();
     const tBar = useTranslations('searchBar');
     const suggestionBoxRef = useRef<HTMLDivElement>(null);
     const editorRef = useRef<ReactCodeMirrorRef>(null);
@@ -280,13 +278,7 @@ export const SearchBar = ({
                     onClick={() => {
                         setQuery("");
                         setIsHistorySearchEnabled(false);
-                        setActivePanel(prev => {
-                            const next = prev === 'searchAssist' ? undefined : 'searchAssist';
-                            if (next === 'searchAssist') {
-                                captureEvent('wa_search_assist_opened', {});
-                            }
-                            return next;
-                        });
+                        setActivePanel(prev => prev === 'searchAssist' ? undefined : 'searchAssist');
                         focusEditor();
                     }}
                     tooltip={tBar('aiSearchAssist')}
