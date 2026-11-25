@@ -29,10 +29,36 @@ ARG SCIP_GO_VERSION=v0.2.10
 ARG SCIP_JAVA_VERSION=0.12.3
 ARG COURSIER_VERSION=v2.1.24
 
+# Optional package mirrors for networks where the default sources are slow or
+# unreachable. Leave empty to use the upstream defaults.
+#   APK_MIRROR:   Alpine mirror host, e.g. mirrors.tuna.tsinghua.edu.cn
+#   GOPROXY:      Go module proxy, e.g. https://goproxy.cn,direct
+#   NPM_REGISTRY: npm registry, e.g. https://registry.npmmirror.com
+#   MAVEN_MIRROR: Maven repository used to fetch scip-java, e.g. https://maven.aliyun.com/repository/public
+ARG APK_MIRROR
+ARG GOPROXY
+ARG NPM_REGISTRY
+ARG MAVEN_MIRROR
+
 FROM node:24-alpine3.23 AS node-alpine
+ARG APK_MIRROR
+ARG NPM_REGISTRY
+RUN if [ -n "$APK_MIRROR" ]; then sed -i "s#dl-cdn.alpinelinux.org#$APK_MIRROR#g" /etc/apk/repositories; fi
+ENV YARN_NPM_REGISTRY_SERVER=${NPM_REGISTRY:-https://registry.npmjs.org}
+ENV npm_config_registry=${NPM_REGISTRY:-https://registry.npmjs.org}
+
 FROM golang:1.25-alpine AS go-alpine
+ARG APK_MIRROR
+ARG GOPROXY
+RUN if [ -n "$APK_MIRROR" ]; then sed -i "s#dl-cdn.alpinelinux.org#$APK_MIRROR#g" /etc/apk/repositories; fi
+ENV GOPROXY=${GOPROXY:-https://proxy.golang.org,direct}
+
 # scip-go requires Go >= 1.26.
 FROM golang:1.26-alpine AS go-scip-alpine
+ARG APK_MIRROR
+ARG GOPROXY
+RUN if [ -n "$APK_MIRROR" ]; then sed -i "s#dl-cdn.alpinelinux.org#$APK_MIRROR#g" /etc/apk/repositories; fi
+ENV GOPROXY=${GOPROXY:-https://proxy.golang.org,direct}
 # ----------------------------------
 
 # ------ SCIP indexers (precise code navigation) ------
@@ -68,8 +94,10 @@ FROM node-alpine AS scip-java-builder
 ARG PRECISE_CODE_NAV_INDEXERS
 ARG SCIP_JAVA_VERSION
 ARG COURSIER_VERSION
+ARG MAVEN_MIRROR
 RUN mkdir -p /out && \
     case ",$PRECISE_CODE_NAV_INDEXERS," in *,java,*) \
+        if [ -n "$MAVEN_MIRROR" ]; then export COURSIER_REPOSITORIES="ivy2Local|$MAVEN_MIRROR"; fi && \
         apk add --no-cache openjdk17-jre-headless curl && \
         curl -fsSL -o /tmp/coursier "https://github.com/coursier/coursier/releases/download/$COURSIER_VERSION/coursier" && \
         chmod +x /tmp/coursier && \
