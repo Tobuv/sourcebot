@@ -28,6 +28,39 @@ const readJson = (file: string): Record<string, unknown> | undefined => {
     }
 }
 
+/**
+ * Returns environment variables that make the JVM build tools used by scip-java
+ * resolve dependencies from `mirror` instead of Maven Central. Config files are
+ * written to `outputDir`.
+ */
+export const getMavenMirrorEnv = async (mirror: string, outputDir: string): Promise<NodeJS.ProcessEnv> => {
+    // sbt
+    const sbtRepositories = path.join(outputDir, 'sbt-repositories');
+    await writeFile(sbtRepositories, `[repositories]\n  local\n  mirror: ${mirror}\n`);
+
+    // Maven (>= 3.9 reads extra command line arguments from MAVEN_ARGS)
+    const mavenSettings = path.join(outputDir, 'maven-settings.xml');
+    await writeFile(mavenSettings, [
+        '<settings>',
+        '  <mirrors>',
+        '    <mirror>',
+        '      <id>precise-code-nav-mirror</id>',
+        '      <mirrorOf>central</mirrorOf>',
+        `      <url>${mirror}</url>`,
+        '    </mirror>',
+        '  </mirrors>',
+        '</settings>',
+        '',
+    ].join('\n'));
+
+    return {
+        // Dependencies scip-java fetches itself (e.g. the SemanticDB compiler plugins).
+        COURSIER_REPOSITORIES: `ivy2Local|${mirror}`,
+        SBT_OPTS: [process.env.SBT_OPTS, `-Dsbt.repository.config=${sbtRepositories}`, '-Dsbt.override.build.repos=true'].filter(Boolean).join(' '),
+        MAVEN_ARGS: [process.env.MAVEN_ARGS, '--settings', mavenSettings].filter(Boolean).join(' '),
+    };
+}
+
 export const getEnabledLanguages = (): Set<ScipLanguage> => {
     const supported: ScipLanguage[] = ['typescript', 'go', 'python', 'java'];
     const requested = env.PRECISE_CODE_NAV_LANGUAGES
@@ -140,11 +173,14 @@ export const detectIndexers = async ({
             indexer: 'scip-java',
             command: env.SCIP_JAVA_PATH,
             args: ['index', '--output', path.join(outputDir, 'java.scip')],
-            // scip-java resolves `java` (and the build tool) from PATH. Honor JAVA_HOME
-            // so a JDK doesn't need to be installed globally.
-            env: process.env.JAVA_HOME ? {
-                PATH: `${path.join(process.env.JAVA_HOME, 'bin')}${path.delimiter}${process.env.PATH ?? ''}`,
-            } : undefined,
+            env: {
+                // scip-java resolves `java` (and the build tool) from PATH. Honor JAVA_HOME
+                // so a JDK doesn't need to be installed globally.
+                ...(process.env.JAVA_HOME ? {
+                    PATH: `${path.join(process.env.JAVA_HOME, 'bin')}${path.delimiter}${process.env.PATH ?? ''}`,
+                } : {}),
+                ...(env.PRECISE_CODE_NAV_MAVEN_MIRROR ? await getMavenMirrorEnv(env.PRECISE_CODE_NAV_MAVEN_MIRROR, outputDir) : {}),
+            },
             defaultPositionEncoding: PositionEncoding.UTF16CodeUnitOffsetFromLineStart,
         });
     }

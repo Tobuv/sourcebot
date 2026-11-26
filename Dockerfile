@@ -18,7 +18,8 @@ ARG NEXT_PUBLIC_BUILD_COMMIT_SHA
 # SCIP indexers to bundle for precise code navigation (comma separated).
 # Supported: typescript, python, go, java. Use an empty value to bundle none.
 # Approximate image size added: typescript + python ~85MB, go ~300MB (scip-go needs the
-# Go toolchain at runtime to load packages), java ~425MB (JDK, Maven and scip-java).
+# Go toolchain at runtime to load packages), java ~425MB (JDK, Maven, sbt launcher and
+# scip-java; covers Java, Kotlin and Scala projects built with Maven, Gradle or sbt).
 # scip-java executes the repository's build, so it additionally requires
 # PRECISE_CODE_NAV_ALLOW_BUILD_EXECUTION=true at runtime.
 # @see: docs/docs/features/precise-code-navigation.mdx
@@ -28,6 +29,11 @@ ARG SCIP_PYTHON_VERSION=0.6.8
 ARG SCIP_GO_VERSION=v0.2.10
 ARG SCIP_JAVA_VERSION=0.12.3
 ARG COURSIER_VERSION=v2.1.24
+# Where to download the standalone coursier jar from (override when GitHub is unreachable).
+ARG COURSIER_URL=https://github.com/coursier/coursier/releases/download/${COURSIER_VERSION}/coursier.jar
+# sbt launcher bundled with the java indexer so that sbt (Scala) projects can be indexed.
+# It boots the sbt version declared in each project's project/build.properties.
+ARG SBT_LAUNCHER_VERSION=1.10.7
 
 # Optional package mirrors for networks where the default sources are slow or
 # unreachable. Leave empty to use the upstream defaults.
@@ -94,17 +100,26 @@ FROM node-alpine AS scip-java-builder
 ARG PRECISE_CODE_NAV_INDEXERS
 ARG SCIP_JAVA_VERSION
 ARG COURSIER_VERSION
+ARG COURSIER_URL
 ARG MAVEN_MIRROR
+ARG SBT_LAUNCHER_VERSION
 RUN mkdir -p /out && \
     case ",$PRECISE_CODE_NAV_INDEXERS," in *,java,*) \
         if [ -n "$MAVEN_MIRROR" ]; then export COURSIER_REPOSITORIES="ivy2Local|$MAVEN_MIRROR"; fi && \
         apk add --no-cache openjdk17-jre-headless curl && \
-        curl -fsSL -o /tmp/coursier "https://github.com/coursier/coursier/releases/download/$COURSIER_VERSION/coursier" && \
-        chmod +x /tmp/coursier && \
+        curl -fsSL --http1.1 --retry 5 --retry-all-errors -o /tmp/coursier.jar "$COURSIER_URL" && \
         mkdir -p /out/scip-bin && \
-        /tmp/coursier bootstrap --standalone -o /out/scip-bin/scip-java \
+        java -jar /tmp/coursier.jar bootstrap --standalone -o /out/scip-bin/scip-java \
             "com.sourcegraph:scip-java_2.13:$SCIP_JAVA_VERSION" \
-            --main com.sourcegraph.scip_java.ScipJava;; \
+            --main com.sourcegraph.scip_java.ScipJava && \
+        mkdir -p /out/sbt && \
+        cp "$(java -jar /tmp/coursier.jar fetch --intransitive "org.scala-sbt:sbt-launch:$SBT_LAUNCHER_VERSION")" /out/sbt/sbt-launch.jar && \
+        printf '%s\n' \
+            '#!/bin/sh' \
+            '# Minimal sbt runner used by scip-java to index sbt (Scala) projects.' \
+            'exec java -Xms512m -Xmx2g -Dsbt.log.noformat=true $SBT_OPTS -jar /opt/sbt/sbt-launch.jar "$@"' \
+            > /out/scip-bin/sbt && \
+        chmod +x /out/scip-bin/sbt;; \
     esac
 # ----------------------------------------------------
 
@@ -282,6 +297,8 @@ ENV PATH=/opt/scip-bin:/opt/go/bin:$PATH
 ENV GOPATH=$DATA_CACHE_DIR/scip-cache/go
 ENV GOCACHE=$DATA_CACHE_DIR/scip-cache/go-build
 ENV MAVEN_OPTS="-Dmaven.repo.local=$DATA_CACHE_DIR/scip-cache/m2"
+ENV COURSIER_CACHE=$DATA_CACHE_DIR/scip-cache/coursier
+ENV SBT_OPTS="-Dsbt.global.base=$DATA_CACHE_DIR/scip-cache/sbt -Dsbt.boot.directory=$DATA_CACHE_DIR/scip-cache/sbt/boot -Dsbt.ivy.home=$DATA_CACHE_DIR/scip-cache/ivy2"
 
 # Remove npm (unused — we use Yarn). The Node.js base image bundles npm
 # with its own transitive dependencies (minimatch, tar, picomatch, etc.)
@@ -312,7 +329,10 @@ COPY .yarn ./.yarn
 
 # Configure zoekt
 COPY vendor/zoekt/install-ctags-alpine.sh .
-RUN ./install-ctags-alpine.sh && rm install-ctags-alpine.sh && \
+# The script downloads ctags from GitHub with curl; force HTTP/1.1 and retry on any
+# error, which is more reliable on flaky networks / proxies.
+RUN printf '%s\n' '--http1.1' '--retry-all-errors' > /root/.curlrc && \
+    ./install-ctags-alpine.sh && rm install-ctags-alpine.sh && rm /root/.curlrc && \
     # Clean up ctags build artifacts
     rm -rf /tmp/*
 RUN mkdir -p ${DATA_CACHE_DIR}

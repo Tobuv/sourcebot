@@ -324,6 +324,12 @@ const options = {
          * from the repository. It is therefore disabled unless explicitly allowed.
          */
         PRECISE_CODE_NAV_ALLOW_BUILD_EXECUTION: booleanSchema.default('false'),
+        /**
+         * Optional Maven repository (e.g. https://maven.aliyun.com/repository/public) used
+         * instead of Maven Central when scip-java builds Java / Kotlin / Scala projects.
+         * Applies to Maven, sbt and the dependencies scip-java downloads itself.
+         */
+        PRECISE_CODE_NAV_MAVEN_MIRROR: z.string().url().optional(),
         PRECISE_CODE_NAV_INDEXER_TIMEOUT_SECONDS: numberSchema.default(60 * 30),
         PRECISE_CODE_NAV_JOB_CONCURRENCY: numberSchema.default(1),
         /** Indexes producing more occurrences than this are rejected to protect the database. */

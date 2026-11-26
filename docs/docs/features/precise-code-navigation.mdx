@@ -34,7 +34,7 @@ The Docker image bundles the indexers selected by the `PRECISE_CODE_NAV_INDEXERS
 |:---------|:-----------------------------|
 | `typescript`, `python` | ~85MB |
 | `go` (includes the Go toolchain, needed at runtime) | ~300MB |
-| `java` (includes a JDK, Maven and scip-java) | ~425MB |
+| `java` (includes a JDK, Maven, an sbt launcher and scip-java) | ~425MB |
 
 
 ```bash
@@ -43,6 +43,18 @@ docker build --build-arg PRECISE_CODE_NAV_INDEXERS=typescript,python,go,java -t 
 
 # Bundle none
 docker build --build-arg PRECISE_CODE_NAV_INDEXERS= -t sourcebot .
+```
+
+In networks where the default package sources are slow or unreachable, mirrors can be passed at build time:
+
+```bash
+docker build \
+  --build-arg PRECISE_CODE_NAV_INDEXERS=typescript,python,go,java \
+  --build-arg APK_MIRROR=mirrors.tuna.tsinghua.edu.cn \
+  --build-arg GOPROXY=https://goproxy.cn,direct \
+  --build-arg NPM_REGISTRY=https://registry.npmmirror.com \
+  --build-arg MAVEN_MIRROR=https://maven.aliyun.com/repository/public \
+  -t sourcebot .
 ```
 
 `PRECISE_CODE_NAV_LANGUAGES` defaults to the bundled set. Go modules and Maven artifacts downloaded while indexing are cached under `$DATA_CACHE_DIR/scip-cache`.
@@ -55,6 +67,7 @@ The indexers must be installed on the worker:
 npm install -g @sourcegraph/scip-typescript @sourcegraph/scip-python
 go install github.com/scip-code/scip-go/cmd/scip-go@latest
 # scip-java: see https://sourcegraph.github.io/scip-java/docs/getting-started.html (requires a JDK)
+# sbt (only needed for Scala projects built with sbt): see https://www.scala-sbt.org/download
 ```
 
 Indexers that are not installed are skipped; the failure is recorded on the index and shown by `/api/precise_status`.
@@ -63,6 +76,19 @@ Indexers that are not installed are skipped; the failure is recorded on the inde
 `scip-java` runs the repository's Maven / Gradle / sbt build, which executes code from the repository. It is disabled unless `PRECISE_CODE_NAV_ALLOW_BUILD_EXECUTION=true`. Only enable this for repositories you trust.
 </Warning>
 
+### Java, Kotlin and Scala
+
+`scip-java` indexes Java, Kotlin and Scala projects by running their build with a compiler plugin:
+
+- **Maven** and **Gradle** projects use the bundled Maven or the repository's Gradle wrapper (`gradlew`).
+- **sbt** (Scala) projects use the bundled sbt launcher, which boots the sbt version declared in `project/build.properties`.
+
+The build downloads the project's dependencies (and the compiler plugins scip-java needs) from Maven Central. Set `PRECISE_CODE_NAV_MAVEN_MIRROR` to use a different Maven repository for Maven, sbt and scip-java. Downloads are cached under `$DATA_CACHE_DIR/scip-cache`.
+
+<Note>
+Scala 3 indexes don't include doc comments, so hovering a Scala symbol shows its signature but not its documentation.
+</Note>
+
 ## Configuration
 
 | Environment variable | Default | Description |
@@ -70,6 +96,7 @@ Indexers that are not installed are skipped; the failure is recorded on the inde
 | `PRECISE_CODE_NAV_ENABLED` | `true` | Generate precise indexes. |
 | `PRECISE_CODE_NAV_LANGUAGES` | `typescript,go,python,java` | Languages to index. |
 | `PRECISE_CODE_NAV_ALLOW_BUILD_EXECUTION` | `false` | Allow indexers that execute the repository's build (`scip-java`). |
+| `PRECISE_CODE_NAV_MAVEN_MIRROR` | - | Maven repository used instead of Maven Central when `scip-java` builds Java / Kotlin / Scala projects (e.g. `https://maven.aliyun.com/repository/public`). |
 | `PRECISE_CODE_NAV_INDEXER_TIMEOUT_SECONDS` | `1800` | Timeout per indexer run. |
 | `PRECISE_CODE_NAV_JOB_CONCURRENCY` | `1` | Number of repositories indexed concurrently. |
 | `PRECISE_CODE_NAV_MAX_OCCURRENCES` | `5000000` | Indexes larger than this are rejected to protect the database. |
